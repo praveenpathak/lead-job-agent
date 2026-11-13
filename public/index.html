@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Lead & Job Agent – WordPress / Shopify</title>
+<style>
+  :root { --bg:#0f1220; --card:#181c2f; --muted:#8b93b5; --txt:#e8ebff; --acc:#6c7cff; --wp:#3b82f6; --sh:#22c55e; --warn:#f59e0b; --bd:#2a3050; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Segoe UI, system-ui, sans-serif; background:var(--bg); color:var(--txt); }
+  header { padding:18px 28px; border-bottom:1px solid var(--bd); display:flex; align-items:center; gap:14px; }
+  header h1 { font-size:20px; margin:0; } header span { color:var(--muted); font-size:13px; }
+  .tabs { display:flex; gap:8px; padding:14px 28px 0; }
+  .tab { padding:10px 18px; border-radius:10px 10px 0 0; background:var(--card); color:var(--muted); cursor:pointer; border:1px solid var(--bd); border-bottom:none; font-weight:600; }
+  .tab.active { color:var(--txt); background:#22284a; }
+  main { padding:0 28px 40px; }
+  .panel { display:none; background:#22284a; border:1px solid var(--bd); border-radius:0 12px 12px 12px; padding:18px; }
+  .panel.active { display:block; }
+  .row { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+  label { display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--muted); }
+  input, select, textarea { background:var(--card); color:var(--txt); border:1px solid var(--bd); border-radius:8px; padding:9px 11px; font-size:14px; min-width:170px; }
+  textarea { width:100%; min-height:110px; font-family:monospace; }
+  button { background:var(--acc); color:white; border:none; border-radius:8px; padding:10px 18px; font-weight:600; cursor:pointer; font-size:14px; }
+  button.sec { background:#2f3760; } button:disabled { opacity:.5; cursor:wait; }
+  .chk { flex-direction:row; align-items:center; gap:6px; color:var(--txt); font-size:13px; }
+  .chk input { min-width:auto; }
+  #log, #jlog, #clog { margin-top:14px; font-size:13px; color:var(--muted); max-height:110px; overflow:auto; font-family:monospace; }
+  .bar { height:6px; background:var(--card); border-radius:4px; margin-top:10px; overflow:hidden; } .bar>div { height:100%; width:0; background:var(--acc); transition:width .3s; }
+  .stats { display:flex; gap:10px; margin:14px 0 6px; flex-wrap:wrap; }
+  .stat { background:var(--card); padding:8px 14px; border-radius:8px; font-size:13px; } .stat b { font-size:16px; }
+  table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13px; }
+  th, td { text-align:left; padding:9px 8px; border-bottom:1px solid var(--bd); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; position:sticky; top:0; background:#22284a; }
+  a { color:#9fb0ff; text-decoration:none; } a:hover { text-decoration:underline; }
+  .pill { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; margin:1px 2px 1px 0; }
+  .WordPress { background:#1e3a8a; color:#bfdbfe; } .Shopify { background:#14532d; color:#bbf7d0; }
+  .other { background:#3f3f46; color:#e4e4e7; } .op { background:#451a03; color:#fde68a; font-weight:500; }
+  .Strong { background:#14532d; color:#bbf7d0; } .Medium { background:#3f3f46; color:#e4e4e7; }
+  .Eligible { background:#14532d; color:#bbf7d0; } .Check { background:#451a03; color:#fde68a; } .Restricted { background:#7f1d1d; color:#fecaca; }
+  .small { color:var(--muted); font-size:12px; }
+  .wrap { max-height:65vh; overflow:auto; }
+</style>
+</head>
+<body>
+<header><h1>🎯 Lead & Job Agent</h1><span>WordPress / Shopify business leads (any city, any niche) + live remote jobs</span></header>
+<div class="tabs">
+  <div class="tab active" data-p="leads">🏪 Business Leads</div>
+  <div class="tab" data-p="check">🔍 Check My URL List</div>
+  <div class="tab" data-p="jobs">💼 Remote Jobs</div>
+  <div class="tab" data-p="apps">📋 My Applications</div>
+  <div class="tab" data-p="profile">👤 My Profile</div>
+</div>
+<main>
+  <!-- LEADS -->
+  <section class="panel active" id="leads">
+    <div class="row">
+      <label>Location
+        <select id="areaSelect" style="min-width:210px">
+          <optgroup label="🇮🇳 India">
+            <option value="Indore, India">Indore, India</option>
+            <option value="Mumbai, India">Mumbai, India</option>
+            <option value="Delhi, India">Delhi, India</option>
+            <option value="Bengaluru, India">Bengaluru, India</option>
+            <option value="Pune, India">Pune, India</option>
+            <option value="Hyderabad, India">Hyderabad, India</option>
+            <option value="Jaipur, India">Jaipur, India</option>
+            <option value="Ahmedabad, India">Ahmedabad, India</option>
+            <option value="Surat, India">Surat, India</option>
+            <option value="Chennai, India">Chennai, India</option>
+            <option value="Kolkata, India">Kolkata, India</option>
+            <option value="Chandigarh, India">Chandigarh, India</option>
+            <option value="Noida, India">Noida, India</option>
+            <option value="Gurugram, India">Gurugram, India</option>
+            <option value="Lucknow, India">Lucknow, India</option>
+            <option value="Bhopal, India">Bhopal, India</option>
+            <option value="Kochi, India">Kochi, India</option>
+            <option value="Goa, India">Goa, India</option>
+            <option value="Vadodara, India">Vadodara, India</option>
+            <option value="Nagpur, India">Nagpur, India</option>
+            <option value="Coimbatore, India">Coimbatore, India</option>
+          </optgroup>
+          <optgroup label="🇦🇪 UAE & Middle East">
+            <option value="Dubai, UAE" selected>Dubai, UAE</option>
+            <option value="Abu Dhabi, UAE">Abu Dhabi, UAE</option>
+            <option value="Sharjah, UAE">Sharjah, UAE</option>
+            <option value="Doha, Qatar">Doha, Qatar</option>
+            <option value="Riyadh, Saudi Arabia">Riyadh, Saudi Arabia</option>
+            <option value="Jeddah, Saudi Arabia">Jeddah, Saudi Arabia</option>
+            <option value="Kuwait City, Kuwait">Kuwait City, Kuwait</option>
+            <option value="Muscat, Oman">Muscat, Oman</option>
+          </optgroup>
+          <optgroup label="🇺🇸 USA">
+            <option value="New York, USA">New York, USA</option>
+            <option value="Los Angeles, USA">Los Angeles, USA</option>
+            <option value="Chicago, USA">Chicago, USA</option>
+            <option value="Austin, Texas, USA">Austin, Texas, USA</option>
+            <option value="Houston, USA">Houston, USA</option>
+            <option value="Miami, USA">Miami, USA</option>
+            <option value="San Francisco, USA">San Francisco, USA</option>
+            <option value="Seattle, USA">Seattle, USA</option>
+            <option value="Dallas, USA">Dallas, USA</option>
+            <option value="Atlanta, USA">Atlanta, USA</option>
+            <option value="Boston, USA">Boston, USA</option>
+            <option value="Denver, USA">Denver, USA</option>
+            <option value="Las Vegas, USA">Las Vegas, USA</option>
+          </optgroup>
+          <optgroup label="🇨🇦 Canada">
+            <option value="Toronto, Canada">Toronto, Canada</option>
+            <option value="Vancouver, Canada">Vancouver, Canada</option>
+            <option value="Montreal, Canada">Montreal, Canada</option>
+            <option value="Calgary, Canada">Calgary, Canada</option>
+            <option value="Ottawa, Canada">Ottawa, Canada</option>
+          </optgroup>
+          <optgroup label="🇬🇧 UK & Europe">
+            <option value="London, UK">London, UK</option>
+            <option value="Manchester, UK">Manchester, UK</option>
+            <option value="Birmingham, UK">Birmingham, UK</option>
+            <option value="Berlin, Germany">Berlin, Germany</option>
+            <option value="Munich, Germany">Munich, Germany</option>
+            <option value="Paris, France">Paris, France</option>
+            <option value="Amsterdam, Netherlands">Amsterdam, Netherlands</option>
+            <option value="Madrid, Spain">Madrid, Spain</option>
+            <option value="Dublin, Ireland">Dublin, Ireland</option>
+          </optgroup>
+          <optgroup label="🌏 Australia & Asia-Pacific">
+            <option value="Sydney, Australia">Sydney, Australia</option>
+            <option value="Melbourne, Australia">Melbourne, Australia</option>
+            <option value="Brisbane, Australia">Brisbane, Australia</option>
+            <option value="Singapore">Singapore</option>
+            <option value="Kuala Lumpur, Malaysia">Kuala Lumpur, Malaysia</option>
+            <option value="Bangkok, Thailand">Bangkok, Thailand</option>
+            <option value="Auckland, New Zealand">Auckland, New Zealand</option>
+          </optgroup>
+          <option value="__custom__">✏️ Custom area...</option>
+        </select>
+      </label>
+      <label>Or type custom area<input id="area" value="Dubai, UAE" style="min-width:190px" /></label>
+      <label>Niche<select id="category"></select></label>
+      <label>Platform / Tech / Need
+        <select id="platform" style="min-width:230px">
+          <optgroup label="CMS & E-Commerce">
+            <option value="both">WordPress + Shopify</option>
+            <option value="wordpress">Only WordPress</option>
+            <option value="woocommerce">Only WooCommerce</option>
+            <option value="shopify">Only Shopify</option>
+            <option value="ecommerce_other">Magento / BigCommerce</option>
+            <option value="migration">Wix / Squarespace / GoDaddy (Migration)</option>
+          </optgroup>
+          <optgroup label="Web & Code Stacks (IT)">
+            <option value="php">PHP (all PHP / Laravel / CI)</option>
+            <option value="laravel">Laravel</option>
+            <option value="codeigniter">CodeIgniter</option>
+            <option value="react">React / Next.js</option>
+            <option value="angular">Angular</option>
+            <option value="vue">Vue / Nuxt</option>
+            <option value="bootstrap">Bootstrap / Custom HTML</option>
+          </optgroup>
+          <optgroup label="IT, SEO & Design Needs">
+            <option value="seo_need">Needs SEO Fix (missing meta/H1/OG)</option>
+            <option value="design_need">Needs Redesign / Mobile / Speed Fix</option>
+            <option value="all">All websites (any tech)</option>
+            <option value="nowebsite">Businesses with NO website</option>
+          </optgroup>
+        </select></label>
+      <label>Max sites to scan<input id="maxScan" type="number" value="80" min="10" max="300" style="min-width:90px" /></label>
+      <button id="goLeads">Find Leads</button>
+      <button class="sec" onclick="exportCSV('leads')">⬇ CSV</button>
+      <label class="chk"><input type="checkbox" id="onlyEmail" /> Only with email</label>
+    </div>
+    <div class="bar"><div id="bar"></div></div>
+    <div id="log"></div>
+    <div class="stats" id="lstats"></div>
+    <div class="wrap"><table id="ltable"></table></div>
+  </section>
+
+  <!-- CHECK URLS -->
+  <section class="panel" id="check">
+    <p class="small">Paste any websites (one per line) – Google Maps, Instagram bio, directories, etc. Agent will tell the platform, contacts & problems to pitch.</p>
+    <textarea id="urls" placeholder="example-jewels.com&#10;https://somerestaurant.ae"></textarea>
+    <div class="row" style="margin-top:10px"><button id="goCheck">Check Websites</button><button class="sec" onclick="exportCSV('check')">⬇ CSV</button></div>
+    <div class="bar"><div id="cbar"></div></div>
+    <div id="clog"></div>
+    <div class="wrap"><table id="ctable"></table></div>
+  </section>
+
+  <!-- JOBS -->
+  <section class="panel" id="jobs">
+    <div class="row">
+      <label>Skill Preset
+        <select id="skillPreset" style="min-width:220px">
+          <option value="wordpress, shopify, woocommerce, elementor">WordPress & Shopify</option>
+          <option value="php, laravel, codeigniter, mysql, wordpress">PHP & Laravel</option>
+          <option value="graphic design, photoshop, illustrator, figma, ui, ux, branding">Graphic Design / UI / Figma</option>
+          <option value="seo, digital marketing, semrush, google ads, content">SEO & Digital Marketing</option>
+          <option value="cad, autocad, solidworks, revit, 3d, drafting">CAD / AutoCAD / 3D</option>
+          <option value="cad, autocad, graphic design, photoshop, illustrator, coreldraw, 3d">CAD + Graphic Design</option>
+          <option value="html, css, bootstrap, javascript, jquery, react, angular, frontend">Frontend (HTML/CSS/React/Angular)</option>
+          <option value="wordpress, shopify, php, laravel, html, css, javascript, figma, graphic, seo">All IT & Design Skills</option>
+        </select></label>
+      <label>Skills / keywords (comma separated)<input id="kws" value="wordpress, shopify, woocommerce, elementor" style="min-width:300px" /></label>
+      <label>Region
+        <select id="region">
+          <option value="any">Anywhere (all)</option>
+          <option value="india">India</option>
+          <option value="india_asia">India / Asia / APAC</option>
+          <option value="usa">USA</option>
+          <option value="canada">Canada</option>
+          <option value="uae_dubai">Dubai / UAE / Middle East</option>
+          <option value="uk">UK</option>
+          <option value="europe">Europe</option>
+          <option value="australia">Australia / NZ</option>
+          <option value="latam">Latin America</option>
+        </select></label>
+      <label>Job Type
+        <select id="jobType" style="min-width:160px">
+          <option value="all">All (Full-Time + Contract)</option>
+          <option value="full_time">Full-Time (Company)</option>
+          <option value="contract">Contract / Freelance</option>
+          <option value="part_time">Part-Time</option>
+        </select></label>
+      <label>Work Mode
+        <select id="workMode" style="min-width:170px">
+          <option value="remote">Remote Only</option>
+          <option value="all">Remote + On-site/Hybrid</option>
+        </select></label>
+      <label class="chk"><input type="checkbox" id="ww" checked /> Include "Worldwide" jobs</label>
+      <label class="chk"><input type="checkbox" id="strict" checked /> Strict match</label>
+      <button id="goJobs">Find Remote Jobs</button>
+      <button class="sec" onclick="exportCSV('jobs')">⬇ CSV</button>
+    </div>
+    <div id="jlog"></div>
+    <div class="stats" id="jstats"></div>
+    <div class="wrap"><table id="jtable"></table></div>
+  </section>
+
+  <!-- APPLICATIONS -->
+  <section class="panel" id="apps">
+    <div class="row"><button class="sec" onclick="loadApps()">↻ Refresh</button><button class="sec" onclick="exportCSV('apps')">⬇ CSV</button>
+      <label class="chk"><select id="appFilter" onchange="renderApps()" style="min-width:140px"><option value="">All</option><option>Job</option><option>Lead</option></select></label></div>
+    <div class="stats" id="astats"></div>
+    <div class="wrap"><table id="atable"></table></div>
+  </section>
+
+  <!-- PROFILE -->
+  <section class="panel" id="profile">
+    <p class="small">Ye details cover letters aur client pitch emails me use hoti hain (resume se bhari gayi hain). Portfolio / LinkedIn zaroor daalo – remote jobs me bahut farak padta hai.</p>
+    <div class="row">
+      <label>Name<input id="p_name" /></label>
+      <label>Headline<input id="p_title" style="min-width:300px" /></label>
+      <label>Email<input id="p_email" /></label>
+      <label>Phone<input id="p_phone" /></label>
+      <label>Location / timezone<input id="p_location" style="min-width:260px" /></label>
+      <label>Years exp.<input id="p_years" style="min-width:80px" /></label>
+      <label>Portfolio URL<input id="p_portfolio" style="min-width:260px" /></label>
+      <label>LinkedIn URL<input id="p_linkedin" style="min-width:260px" /></label>
+      <label>Resume file (path)<input id="p_resumeFile" style="min-width:320px" /></label>
+    </div>
+    <label style="margin-top:10px">Skills (comma separated)<textarea id="p_skills" style="min-height:60px"></textarea></label>
+    <label style="margin-top:10px">Availability line<input id="p_rateNote" style="width:100%" /></label>
+    <label style="margin-top:10px">Projects (one per line: Name | URL | tags)<textarea id="p_projects"></textarea></label>
+    <div class="row" style="margin-top:10px"><button onclick="saveProfile()">💾 Save Profile</button><span id="psaved" class="small"></span></div>
+  </section>
+</main>
+
+<!-- APPLY / PITCH MODAL -->
+<div id="modal" style="display:none;position:fixed;inset:0;background:#000a;z-index:9;align-items:center;justify-content:center">
+  <div style="background:#22284a;border:1px solid var(--bd);border-radius:12px;padding:18px;width:min(900px,95vw);max-height:92vh;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h3 id="m_title" style="margin:0"></h3><button class="sec" onclick="closeModal()">✕</button></div>
+    <div id="m_info" class="small" style="margin:6px 0 10px"></div>
+    <label>To<input id="m_to" style="width:100%" /></label>
+    <label style="margin-top:8px">Subject<input id="m_subject" style="width:100%" /></label>
+    <label style="margin-top:8px">Message (edit kar sakte ho)<textarea id="m_body" style="min-height:330px"></textarea></label>
+    <div class="row" style="margin-top:10px" id="m_actions"></div>
+    <div id="m_steps" class="small" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const data = { leads: [], check: [], jobs: [], apps: [] };
+
+document.querySelectorAll('.tab').forEach((t) => t.onclick = () => {
+  document.querySelectorAll('.tab,.panel').forEach((e) => e.classList.remove('active'));
+  t.classList.add('active'); $(t.dataset.p).classList.add('active');
+  if (t.dataset.p === 'apps') loadApps();
+  if (t.dataset.p === 'profile') loadProfile();
+});
+
+fetch('/api/meta').then((r) => r.json()).then((m) => {
+  $('category').innerHTML = m.categories.map((c) => `<option value="${c}">${c.replace(/_/g, ' / ')}</option>`).join('');
+});
+$('areaSelect').onchange = () => {
+  if ($('areaSelect').value !== '__custom__') $('area').value = $('areaSelect').value;
+  else { $('area').value = ''; $('area').focus(); }
+};
+$('skillPreset').onchange = () => { $('kws').value = $('skillPreset').value; };
+
+async function streamPost(url, payload, onMsg) {
+  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
+  while (true) {
+    const { done, value } = await reader.read(); if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i; while ((i = buf.indexOf('\n')) >= 0) { const line = buf.slice(0, i); buf = buf.slice(i + 1); if (line.trim()) onMsg(JSON.parse(line)); }
+  }
+}
+const log = (el, msg) => { $(el).innerHTML += esc(msg) + '<br>'; $(el).scrollTop = 1e9; };
+
+function leadRow(l, kind, idx) {
+  const plat = `<span class="pill ${['WordPress','Shopify'].includes(l.platform) ? l.platform : 'other'}">${esc(l.platform)}</span>`
+    + (l.woocommerce ? '<span class="pill WordPress">WooCommerce</span>' : '')
+    + (l.theme ? `<div class="small">theme: ${esc(l.theme)}</div>` : '') + (l.wpVersion ? `<div class="small">WP ${esc(l.wpVersion)}</div>` : '');
+  const soc = Object.entries(l.socials || {}).map(([k, v]) => `<a target="_blank" href="${esc(v)}">${k}</a>`).join(' · ');
+  return `<tr>
+    <td><b>${esc(l.name)}</b><div class="small">${esc(l.category)}</div><div class="small">${esc(l.address)}</div></td>
+    <td>${l.website ? `<a target="_blank" href="${esc(l.website)}">${esc(l.website.replace(/^https?:\/\/(www\.)?/, '').slice(0, 40))}</a>` : '—'}</td>
+    <td>${plat}</td>
+    <td>${(l.emails || []).map((e) => `<a href="mailto:${esc(e)}">${esc(e)}</a>`).join('<br>') || '—'}</td>
+    <td>${(l.phones || []).map(esc).join('<br>') || '—'}</td>
+    <td>${soc || '—'}</td>
+    <td>${(l.opportunities || []).map((o) => `<span class="pill op">${esc(o)}</span>`).join('')}</td>
+    <td><button onclick="openPitch('${kind}',${idx})">✉ Pitch</button></td></tr>`;
+}
+const LHEAD = '<tr><th>Business</th><th>Website</th><th>Platform</th><th>Email</th><th>Phone</th><th>Social</th><th>Pitch opportunities</th><th></th></tr>';
+
+function renderLeads() {
+  const list = data.leads.map((l, i) => [l, i]).filter(([l]) => !$('onlyEmail').checked || (l.emails || []).length);
+  $('ltable').innerHTML = LHEAD + list.map(([l, i]) => leadRow(l, 'leads', i)).join('');
+  const c = (p) => data.leads.filter((l) => l.platform === p).length;
+  $('lstats').innerHTML = `<div class="stat"><b>${data.leads.length}</b> leads</div><div class="stat"><b>${c('WordPress')}</b> WordPress</div><div class="stat"><b>${c('Shopify')}</b> Shopify</div><div class="stat"><b>${data.leads.filter((l) => (l.emails||[]).length).length}</b> with email</div>`;
+}
+$('onlyEmail').onchange = renderLeads;
+
+$('goLeads').onclick = async () => {
+  const btn = $('goLeads'); btn.disabled = true; data.leads = []; $('log').innerHTML = ''; $('bar').style.width = '0'; renderLeads();
+  try {
+    await streamPost('/api/leads', { area: $('area').value, category: $('category').value, platform: $('platform').value, maxScan: $('maxScan').value }, (m) => {
+      if (m.stage === 'lead') { data.leads.push(m.lead); renderLeads(); }
+      else if (m.stage === 'progress') $('bar').style.width = (m.done / m.total * 100) + '%';
+      else if (m.stage === 'result') { data.leads = m.leads; renderLeads(); $('bar').style.width = '100%'; }
+      else if (m.msg) log('log', (m.stage === 'error' ? '❌ ' : '• ') + m.msg);
+    });
+  } catch (e) { log('log', '❌ ' + e.message); }
+  btn.disabled = false;
+};
+
+$('goCheck').onclick = async () => {
+  const btn = $('goCheck'); btn.disabled = true; data.check = []; $('clog').innerHTML = ''; $('ctable').innerHTML = LHEAD;
+  await streamPost('/api/check-urls', { urls: $('urls').value }, (m) => {
+    if (m.stage === 'lead') { data.check.push(m.lead); $('ctable').innerHTML = LHEAD + data.check.map((l, i) => leadRow(l, 'check', i)).join(''); }
+    else if (m.stage === 'progress') $('cbar').style.width = (m.done / m.total * 100) + '%';
+    else if (m.msg) log('clog', '• ' + m.msg);
+  });
+  btn.disabled = false;
+};
+
+function renderJobs() {
+  $('jtable').innerHTML = '<tr><th>Job</th><th>Match</th><th>Company</th><th>Location</th><th>Salary</th><th>Posted</th><th>Source</th><th></th></tr>' + data.jobs.map((j, i) => `<tr>
+    <td><b>${esc(j.title)}</b> <span class="pill ${j.relevance}">${j.relevance}</span>
+      ${j.eligibility ? `<span class="pill ${j.eligibility}">${j.eligibility}</span>` : ''}
+      <div class="small">${esc((j.skillHits || j.matched || []).join(', '))} ${j.type ? '· ' + esc(j.type) : ''}</div>
+      <div class="small">${esc(j.description.slice(0, 160))}…</div></td>
+    <td><b>${j.score ?? '—'}%</b></td>
+    <td>${esc(j.company)}</td><td>${esc(j.location)}</td><td>${esc(j.salary) || '—'}</td>
+    <td class="small">${j.date ? esc(new Date(j.date).toLocaleDateString()) : ''}</td><td class="small">${esc(j.source)}</td>
+    <td><button onclick="openApply(${i})">🚀 Apply</button></td></tr>`).join('');
+  $('jstats').innerHTML = `<div class="stat"><b>${data.jobs.length}</b> jobs</div>
+    <div class="stat"><b>${data.jobs.filter((j) => j.eligibility === 'Eligible').length}</b> worldwide/India eligible</div>
+    <div class="stat"><b>${data.jobs.filter((j) => (j.score || 0) >= 50).length}</b> 50%+ match</div>`;
+}
+
+$('goJobs').onclick = async () => {
+  const btn = $('goJobs'); btn.disabled = true; data.jobs = []; $('jlog').innerHTML = ''; renderJobs();
+  await streamPost('/api/jobs', { keywords: $('kws').value.split(','), region: $('region').value, jobType: $('jobType').value, workMode: $('workMode').value, includeWorldwide: $('ww').checked, strict: $('strict').checked }, (m) => {
+    if (m.stage === 'result') { data.jobs = m.jobs; renderJobs(); log('jlog', `✅ ${m.jobs.length} matching jobs`); }
+    else if (m.msg) log('jlog', m.msg);
+  });
+  btn.disabled = false;
+};
+
+// ---------- Apply / Pitch Modal ----------
+function closeModal() { $('modal').style.display = 'none'; }
+async function copyText(txt, btn) {
+  await navigator.clipboard.writeText(txt);
+  const old = btn.textContent; btn.textContent = '✔ Copied'; setTimeout(() => btn.textContent = old, 1500);
+}
+function openMailto() {
+  const to = $('m_to').value.trim();
+  const sub = encodeURIComponent($('m_subject').value);
+  const body = encodeURIComponent($('m_body').value);
+  window.open(`mailto:${encodeURIComponent(to)}?subject=${sub}&body=${body}`, '_blank');
+}
+async function trackApp(item) {
+  await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) });
+  alert('Saved to My Applications!');
+}
+
+async function openApply(idx) {
+  const j = data.jobs[idx];
+  const r = await fetch('/api/cover-letter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job: j }) }).then((x) => x.json());
+  $('m_title').textContent = `Apply: ${j.title} @ ${j.company}`;
+  $('m_info').innerHTML = `Location: <b>${esc(j.location)}</b> · Eligibility: <span class="pill ${j.eligibility}">${esc(j.eligibility)}</span> · Match: <b>${j.score ?? 0}%</b>`;
+  $('m_to').value = j.applyEmail || '';
+  $('m_subject').value = r.subject;
+  $('m_body').value = r.body;
+  $('m_actions').innerHTML = `
+    <button onclick="copyText($('m_body').value, this)">📋 Copy Cover Letter</button>
+    <a target="_blank" href="${esc(j.url)}"><button type="button">🌐 Open Job Apply Page</button></a>
+    ${j.applyEmail ? `<button class="sec" onclick="openMailto()">📧 Open Email App</button>` : ''}
+    <a href="/api/resume" download><button class="sec" type="button">⬇ Download Resume</button></a>
+    <button class="sec" id="saveAppBtn">✔ Mark Applied</button>`;
+  $('saveAppBtn').onclick = () => trackApp({ kind: 'Job', title: j.title, company: j.company, location: j.location, url: j.url, status: 'Applied', notes: `Match ${j.score}%` });
+  $('m_steps').innerHTML = 'Steps: 1) Copy Cover Letter → 2) Open Job Apply Page → 3) Attach resume (<code>Praveen-Pathak-Sr.WebDesigner.docx</code>) → 4) Click "Mark Applied" to track.';
+  $('modal').style.display = 'flex';
+}
+
+async function openPitch(kind, idx) {
+  const l = data[kind][idx];
+  const r = await fetch('/api/pitch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: l }) }).then((x) => x.json());
+  $('m_title').textContent = `Pitch: ${l.name} (${l.platform})`;
+  $('m_info').innerHTML = `${esc(l.website || 'No website')} · Phones: ${esc((l.phones||[]).join(', ') || '—')}`;
+  $('m_to').value = (l.emails || []).join(', ');
+  $('m_subject').value = r.subject;
+  $('m_body').value = r.body;
+  $('m_actions').innerHTML = `
+    <button onclick="copyText($('m_body').value, this)">📋 Copy Pitch</button>
+    <button onclick="openMailto()">📧 Open Email App</button>
+    ${l.socials?.whatsapp ? `<a target="_blank" href="${esc(l.socials.whatsapp)}"><button class="sec" type="button">💬 WhatsApp</button></a>` : ''}
+    <button class="sec" id="saveLeadBtn">✔ Mark Pitched</button>`;
+  $('saveLeadBtn').onclick = () => trackApp({ kind: 'Lead', title: `${l.name} (${l.platform})`, company: (l.emails||[]).join(', '), location: l.address, url: l.website || l.osm || l.name, status: 'Pitched', notes: (l.opportunities||[]).join('; ') });
+  $('m_steps').innerHTML = 'Note: Email bhejte waqt anti-spam rules follow karein; pitch me unsubscribe line already included hai.';
+  $('modal').style.display = 'flex';
+}
+
+// ---------- Applications Tracker ----------
+async function loadApps() {
+  data.apps = await fetch('/api/applications').then((r) => r.json());
+  renderApps();
+}
+async function updateAppStatus(url, status) {
+  await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, status }) });
+  loadApps();
+}
+async function delApp(url) {
+  await fetch('/api/applications', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+  loadApps();
+}
+function renderApps() {
+  const f = $('appFilter').value;
+  const list = data.apps.filter((a) => !f || a.kind === f);
+  $('atable').innerHTML = '<tr><th>Type</th><th>Title</th><th>Company / Email</th><th>Status</th><th>Date</th><th></th></tr>' + list.map((a) => `<tr>
+    <td><span class="pill ${a.kind === 'Job' ? 'WordPress' : 'Shopify'}">${esc(a.kind)}</span></td>
+    <td><a target="_blank" href="${esc(a.url)}"><b>${esc(a.title)}</b></a><div class="small">${esc(a.notes)}</div></td>
+    <td class="small">${esc(a.company)}<br>${esc(a.location)}</td>
+    <td><select onchange="updateAppStatus(${JSON.stringify(a.url)}, this.value)" style="min-width:120px">
+      ${['Applied','Pitched','Replied','Interview','Offer','Rejected'].map((s) => `<option ${a.status===s?'selected':''}>${s}</option>`).join('')}
+    </select></td>
+    <td class="small">${a.updatedAt ? new Date(a.updatedAt).toLocaleDateString() : ''}</td>
+    <td><button class="sec" onclick="delApp(${JSON.stringify(a.url)})">🗑</button></td></tr>`).join('');
+  $('astats').innerHTML = `<div class="stat"><b>${data.apps.length}</b> total tracked</div>
+    <div class="stat"><b>${data.apps.filter((a) => a.kind === 'Job').length}</b> jobs</div>
+    <div class="stat"><b>${data.apps.filter((a) => a.kind === 'Lead').length}</b> leads pitched</div>`;
+}
+
+// ---------- Profile ----------
+async function loadProfile() {
+  const p = await fetch('/api/profile').then((r) => r.json());
+  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote']) $('p_' + k).value = p[k] || '';
+  $('p_skills').value = (p.skills || []).join(', ');
+  $('p_projects').value = (p.projects || []).map((x) => `${x.name} | ${x.url} | ${(x.tags || []).join(', ')}`).join('\n');
+}
+async function saveProfile() {
+  const p = {};
+  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote']) p[k] = $('p_' + k).value.trim();
+  p.skills = $('p_skills').value.split(',').map((s) => s.trim()).filter(Boolean);
+  p.projects = $('p_projects').value.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
+    const [name, url, tags] = l.split('|').map((s) => (s || '').trim());
+    return { name, url, tags: (tags || '').split(',').map((t) => t.trim().toLowerCase()).filter(Boolean) };
+  });
+  await fetch('/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+  $('psaved').textContent = '✔ Saved!'; setTimeout(() => $('psaved').textContent = '', 2000);
+}
+
+function exportCSV(kind) {
+  const rows = data[kind]; if (!rows.length) return alert('No data yet');
+  let cols, map;
+  if (kind === 'jobs') { cols = ['title','company','location','eligibility','score','salary','type','date','source','relevance','url']; map = (r) => cols.map((c) => r[c]); }
+  else if (kind === 'apps') { cols = ['kind','title','company','location','status','notes','url','updatedAt']; map = (r) => cols.map((c) => r[c]); }
+  else { cols = ['name','category','address','website','platform','theme','emails','phones','instagram','facebook','linkedin','whatsapp','opportunities']; map = (r) => [r.name, r.category, r.address, r.website, r.platform, r.theme, (r.emails||[]).join('; '), (r.phones||[]).join('; '), r.socials?.instagram, r.socials?.facebook, r.socials?.linkedin, r.socials?.whatsapp, (r.opportunities||[]).join('; ')]; }
+  const csv = [cols.join(','), ...rows.map((r) => map(r).map((v) => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(','))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' }));
+  a.download = `${kind}-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+}
+</script>
+</body>
+</html>
