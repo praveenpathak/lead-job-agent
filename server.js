@@ -37,7 +37,7 @@ const server = http.createServer(async (req, res) => {
       const b = await body(req);
       const send = stream(res);
       try {
-        const r = await findLeads({ ...b, maxScan: Math.min(Number(b.maxScan) || 80, 300), onProgress: send });
+        const r = await findLeads({ ...b, maxScan: Math.min(Number(b.maxScan) || 120, 500), onProgress: send });
         send({ stage: 'result', ...r });
       } catch (e) { send({ stage: 'error', msg: e.message }); }
       return res.end();

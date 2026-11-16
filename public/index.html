@@ -162,8 +162,9 @@
             <option value="nowebsite">Businesses with NO website</option>
           </optgroup>
         </select></label>
-      <label>Max sites to scan<input id="maxScan" type="number" value="80" min="10" max="300" style="min-width:90px" /></label>
+      <label>Max sites to scan<input id="maxScan" type="number" value="120" min="10" max="500" style="min-width:90px" /></label>
       <button id="goLeads">Find Leads</button>
+      <button class="sec" onclick="searchGoogleMapsLeads()">📍 Google Maps</button>
       <button class="sec" onclick="searchLinkedInLeads()">in LinkedIn Leads</button>
       <button class="sec" onclick="exportCSV('leads')">⬇ CSV</button>
       <label class="chk"><input type="checkbox" id="onlyEmail" /> Only with email</label>
@@ -227,8 +228,11 @@
       <label class="chk"><input type="checkbox" id="ww" checked /> Include "Worldwide" jobs</label>
       <label class="chk"><input type="checkbox" id="strict" checked /> Strict match</label>
       <button id="goJobs">Find Remote Jobs</button>
-      <button class="sec" onclick="searchLinkedInJobs()">in LinkedIn Jobs</button>
+      <button class="sec" onclick="searchLinkedInJobs()">in LinkedIn</button>
       <button class="sec" onclick="searchLinkedInPosts()">in Hiring Posts</button>
+      <button class="sec" onclick="searchPortal('naukri')">Naukri</button>
+      <button class="sec" onclick="searchPortal('indeed')">Indeed</button>
+      <button class="sec" onclick="searchPortal('glassdoor')">Glassdoor</button>
       <button class="sec" onclick="exportCSV('jobs')">⬇ CSV</button>
     </div>
     <div id="jlog"></div>
@@ -325,6 +329,24 @@ function searchLinkedInLeads() {
 function findOwner(kind, idx) {
   const l = data[kind][idx];
   window.open(`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(`${l.name} founder owner ceo`)}`, '_blank');
+}
+function searchGoogleMapsLeads() {
+  const area = $('area').value.trim();
+  const cat = $('category').value.replace(/_/g, ' ');
+  window.open(`https://www.google.com/maps/search/${encodeURIComponent(`${cat} in ${area}`)}`, '_blank');
+}
+function searchPortal(portal) {
+  const kws = $('kws').value.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 2).join(' ');
+  const loc = LI_LOC[$('region').value] || 'Remote';
+  if (portal === 'naukri') {
+    const slug = kws.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    window.open(`https://www.naukri.com/${encodeURIComponent(slug)}-jobs${loc === 'India' ? '' : '-in-' + encodeURIComponent(loc.toLowerCase().replace(/\s+/g, '-'))}`, '_blank');
+  } else if (portal === 'indeed') {
+    const base = $('region').value === 'india' ? 'https://in.indeed.com' : 'https://www.indeed.com';
+    window.open(`${base}/jobs?q=${encodeURIComponent(kws)}&l=${encodeURIComponent($('workMode').value === 'remote' ? 'Remote' : loc)}`, '_blank');
+  } else if (portal === 'glassdoor') {
+    window.open(`https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${encodeURIComponent(kws + ($('workMode').value === 'remote' ? ' remote' : ''))}`, '_blank');
+  }
 }
 
 async function streamPost(url, payload, onMsg) {
@@ -433,6 +455,7 @@ async function openApply(idx) {
   $('m_title').textContent = `Apply: ${j.title} @ ${j.company}`;
   $('m_info').innerHTML = `Location: <b>${esc(j.location)}</b> · Eligibility: <span class="pill ${j.eligibility}">${esc(j.eligibility)}</span> · Match: <b>${j.score ?? 0}%</b>`;
   $('m_to').value = j.applyEmail || '';
+  $('m_to').placeholder = j.applyEmail ? '' : 'No direct email — click "Open Job Apply Page" below to apply online!';
   $('m_subject').value = r.subject;
   $('m_body').value = r.body;
   $('m_actions').innerHTML = `
