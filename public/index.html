@@ -164,6 +164,7 @@
         </select></label>
       <label>Max sites to scan<input id="maxScan" type="number" value="80" min="10" max="300" style="min-width:90px" /></label>
       <button id="goLeads">Find Leads</button>
+      <button class="sec" onclick="searchLinkedInLeads()">in LinkedIn Leads</button>
       <button class="sec" onclick="exportCSV('leads')">⬇ CSV</button>
       <label class="chk"><input type="checkbox" id="onlyEmail" /> Only with email</label>
     </div>
@@ -226,6 +227,8 @@
       <label class="chk"><input type="checkbox" id="ww" checked /> Include "Worldwide" jobs</label>
       <label class="chk"><input type="checkbox" id="strict" checked /> Strict match</label>
       <button id="goJobs">Find Remote Jobs</button>
+      <button class="sec" onclick="searchLinkedInJobs()">in LinkedIn Jobs</button>
+      <button class="sec" onclick="searchLinkedInPosts()">in Hiring Posts</button>
       <button class="sec" onclick="exportCSV('jobs')">⬇ CSV</button>
     </div>
     <div id="jlog"></div>
@@ -296,6 +299,34 @@ $('areaSelect').onchange = () => {
 };
 $('skillPreset').onchange = () => { $('kws').value = $('skillPreset').value; };
 
+// ---------- Safe LinkedIn Search Helpers (uses your own logged-in browser) ----------
+const LI_LOC = {
+  any: 'Worldwide', india: 'India', india_asia: 'India', usa: 'United States',
+  canada: 'Canada', uae_dubai: 'United Arab Emirates', uk: 'United Kingdom',
+  europe: 'European Union', australia: 'Australia', latam: 'Latin America',
+};
+function searchLinkedInJobs() {
+  const kws = $('kws').value.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 3).join(' OR ');
+  const loc = LI_LOC[$('region').value] || 'Worldwide';
+  const wt = $('workMode').value === 'remote' ? '&f_WT=2' : '';
+  const jtMap = { full_time: '&f_JT=F', contract: '&f_JT=C', part_time: '&f_JT=P' };
+  const jt = jtMap[$('jobType').value] || '';
+  window.open(`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(kws)}&location=${encodeURIComponent(loc)}${wt}${jt}`, '_blank');
+}
+function searchLinkedInPosts() {
+  const kws = $('kws').value.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 2).join(' OR ');
+  window.open(`https://www.linkedin.com/search/results/content/?keywords=${encodeURIComponent('hiring ' + kws)}&sortBy=%22date_posted%22`, '_blank');
+}
+function searchLinkedInLeads() {
+  const area = $('area').value.trim();
+  const cat = $('category').value.replace(/_/g, ' ');
+  window.open(`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(`${cat} founder owner ${area}`)}`, '_blank');
+}
+function findOwner(kind, idx) {
+  const l = data[kind][idx];
+  window.open(`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(`${l.name} founder owner ceo`)}`, '_blank');
+}
+
 async function streamPost(url, payload, onMsg) {
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
@@ -320,7 +351,7 @@ function leadRow(l, kind, idx) {
     <td>${(l.phones || []).map(esc).join('<br>') || '—'}</td>
     <td>${soc || '—'}</td>
     <td>${(l.opportunities || []).map((o) => `<span class="pill op">${esc(o)}</span>`).join('')}</td>
-    <td><button onclick="openPitch('${kind}',${idx})">✉ Pitch</button></td></tr>`;
+    <td><button onclick="openPitch('${kind}',${idx})">✉ Pitch</button> <button class="sec" style="margin-top:4px" onclick="findOwner('${kind}',${idx})">in Owner</button></td></tr>`;
 }
 const LHEAD = '<tr><th>Business</th><th>Website</th><th>Platform</th><th>Email</th><th>Phone</th><th>Social</th><th>Pitch opportunities</th><th></th></tr>';
 
