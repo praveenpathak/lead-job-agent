@@ -455,12 +455,14 @@ async function openPitch(kind, idx) {
   $('m_subject').value = r.subject;
   $('m_body').value = r.body;
   $('m_actions').innerHTML = `
-    <button onclick="copyText($('m_body').value, this)">📋 Copy Pitch</button>
+    <button onclick="copyText($('m_body').value, this)">📋 Copy Email Pitch</button>
+    <button onclick="copyText(${JSON.stringify(r.linkedinNote || '')}, this)">📋 Copy LinkedIn Note (300c)</button>
     <button onclick="openMailto()">📧 Open Email App</button>
+    <button class="sec" onclick="findOwner('${kind}',${idx})">in Find Owner</button>
     ${l.socials?.whatsapp ? `<a target="_blank" href="${esc(l.socials.whatsapp)}"><button class="sec" type="button">💬 WhatsApp</button></a>` : ''}
     <button class="sec" id="saveLeadBtn">✔ Mark Pitched</button>`;
   $('saveLeadBtn').onclick = () => trackApp({ kind: 'Lead', title: `${l.name} (${l.platform})`, company: (l.emails||[]).join(', '), location: l.address, url: l.website || l.osm || l.name, status: 'Pitched', notes: (l.opportunities||[]).join('; ') });
-  $('m_steps').innerHTML = 'Note: Email bhejte waqt anti-spam rules follow karein; pitch me unsubscribe line already included hai.';
+  $('m_steps').innerHTML = '<b>Easy Pitch:</b> Email ke liye "Open Email App" dabayein, ya LinkedIn ke liye "Copy LinkedIn Note" → "in Find Owner" → Connect → Paste!';
   $('modal').style.display = 'flex';
 }
 
