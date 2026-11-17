@@ -165,9 +165,12 @@
         <div class="tab" data-p="profile">👤 My Profile</div>
       </div>
     </div>
-    <div class="user-card">
-      <div class="avatar">PP</div>
-      <div><b>Praveen Pathak</b><span>Sr. Web Designer · 14.5 yrs</span></div>
+    <div>
+      <div id="dailyGoal" style="padding:10px;border-radius:10px;background:#f8fafc;border:1px solid var(--bd);font-size:11.5px;margin-bottom:10px"></div>
+      <div class="user-card" style="margin-top:0">
+        <div class="avatar">PP</div>
+        <div><b>Praveen Pathak</b><span>Sr. Web Designer · 14.5 yrs</span></div>
+      </div>
     </div>
   </aside>
   <div class="content">
@@ -318,6 +321,9 @@
     </div>
     <label style="margin-top:10px">Skills (comma separated)<textarea id="p_skills" style="min-height:60px"></textarea></label>
     <label style="margin-top:10px">Availability line<input id="p_rateNote" style="width:100%" /></label>
+    <label style="margin-top:10px">Google Sheets Auto-Sync Webhook URL (Optional — auto-saves every Pitch & Job Apply to your Google Sheet)
+      <div class="row"><input id="p_gsheetUrl" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1" /><button type="button" class="sec" onclick="showGSheetGuide()">❓ 30-sec Setup</button></div>
+    </label>
     <label style="margin-top:10px">Projects (one per line: Name | URL | tags)<textarea id="p_projects"></textarea></label>
     <div class="row" style="margin-top:10px"><button onclick="saveProfile()">💾 Save Profile</button><span id="psaved" class="small"></span></div>
   </section>
@@ -330,6 +336,12 @@
   <div style="background:#22284a;border:1px solid var(--bd);border-radius:12px;padding:18px;width:min(900px,95vw);max-height:92vh;overflow:auto">
     <div style="display:flex;justify-content:space-between;align-items:center"><h3 id="m_title" style="margin:0"></h3><button class="sec" onclick="closeModal()">✕</button></div>
     <div id="m_info" class="small" style="margin:6px 0 10px"></div>
+    <div id="m_toneWrap" style="display:none;margin-bottom:8px"><label>Pitch Tone
+      <select id="m_tone" style="min-width:240px">
+        <option value="friendly">😊 Friendly & Positive (Default)</option>
+        <option value="corporate">💼 USA / Dubai Corporate (ROI)</option>
+        <option value="hinglish">🇮🇳 Indian Business (Hinglish Warm)</option>
+      </select></label></div>
     <label>To<input id="m_to" style="width:100%" /></label>
     <label style="margin-top:8px">Subject<input id="m_subject" style="width:100%" /></label>
     <label style="margin-top:8px">Message (edit kar sakte ho)<textarea id="m_body" style="min-height:330px"></textarea></label>
@@ -495,6 +507,17 @@ async function streamPost(url, payload, onMsg, signal) {
 }
 const log = (el, msg) => { $(el).innerHTML += esc(msg) + '<br>'; $(el).scrollTop = 1e9; };
 
+function leadScore(l) {
+  let s = 0;
+  if ((l.emails || []).length) s += 30;
+  if ((l.phones || []).length || l.socials?.whatsapp) s += 20;
+  if (['WordPress', 'Shopify', 'Wix', 'Squarespace', 'GoDaddy Builder'].includes(l.platform)) s += 20;
+  s += Math.min(30, (l.opportunities || []).length * 15);
+  if (s >= 70) return '<span class="pill Restricted">🔥 Hot</span>';
+  if (s >= 45) return '<span class="pill op">⚡ Warm</span>';
+  return '';
+}
+
 function leadRow(l, kind, idx) {
   const plat = `<span class="pill ${['WordPress','Shopify'].includes(l.platform) ? l.platform : 'other'}">${esc(l.platform)}</span>`
     + (l.woocommerce ? '<span class="pill WordPress">WooCommerce</span>' : '')
@@ -503,7 +526,7 @@ function leadRow(l, kind, idx) {
   const key = l.website || l.osm || l.name;
   const st = trackedMap().get(key);
   return `<tr>
-    <td><b>${esc(l.name)}</b> ${st ? `<span class="pill Shopify">✔ ${esc(st)}</span>` : ''}<div class="small">${esc(l.category)}</div><div class="small">${esc(l.address)}</div></td>
+    <td><b>${esc(l.name)}</b> ${leadScore(l)} ${st ? `<span class="pill Shopify">✔ ${esc(st)}</span>` : ''}<div class="small">${esc(l.category)}</div><div class="small">${esc(l.address)}</div></td>
     <td>${l.website ? `<a target="_blank" href="${esc(l.website)}">${esc(l.website.replace(/^https?:\/\/(www\.)?/, '').slice(0, 40))}</a>` : '—'}</td>
     <td>${plat}</td>
     <td>${(l.emails || []).map((e) => `<a target="_blank" href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(e)}">${esc(e)}</a>`).join('<br>') || '—'}</td>
@@ -625,20 +648,35 @@ function openMailto() {
   const body = encodeURIComponent($('m_body').value);
   window.open(`mailto:${encodeURIComponent(to)}?subject=${sub}&body=${body}`, '_blank');
 }
+function updateGoal() {
+  const box = $('dailyGoal'); if (!box) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const todays = (data.apps || []).filter((a) => (a.updatedAt || '').slice(0, 10) === today);
+  const pitches = todays.filter((a) => a.kind === 'Lead').length;
+  const jobs = todays.filter((a) => a.kind === 'Job').length;
+  const bar = (n, max, col) => `<div style="height:5px;background:#e2e8f0;border-radius:99px;margin:3px 0 6px;overflow:hidden"><div style="height:100%;width:${Math.min(100, n / max * 100)}%;background:${col}"></div></div>`;
+  box.innerHTML = `<div style="font-weight:700;margin-bottom:5px;color:var(--txt)">📊 Today's Goal</div>
+    <div>Pitches: <b>${pitches} / 10</b></div>${bar(pitches, 10, '#4f46e5')}
+    <div>Job Applies: <b>${jobs} / 5</b></div>${bar(jobs, 5, '#10b981')}`;
+}
+
 async function trackApp(item, quiet = false) {
   const rec = { ...item, updatedAt: new Date().toISOString() };
   const i = data.apps.findIndex((a) => a.url === rec.url);
   if (i >= 0) data.apps[i] = { ...data.apps[i], ...rec }; else data.apps.unshift(rec);
   lsSet('apps', data.apps);
-  renderLeads(); renderJobs();
+  renderLeads(); renderJobs(); updateGoal();
   try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec) }); } catch {}
-  if (!quiet) alert('Saved to My Applications!');
+  const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+  if (gUrl) { try { fetch(gUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(rec) }); } catch {} }
+  if (!quiet) showToast('✔ Saved to My Applications!');
 }
 
 let currentTrack = null;
 function autoTrack() { if (currentTrack) trackApp(currentTrack, true); }
 
 async function openApply(idx) {
+  $('m_toneWrap').style.display = 'none';
   const j = data.jobs[idx];
   const r = await fetch('/api/cover-letter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job: j }) }).then((x) => x.json());
   $('m_title').textContent = `Apply: ${j.title} @ ${j.company}`;
@@ -660,9 +698,32 @@ async function openApply(idx) {
   $('modal').style.display = 'flex';
 }
 
-async function openPitch(kind, idx) {
+let currentAudit = null;
+function printAuditReport() {
+  if (!currentAudit) return;
+  const { lead, auditItems, projects } = currentAudit;
+  const rows = (auditItems && auditItems.length)
+    ? auditItems.map((x) => `<tr><td><b>${esc(x.raw)}</b></td><td>${esc(x.impact)}</td></tr>`).join('')
+    : '<tr><td><b>Website Health Check</b></td><td>Your site is clean &amp; fast! Recommended: Monthly security backups, theme/plugin updates, speed monitoring &amp; seasonal offer-banner updates.</td></tr>';
+  const w = window.open('', '_blank');
+  w.document.write(`<!doctype html><html><head><title>Website Audit – ${esc(lead.name)}</title><style>body{font-family:Segoe UI,sans-serif;max-width:780px;margin:36px auto;color:#0f172a;line-height:1.5}h1{margin:0;color:#4f46e5}table{width:100%;border-collapse:collapse;margin:18px 0}th,td{border:1px solid #cbd5e1;padding:10px;text-align:left}th{background:#f1f5f9}.box{background:#f8fafc;border-left:4px solid #4f46e5;padding:12px 16px;margin:16px 0}@media print{button{display:none}}</style></head><body>
+    <button onclick="window.print()" style="float:right;padding:8px 14px;background:#4f46e5;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨 Save as PDF / Print</button>
+    <h1>Website Health &amp; Growth Audit</h1>
+    <p>Prepared for <b>${esc(lead.name)}</b> (${esc(lead.website || 'No Website')}) · Platform: <b>${esc(lead.platform)}</b></p>
+    <table><tr><th>Finding</th><th>Business Impact &amp; Recommended Fix</th></tr>${rows}</table>
+    <div class="box"><b>About Praveen Pathak (Senior Web Designer · 14.5+ Years)</b><br>Specializing in WordPress, WooCommerce, Shopify, UI/UX &amp; Conversion Optimization.<br>
+    Sample Work: ${(projects || []).map((p) => `<a href="${esc(p.url)}">${esc(p.name)}</a>`).join(' · ')}<br>
+    Contact: parvpathak12@gmail.com | +91 8109567672</div></body></html>`);
+  w.document.close();
+}
+
+async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
   const l = data[kind][idx];
-  const r = await fetch('/api/pitch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: l }) }).then((x) => x.json());
+  const r = await fetch('/api/pitch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: l, tone }) }).then((x) => x.json());
+  currentAudit = { lead: l, auditItems: r.auditItems || [], projects: r.projects || [] };
+  $('m_toneWrap').style.display = 'block';
+  $('m_tone').value = tone;
+  $('m_tone').onchange = () => openPitch(kind, idx, $('m_tone').value);
   $('m_title').textContent = `Pitch: ${l.name} (${l.platform})`;
   $('m_info').innerHTML = `${esc(l.website || 'No website')} · Phones: ${esc((l.phones||[]).join(', ') || '—')}`;
   $('m_to').value = (l.emails || []).join(', ');
@@ -682,6 +743,7 @@ async function openPitch(kind, idx) {
     ${l.socials?.instagram ? `<a target="_blank" href="${esc(l.socials.instagram)}" onclick="autoTrack()"><button class="sec" type="button">📸 Instagram</button></a>` : ''}
     ${l.socials?.facebook ? `<a target="_blank" href="${esc(l.socials.facebook)}" onclick="autoTrack()"><button class="sec" type="button">📘 Facebook</button></a>` : ''}
     ${l.website ? `<a target="_blank" href="${esc(l.website)}" onclick="autoTrack()"><button class="sec" type="button">🌐 Website / Contact Form</button></a>` : ''}
+    <button class="sec" onclick="printAuditReport()">📄 Audit PDF</button>
     <button class="sec" onclick="autoTrack();findOwner('${kind}',${idx})">in Find Owner</button>
     <button class="sec" id="saveLeadBtn">✔ Mark Pitched</button>`;
   $('saveLeadBtn').onclick = () => trackApp(item);
@@ -703,7 +765,7 @@ async function loadApps() {
   }
   data.apps = [...map.values()].sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
   lsSet('apps', data.apps);
-  renderApps(); renderLeads(); renderJobs();
+  renderApps(); renderLeads(); renderJobs(); updateGoal();
 }
 async function updateAppStatus(url, status) {
   const i = data.apps.findIndex((a) => a.url === url);
@@ -731,7 +793,7 @@ async function restoreSyncCode() {
     if (Array.isArray(obj.apps)) { data.apps = obj.apps; lsSet('apps', data.apps); }
     if (obj.profile) { lsSet('profile', obj.profile); try { await fetch('/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj.profile) }); } catch {} }
     if (Array.isArray(obj.presets)) { presets = obj.presets; lsSet('presets', presets); renderPresets(); }
-    renderApps(); renderLeads(); renderJobs();
+    renderApps(); renderLeads(); renderJobs(); updateGoal();
     showToast(`✔ Restored ${data.apps.length} records!`);
   } catch { alert('Could not read sync code.'); }
 }
@@ -778,15 +840,20 @@ function renderApps() {
 }
 
 // ---------- Profile ----------
+function showGSheetGuide() {
+  alert('30-sec Google Sheets Setup:\n1) Open a new Google Sheet → Extensions → Apps Script\n2) Paste:\nfunction doPost(e){ var d=JSON.parse(e.postData.contents); SpreadsheetApp.getActiveSheet().appendRow([new Date(), d.kind, d.title, d.company, d.location, d.status, d.url, d.notes]); return ContentService.createTextOutput("ok"); }\n3) Click Deploy → New deployment → Web app → Who has access: Anyone → Copy URL & paste here!');
+}
 async function loadProfile() {
   const p = await fetch('/api/profile').then((r) => r.json());
-  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote']) $('p_' + k).value = p[k] || '';
-  $('p_skills').value = (p.skills || []).join(', ');
-  $('p_projects').value = (p.projects || []).map((x) => `${x.name} | ${x.url} | ${(x.tags || []).join(', ')}`).join('\n');
+  const localP = lsGet('profile', {});
+  const merged = { ...p, ...localP };
+  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl']) if ($('p_' + k)) $('p_' + k).value = merged[k] || '';
+  $('p_skills').value = (merged.skills || []).join(', ');
+  $('p_projects').value = (merged.projects || []).map((x) => `${x.name} | ${x.url} | ${(x.tags || []).join(', ')}`).join('\n');
 }
 async function saveProfile() {
   const p = {};
-  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote']) p[k] = $('p_' + k).value.trim();
+  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl']) if ($('p_' + k)) p[k] = $('p_' + k).value.trim();
   p.skills = $('p_skills').value.split(',').map((s) => s.trim()).filter(Boolean);
   p.projects = $('p_projects').value.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
     const [name, url, tags] = l.split('|').map((s) => (s || '').trim());

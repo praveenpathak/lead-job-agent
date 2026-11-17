@@ -78,8 +78,8 @@ const server = http.createServer(async (req, res) => {
       return json(coverLetter(job, await getProfile()));
     }
     if (req.method === 'POST' && req.url === '/api/pitch') {
-      const { lead } = await body(req);
-      return json(pitchEmail(lead, await getProfile()));
+      const { lead, tone } = await body(req);
+      return json(pitchEmail(lead, await getProfile(), tone));
     }
     if (req.url === '/api/applications') {
       if (req.method === 'POST') { const a = await body(req); return json(await upsertApplication(a)); }
