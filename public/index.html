@@ -298,6 +298,8 @@
   <section class="panel" id="apps">
     <div class="row">
       <button class="sec" onclick="loadApps()">↻ Refresh</button>
+      <button onclick="openQuickAddApp('single')">➕ Add / Recover Pitch</button>
+      <button class="sec" onclick="openQuickAddApp('bulk')">📥 Bulk Paste from Gmail</button>
       <button class="sec" onclick="exportCSV('apps')">⬇ Excel / CSV</button>
       <button class="sec" onclick="copySyncCode(this)">📋 Copy Sync Code</button>
       <button class="sec" onclick="restoreSyncCode()">📥 Restore Sync Code</button>
@@ -337,9 +339,9 @@
 </div>
 
 <!-- APPLY / PITCH MODAL -->
-<div id="modal" style="display:none;position:fixed;inset:0;background:#000a;z-index:9;align-items:center;justify-content:center">
-  <div style="background:#22284a;border:1px solid var(--bd);border-radius:12px;padding:18px;width:min(900px,95vw);max-height:92vh;overflow:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center"><h3 id="m_title" style="margin:0"></h3><button class="sec" onclick="closeModal()">✕</button></div>
+<div id="modal" style="display:none;position:fixed;inset:0;background:#0008;z-index:99;align-items:center;justify-content:center;backdrop-filter:blur(2px)">
+  <div style="background:#ffffff;color:var(--txt);border:1px solid var(--bd);border-radius:14px;padding:22px;width:min(900px,95vw);max-height:92vh;overflow:auto;box-shadow:0 20px 40px rgba(0,0,0,0.18)">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h3 id="m_title" style="margin:0;font-size:17px;font-weight:700;color:var(--txt)"></h3><button class="sec" onclick="closeModal()">✕</button></div>
     <div id="m_info" class="small" style="margin:6px 0 10px"></div>
     <div id="m_toneWrap" style="display:none;margin-bottom:8px"><label>Pitch Tone
       <select id="m_tone" style="min-width:240px">
@@ -355,6 +357,129 @@
     <div id="m_steps" class="small" style="margin-top:10px"></div>
   </div>
 </div>
+
+<!-- QUICK ADD & RECOVERY MODAL -->
+<div id="quickAddModal" style="display:none;position:fixed;inset:0;background:#0008;z-index:99;align-items:center;justify-content:center;backdrop-filter:blur(2px)">
+  <div style="background:#ffffff;color:var(--txt);border:1px solid var(--bd);border-radius:14px;padding:22px;width:min(680px,95vw);max-height:92vh;overflow:auto;box-shadow:0 20px 40px rgba(0,0,0,0.18)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="margin:0;font-size:17px;font-weight:700;color:var(--txt)">➕ Add / Recover Past Pitches</h3>
+      <button class="sec" onclick="$('quickAddModal').style.display='none'">✕</button>
+    </div>
+    
+    <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--bd);padding-bottom:10px">
+      <button type="button" id="qaTabSingle" onclick="switchQATab('single')" style="font-size:12.5px;padding:7px 14px">Single Lead Add</button>
+      <button type="button" class="sec" id="qaTabBulk" onclick="switchQATab('bulk')" style="font-size:12.5px;padding:7px 14px">📥 Bulk Paste from Gmail / WhatsApp</button>
+    </div>
+
+    <!-- SINGLE LEAD FORM -->
+    <div id="qaSingleWrap">
+      <div class="row">
+        <label style="flex:1">Business / Client Name *<input id="qa_name" placeholder="e.g. Orbit Local or Face Lab" /></label>
+        <label style="flex:1">Website or Email / Phone *<input id="qa_url" placeholder="https://example.com or client@gmail.com" /></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label style="flex:1">Kind
+          <select id="qa_kind">
+            <option value="Lead" selected>Client Lead</option>
+            <option value="Job">Remote Job</option>
+          </select>
+        </label>
+        <label style="flex:1">Platform / Niche
+          <select id="qa_platform">
+            <option value="WordPress" selected>WordPress</option>
+            <option value="Shopify">Shopify</option>
+            <option value="Web Design">Web Design / PHP</option>
+          </select>
+        </label>
+        <label style="flex:1">Status
+          <select id="qa_status">
+            <option value="Pitched" selected>Pitched</option>
+            <option value="Replied">Replied (Interested)</option>
+            <option value="Interview">Call / Meeting</option>
+            <option value="Won">Deal Won 🎉</option>
+            <option value="Applied">Applied</option>
+          </select>
+        </label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label style="flex:1">Deal Value ($ USD)<input type="number" id="qa_deal" placeholder="e.g. 499" /></label>
+        <label style="flex:1">Pitch Date<input type="date" id="qa_date" /></label>
+      </div>
+      <label style="margin-top:10px">Call / Follow-up Notes
+        <input id="qa_notes" placeholder="e.g. Pitched via Gmail in the morning; sent WordPress maintenance portfolio" style="width:100%" />
+      </label>
+      <div class="row" style="margin-top:16px;justify-content:flex-end">
+        <button type="button" class="sec" onclick="$('quickAddModal').style.display='none'">Cancel</button>
+        <button type="button" onclick="submitSingleQA()">✔ Save to Applications</button>
+      </div>
+    </div>
+
+    <!-- BULK PASTE WRAP -->
+    <div id="qaBulkWrap" style="display:none">
+      <p class="small" style="margin-top:0">
+        <b>Gmail Sent Folder</b> ya WhatsApp se client emails ya websites copy karein aur yahan paste karein (one per line).<br>
+        Aap seedha email addresses paste kar sakte hain (e.g. <code>info@orbitlocal.com</code>) ya website links.
+      </p>
+      <label>Paste Leads (One per line)
+        <textarea id="qa_bulk_text" style="min-height:160px" placeholder="info@clinicdental.com
+https://agoodelectrician.com | A Good Electrician | WordPress
+contact@samayajewelry.com | Samaya Jewelry | Shopify
+hello@roofersllc.com"></textarea>
+      </label>
+      <div class="row" style="margin-top:10px">
+        <label>Default Status
+          <select id="qa_bulk_status">
+            <option value="Pitched" selected>Pitched</option>
+            <option value="Replied">Replied</option>
+            <option value="Applied">Applied</option>
+          </select>
+        </label>
+        <label>Default Date<input type="date" id="qa_bulk_date" /></label>
+      </div>
+      <div class="row" style="margin-top:16px;justify-content:flex-end">
+        <button type="button" class="sec" onclick="$('quickAddModal').style.display='none'">Cancel</button>
+        <button type="button" onclick="submitBulkQA()">📥 Import All Leads</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GSHEET SETUP GUIDE MODAL -->
+<div id="gsheetModal" style="display:none;position:fixed;inset:0;background:#0008;z-index:99;align-items:center;justify-content:center;backdrop-filter:blur(2px)">
+  <div style="background:#ffffff;color:var(--txt);border:1px solid var(--bd);border-radius:14px;padding:22px;width:min(720px,95vw);max-height:92vh;overflow:auto;box-shadow:0 20px 40px rgba(0,0,0,0.18)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0;font-size:17px;font-weight:700;color:var(--txt)">📊 Google Sheets 2-Way Auto-Sync (Permanent Cloud Database)</h3>
+      <button class="sec" onclick="$('gsheetModal').style.display='none'">✕</button>
+    </div>
+    
+    <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:12px;font-size:13px;color:#065f46;margin-bottom:14px;line-height:1.5">
+      <b>Fayde:</b> Google Sheet 100% free hai aur kabhi delete nahi hoti. Har pitch, deal value aur follow-up note aapke Google Sheet me real-time sync hoga, aur phone/laptop par kabhi gayab nahi hoga!
+    </div>
+
+    <ol style="font-size:13px;line-height:1.6;color:var(--txt);padding-left:20px;margin-bottom:14px">
+      <li>Nayi Google Sheet kholein: <a href="https://sheets.new" target="_blank"><b>sheets.new</b></a></li>
+      <li>Upar menu me click karein: <b>Extensions (एक्सटेंशन) → Apps Script</b></li>
+      <li>Wahan jo purana code ho usse mita kar niche diya gaya <b>Code Copy</b> karke paste karein:</li>
+    </ol>
+
+    <div style="position:relative;margin-bottom:14px">
+      <textarea id="gsheetCode" readonly style="min-height:180px;font-size:12px;background:#f8fafc;color:#0f172a;border:1px solid #cbd5e1;border-radius:8px;padding:10px;width:100%"></textarea>
+      <button type="button" onclick="copyText($('gsheetCode').value, this)" style="position:absolute;top:10px;right:10px;font-size:11.5px;padding:5px 10px">📋 Copy Code</button>
+    </div>
+
+    <ol start="4" style="font-size:13px;line-height:1.6;color:var(--txt);padding-left:20px;margin-bottom:16px">
+      <li>Apps Script me <b>Deploy (डिप्लॉय) → New deployment (नया डिप्लॉयमेंट)</b> dabayein.</li>
+      <li>Gear icon par click karke <b>Web app</b> select karein.</li>
+      <li><b>"Who has access"</b> ko <b>"Anyone" (कोई भी)</b> select karein aur Deploy par click karein.</li>
+      <li>Milne wala <b>Web app URL</b> copy karke My Profile me paste karein aur Save Profile dabayein!</li>
+    </ol>
+
+    <div class="row" style="justify-content:flex-end">
+      <button onclick="$('gsheetModal').style.display='none'">Samajh Gaya (Done)</button>
+    </div>
+  </div>
+</div>
+
 
 <script>
 const $ = (id) => document.getElementById(id);
@@ -820,13 +945,76 @@ async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
   $('modal').style.display = 'flex';
 }
 
-// ---------- Applications Tracker (persisted in localStorage + server) ----------
+// ---------- Applications Tracker (persisted in localStorage + server + Google Sheets) ----------
+const GSHEET_APPS_SCRIPT = `function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+  var headers = data[0];
+  var rows = [];
+  for (var i = 1; i < data.length; i++) {
+    var r = data[i];
+    var obj = {};
+    for (var j = 0; j < headers.length; j++) { obj[headers[j]] = r[j]; }
+    rows.push(obj);
+  }
+  return ContentService.createTextOutput(JSON.stringify(rows)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["updatedAt", "kind", "title", "company", "location", "status", "url", "notes", "deal"]);
+    }
+    var d = JSON.parse(e.postData.contents);
+    var data = sheet.getDataRange().getValues();
+    var rowIndex = -1;
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][6] === d.url) { rowIndex = i + 1; break; }
+    }
+    var rowData = [d.updatedAt || new Date().toISOString(), d.kind || 'Lead', d.title || '', d.company || '', d.location || '', d.status || 'Pitched', d.url || '', d.notes || '', Number(d.deal) || 0];
+    if (rowIndex > 0) {
+      sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+    } else {
+      sheet.appendRow(rowData);
+    }
+    return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ error: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+
 async function loadApps() {
   const local = lsGet('apps', []);
   let remote = [];
   try { remote = await fetch('/api/applications').then((r) => r.json()); } catch {}
+
+  // 2-Way Google Sheets Auto-Sync (Cloud Persistence across devices)
+  const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+  if (gUrl) {
+    try {
+      const gRes = await fetch(gUrl);
+      const gData = await gRes.json();
+      if (Array.isArray(gData) && gData.length) {
+        remote = [...remote, ...gData.map((d) => ({
+          kind: d.kind || 'Lead',
+          title: d.title || '',
+          company: d.company || '',
+          location: d.location || '',
+          status: d.status || 'Pitched',
+          url: d.url || '',
+          notes: d.notes || '',
+          deal: Number(d.deal) || 0,
+          updatedAt: d.updatedAt || new Date().toISOString()
+        }))];
+      }
+    } catch {}
+  }
+
   const map = new Map();
   for (const a of [...remote, ...local]) {
+    if (!a || !a.url) continue;
     const prev = map.get(a.url);
     if (!prev || new Date(a.updatedAt || 0) > new Date(prev.updatedAt || 0)) map.set(a.url, a);
   }
@@ -836,7 +1024,13 @@ async function loadApps() {
 }
 async function updateAppStatus(url, status) {
   const i = data.apps.findIndex((a) => a.url === url);
-  if (i >= 0) { data.apps[i].status = status; data.apps[i].updatedAt = new Date().toISOString(); lsSet('apps', data.apps); }
+  if (i >= 0) {
+    data.apps[i].status = status;
+    data.apps[i].updatedAt = new Date().toISOString();
+    lsSet('apps', data.apps);
+    const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+    if (gUrl) { try { fetch(gUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data.apps[i]) }); } catch {} }
+  }
   try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, status }) }); } catch {}
   loadApps();
 }
@@ -863,6 +1057,126 @@ async function restoreSyncCode() {
     renderApps(); renderLeads(); renderJobs(); updateGoal();
     showToast(`✔ Restored ${data.apps.length} records!`);
   } catch { alert('Could not read sync code.'); }
+}
+
+function openQuickAddApp(tab = 'single') {
+  $('quickAddModal').style.display = 'flex';
+  $('qa_date').value = new Date().toISOString().slice(0, 10);
+  $('qa_bulk_date').value = new Date().toISOString().slice(0, 10);
+  switchQATab(tab);
+}
+
+function switchQATab(tab) {
+  if (tab === 'bulk') {
+    $('qaSingleWrap').style.display = 'none';
+    $('qaBulkWrap').style.display = 'block';
+    $('qaTabBulk').className = '';
+    $('qaTabSingle').className = 'sec';
+  } else {
+    $('qaSingleWrap').style.display = 'block';
+    $('qaBulkWrap').style.display = 'none';
+    $('qaTabSingle').className = '';
+    $('qaTabBulk').className = 'sec';
+  }
+}
+
+async function submitSingleQA() {
+  const name = $('qa_name').value.trim();
+  const url = $('qa_url').value.trim();
+  if (!name || !url) return alert('Please enter Business Name and Website/Email!');
+  const kind = $('qa_kind').value;
+  const plat = $('qa_platform').value;
+  const status = $('qa_status').value;
+  const deal = Number($('qa_deal').value) || 0;
+  const notes = $('qa_notes').value.trim();
+  const dateVal = $('qa_date').value || new Date().toISOString().slice(0, 10);
+  const updatedAt = new Date(dateVal + 'T12:00:00Z').toISOString();
+  
+  const rec = {
+    kind,
+    title: `${name} (${plat})`,
+    company: /@/.test(url) ? url : name,
+    location: '',
+    url,
+    status,
+    deal,
+    notes,
+    updatedAt
+  };
+  await trackApp(rec);
+  $('quickAddModal').style.display = 'none';
+  $('qa_name').value = '';
+  $('qa_url').value = '';
+  $('qa_notes').value = '';
+  $('qa_deal').value = '';
+  showToast('✔ Added lead to My Applications!');
+}
+
+async function submitBulkQA() {
+  const text = $('qa_bulk_text').value.trim();
+  if (!text) return alert('Please paste at least one email or website!');
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const defaultStatus = $('qa_bulk_status').value || 'Pitched';
+  const dateVal = $('qa_bulk_date').value || new Date().toISOString().slice(0, 10);
+  const updatedAt = new Date(dateVal + 'T12:00:00Z').toISOString();
+
+  const newItems = [];
+  for (const line of lines) {
+    let url = '', name = '', plat = 'WordPress / Shopify';
+    if (line.includes('|')) {
+      const parts = line.split('|').map((s) => s.trim());
+      url = parts[0];
+      name = parts[1] || url;
+      plat = parts[2] || plat;
+    } else {
+      const emailMatch = line.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+      if (emailMatch) {
+        url = emailMatch[1];
+        name = url.split('@')[1].replace(/\.[^.]+$/, '');
+        name = name.charAt(0).toUpperCase() + name.slice(1);
+      } else {
+        url = line;
+        name = line.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '');
+      }
+    }
+    newItems.push({
+      kind: 'Lead',
+      title: `${name} (${plat})`,
+      company: /@/.test(url) ? url : name,
+      location: '',
+      url,
+      status: defaultStatus,
+      deal: 0,
+      notes: 'Recovered from past pitch',
+      updatedAt
+    });
+  }
+
+  for (const rec of newItems) {
+    const i = data.apps.findIndex((a) => a.url === rec.url);
+    if (i >= 0) data.apps[i] = { ...data.apps[i], ...rec }; else data.apps.unshift(rec);
+  }
+  lsSet('apps', data.apps);
+  renderApps(); renderLeads(); renderJobs(); updateGoal();
+
+  try {
+    await fetch('/api/applications/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ list: newItems })
+    });
+  } catch {}
+
+  const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+  if (gUrl) {
+    for (const rec of newItems) {
+      try { fetch(gUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(rec) }); } catch {}
+    }
+  }
+
+  $('quickAddModal').style.display = 'none';
+  $('qa_bulk_text').value = '';
+  showToast(`✔ Restored ${newItems.length} leads to My Applications!`);
 }
 
 function isDue(a) {
@@ -897,13 +1211,24 @@ function openCallScript() {
 }
 async function updateAppNote(url, notes) {
   const i = data.apps.findIndex((a) => a.url === url);
-  if (i >= 0) { data.apps[i].notes = notes; lsSet('apps', data.apps); }
+  if (i >= 0) {
+    data.apps[i].notes = notes;
+    lsSet('apps', data.apps);
+    const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+    if (gUrl) { try { fetch(gUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data.apps[i]) }); } catch {} }
+  }
   try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, notes }) }); } catch {}
   showToast('✔ Note saved');
 }
 async function updateAppDeal(url, deal) {
   const i = data.apps.findIndex((a) => a.url === url);
-  if (i >= 0) { data.apps[i].deal = Number(deal) || 0; lsSet('apps', data.apps); }
+  if (i >= 0) {
+    data.apps[i].deal = Number(deal) || 0;
+    data.apps[i].updatedAt = new Date().toISOString();
+    lsSet('apps', data.apps);
+    const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+    if (gUrl) { try { fetch(gUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data.apps[i]) }); } catch {} }
+  }
   try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, deal: Number(deal) || 0 }) }); } catch {}
   renderApps();
 }
@@ -922,20 +1247,34 @@ function renderApps() {
     } else db.style.display = 'none';
   }
   const list = data.apps.map((a, i) => [a, i]).filter(([a]) => f === 'DUE' ? isDue(a) : (!f || a.kind === f));
-  $('atable').innerHTML = '<tr><th>Type</th><th>Title &amp; Call Notes</th><th>Company / Email</th><th>Deal ($)</th><th>Status</th><th>Date</th><th></th></tr>' + list.map(([a, i]) => {
-    const due = isDue(a);
-    return `<tr>
-    <td><span class="pill ${a.kind === 'Job' ? 'WordPress' : 'Shopify'}">${esc(a.kind)}</span></td>
-    <td><a target="_blank" href="${esc(a.url)}"><b>${esc(a.title)}</b></a> ${due ? '<span class="pill op">⏰ Follow-up Due</span>' : ''}
-      <input value="${esc(a.notes || '')}" placeholder="Add call / follow-up note..." onchange="updateAppNote(${JSON.stringify(a.url)}, this.value)" style="width:100%;margin-top:5px;padding:5px 8px;font-size:12px" /></td>
-    <td class="small">${esc(a.company)}<br>${esc(a.location)}</td>
-    <td><input type="number" min="0" value="${esc(a.deal || '')}" placeholder="0" onchange="updateAppDeal(${JSON.stringify(a.url)}, this.value)" style="width:78px;min-width:78px;padding:5px 8px;font-size:12px" /></td>
-    <td><select onchange="updateAppStatus(${JSON.stringify(a.url)}, this.value)" style="min-width:115px">
-      ${['Applied','Pitched','Replied','Interview','Offer','Won','Rejected'].map((s) => `<option ${a.status===s?'selected':''}>${s}</option>`).join('')}
-    </select></td>
-    <td class="small">${a.updatedAt ? new Date(a.updatedAt).toLocaleDateString() : ''}</td>
-    <td>${due || a.status === 'Pitched' ? `<button class="sec" style="padding:5px 9px;font-size:12px" onclick="openFollowUp(${i})">↩ Follow-up</button> ` : ''}<button class="sec" style="padding:5px 9px;font-size:12px" onclick="delApp(${JSON.stringify(a.url)})">🗑</button></td></tr>`;
-  }).join('');
+  const thead = '<tr><th>Type</th><th>Title &amp; Call Notes</th><th>Company / Email</th><th>Deal ($)</th><th>Status</th><th>Date</th><th></th></tr>';
+  
+  if (!list.length) {
+    $('atable').innerHTML = thead + `<tr><td colspan="7" style="text-align:center;padding:45px 20px;background:#f8fafc;color:var(--txt)">
+      <div style="font-size:26px;margin-bottom:8px">📭 Abhi koi records nahi dikh rahe hain</div>
+      <div style="font-size:13.5px;color:var(--muted);max-width:560px;margin:0 auto 16px;line-height:1.55">
+        <b>Subha wale pitches nahi dikh rahe?</b> Render free tier server restart hone par container reset ho jata hai, aur browser storage device-dependent hoti hai.<br><br>
+        <span style="color:#047857;font-weight:600">✔ Aapki mehnat 100% surakshit hai:</span> Jo emails subha Gmail se bheje the wo aapke <b>Gmail ke "Sent" (भेजे गए)</b> folder me maujood hain!
+      </div>
+      <button onclick="openQuickAddApp('bulk')" style="padding:10px 18px;font-size:13.5px">📥 Gmail Sent se Leads Recover Karein (1-Click Paste)</button>
+      <button class="sec" onclick="openQuickAddApp('single')" style="margin-left:8px;padding:10px 18px;font-size:13.5px">➕ Add Lead Manually</button>
+    </td></tr>`;
+  } else {
+    $('atable').innerHTML = thead + list.map(([a, i]) => {
+      const due = isDue(a);
+      return `<tr>
+      <td><span class="pill ${a.kind === 'Job' ? 'WordPress' : 'Shopify'}">${esc(a.kind)}</span></td>
+      <td><a target="_blank" href="${esc(a.url)}"><b>${esc(a.title)}</b></a> ${due ? '<span class="pill op">⏰ Follow-up Due</span>' : ''}
+        <input value="${esc(a.notes || '')}" placeholder="Add call / follow-up note..." onchange="updateAppNote(${JSON.stringify(a.url)}, this.value)" style="width:100%;margin-top:5px;padding:5px 8px;font-size:12px" /></td>
+      <td class="small">${esc(a.company)}<br>${esc(a.location)}</td>
+      <td><input type="number" min="0" value="${esc(a.deal || '')}" placeholder="0" onchange="updateAppDeal(${JSON.stringify(a.url)}, this.value)" style="width:78px;min-width:78px;padding:5px 8px;font-size:12px" /></td>
+      <td><select onchange="updateAppStatus(${JSON.stringify(a.url)}, this.value)" style="min-width:115px">
+        ${['Applied','Pitched','Replied','Interview','Offer','Won','Rejected'].map((s) => `<option ${a.status===s?'selected':''}>${s}</option>`).join('')}
+      </select></td>
+      <td class="small">${a.updatedAt ? new Date(a.updatedAt).toLocaleDateString() : ''}</td>
+      <td>${due || a.status === 'Pitched' ? `<button class="sec" style="padding:5px 9px;font-size:12px" onclick="openFollowUp(${i})">↩ Follow-up</button> ` : ''}<button class="sec" style="padding:5px 9px;font-size:12px" onclick="delApp(${JSON.stringify(a.url)})">🗑</button></td></tr>`;
+    }).join('');
+  }
   const pipe = data.apps.filter((a) => !['Rejected','Won'].includes(a.status)).reduce((s, a) => s + (Number(a.deal) || 0), 0);
   const won = data.apps.filter((a) => a.status === 'Won').reduce((s, a) => s + (Number(a.deal) || 0), 0);
   $('astats').innerHTML = `<div class="stat"><b>${data.apps.length}</b> total tracked</div>
@@ -947,7 +1286,8 @@ function renderApps() {
 
 // ---------- Profile ----------
 function showGSheetGuide() {
-  alert('30-sec Google Sheets Setup:\n1) Open a new Google Sheet → Extensions → Apps Script\n2) Paste:\nfunction doPost(e){ var d=JSON.parse(e.postData.contents); SpreadsheetApp.getActiveSheet().appendRow([new Date(), d.kind, d.title, d.company, d.location, d.status, d.url, d.notes]); return ContentService.createTextOutput("ok"); }\n3) Click Deploy → New deployment → Web app → Who has access: Anyone → Copy URL & paste here!');
+  $('gsheetCode').value = GSHEET_APPS_SCRIPT;
+  $('gsheetModal').style.display = 'flex';
 }
 async function loadProfile() {
   const p = await fetch('/api/profile').then((r) => r.json());

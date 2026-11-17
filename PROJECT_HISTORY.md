@@ -63,3 +63,20 @@
    - Windows: double-click `start.bat`
    - Any OS: `node server.js` → open `http://localhost:3777`
 5. Transfer saved data from old PC: Click **`📋 Copy Sync Code`** on the old PC → click **`📥 Restore Sync Code`** on the new PC.
+6. Permanent Cloud Persistence: Set up Google Sheets Auto-Sync (Extensions → Apps Script → Web App) so leads persist across Render restarts, all PCs, and mobile devices.
+
+---
+
+## 5. Incident Log: Morning Pitches Disappearance & Permanent Resolution
+- **Issue Reported:** User reported that leads pitched in the morning disappeared ("subha jo pitch kiya tha wo sab gayab ho gaye nahi dikh rahe").
+- **Root Cause Analysis:**
+  1. **Render Free Tier Ephemeral Storage:** Render's free instances spin down after 15 min of inactivity and re-build from git on every deploy. Files written to `data/applications.json` on Render are wiped during restarts.
+  2. **Timing of LocalStorage:** Client-side `localStorage` persistence was introduced at 3:03 PM (commit `846d8ca`). Pitches sent in the morning existed only on Render's ephemeral disk before that commit.
+  3. **Device/Origin Isolation:** If pitched on mobile or a different browser/origin (`localhost` vs `onrender.com`), storage was not shared.
+- **Relief & Safety:** All pitches sent via "Open in Gmail" are 100% preserved in the user's personal Gmail "Sent" folder (`parvpathak12@gmail.com`) and WhatsApp chats.
+- **Fixes Landed:**
+  1. **`➕ Add / Recover Pitch` & `📥 Bulk Paste from Gmail`:** Users can paste recipient emails/websites from their Gmail Sent box to instantly restore past pitches into the CRM with 1 click.
+  2. **2-Way Google Sheets Cloud Sync:** Supports `doGet` (pull past leads to any device/PC) and `doPost` (save/update leads in real time). Built-in 30-sec setup modal with 1-click script copy.
+  3. **Empty Table Recovery Guidance:** When 0 applications exist, the table displays an informative card with 1-click recovery buttons.
+  4. **Bulk Applications Backend:** Added `/api/applications/bulk` endpoint for rapid bulk restoration.
+

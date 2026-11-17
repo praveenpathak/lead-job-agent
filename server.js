@@ -7,7 +7,7 @@ import { findLeads, CATEGORIES } from './lib/leads.js';
 import { findJobs, REGIONS } from './lib/jobs.js';
 import { analyzeSite, pool } from './lib/detect.js';
 import { execFile } from 'node:child_process';
-import { getProfile, saveProfile, getApplications, upsertApplication, deleteApplication, coverLetter, pitchEmail } from './lib/apply.js';
+import { getProfile, saveProfile, getApplications, upsertApplication, upsertApplications, deleteApplication, coverLetter, pitchEmail } from './lib/apply.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3777;
@@ -85,6 +85,10 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'POST') { const a = await body(req); return json(await upsertApplication(a)); }
       if (req.method === 'DELETE') { const a = await body(req); await deleteApplication(a.url); return json({ ok: true }); }
       return json(await getApplications());
+    }
+    if (req.url === '/api/applications/bulk' && req.method === 'POST') {
+      const { list } = await body(req);
+      return json(await upsertApplications(list || []));
     }
     if (req.method === 'POST' && req.url === '/api/open-resume') {
       const p = await getProfile();
