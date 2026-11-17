@@ -39,6 +39,18 @@
   .Eligible { background:#14532d; color:#bbf7d0; } .Check { background:#451a03; color:#fde68a; } .Restricted { background:#7f1d1d; color:#fecaca; }
   .small { color:var(--muted); font-size:12px; }
   .wrap { max-height:65vh; overflow:auto; }
+  .ms { position:relative; min-width:250px; }
+  .ms-btn { background:var(--card); color:var(--txt); border:1px solid var(--bd); border-radius:8px; padding:9px 11px; font-size:13px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; text-align:left; font-weight:400; }
+  .ms-drop { display:none; position:absolute; top:105%; left:0; width:320px; max-width:90vw; background:#181c2f; border:1px solid var(--acc); border-radius:10px; padding:10px; z-index:20; box-shadow:0 12px 30px #0009; }
+  .ms.open .ms-drop { display:block; }
+  .ms-drop input[type=text] { width:100%; min-width:0; padding:7px 9px; font-size:13px; margin-bottom:6px; }
+  .ms-bar { display:flex; gap:6px; margin-bottom:6px; flex-wrap:wrap; }
+  .ms-bar button { padding:4px 9px; font-size:11px; }
+  .ms-list { max-height:240px; overflow:auto; display:flex; flex-direction:column; gap:2px; }
+  .ms-grp { font-size:11px; color:var(--acc); font-weight:700; padding:6px 4px 2px; }
+  .ms-item { display:flex; flex-direction:row; align-items:center; gap:7px; padding:4px 6px; border-radius:6px; cursor:pointer; font-size:13px; color:var(--txt); }
+  .ms-item:hover { background:#252b48; }
+  .ms-item input { min-width:auto; margin:0; }
 </style>
 </head>
 <body>
@@ -54,168 +66,8 @@
   <!-- LEADS -->
   <section class="panel active" id="leads">
     <div class="row">
-      <label>Location
-        <select id="areaSelect" style="min-width:210px">
-          <optgroup label="🇮🇳 India">
-            <option value="Indore, India">Indore, India</option>
-            <option value="Mumbai, India">Mumbai, India</option>
-            <option value="Delhi, India">Delhi, India</option>
-            <option value="New Delhi, India">New Delhi, India</option>
-            <option value="Bengaluru, India">Bengaluru, India</option>
-            <option value="Pune, India">Pune, India</option>
-            <option value="Hyderabad, India">Hyderabad, India</option>
-            <option value="Jaipur, India">Jaipur, India</option>
-            <option value="Ahmedabad, India">Ahmedabad, India</option>
-            <option value="Surat, India">Surat, India</option>
-            <option value="Chennai, India">Chennai, India</option>
-            <option value="Kolkata, India">Kolkata, India</option>
-            <option value="Chandigarh, India">Chandigarh, India</option>
-            <option value="Noida, India">Noida, India</option>
-            <option value="Gurugram, India">Gurugram, India</option>
-            <option value="Faridabad, India">Faridabad, India</option>
-            <option value="Ghaziabad, India">Ghaziabad, India</option>
-            <option value="Lucknow, India">Lucknow, India</option>
-            <option value="Kanpur, India">Kanpur, India</option>
-            <option value="Bhopal, India">Bhopal, India</option>
-            <option value="Ujjain, India">Ujjain, India</option>
-            <option value="Raipur, India">Raipur, India</option>
-            <option value="Nagpur, India">Nagpur, India</option>
-            <option value="Nashik, India">Nashik, India</option>
-            <option value="Vadodara, India">Vadodara, India</option>
-            <option value="Rajkot, India">Rajkot, India</option>
-            <option value="Kochi, India">Kochi, India</option>
-            <option value="Thiruvananthapuram, India">Thiruvananthapuram, India</option>
-            <option value="Goa, India">Goa, India</option>
-            <option value="Coimbatore, India">Coimbatore, India</option>
-            <option value="Madurai, India">Madurai, India</option>
-            <option value="Visakhapatnam, India">Visakhapatnam, India</option>
-            <option value="Vijayawada, India">Vijayawada, India</option>
-            <option value="Bhubaneswar, India">Bhubaneswar, India</option>
-            <option value="Patna, India">Patna, India</option>
-            <option value="Ranchi, India">Ranchi, India</option>
-            <option value="Guwahati, India">Guwahati, India</option>
-            <option value="Dehradun, India">Dehradun, India</option>
-            <option value="Ludhiana, India">Ludhiana, India</option>
-            <option value="Amritsar, India">Amritsar, India</option>
-          </optgroup>
-          <optgroup label="🇦🇪 UAE & Middle East">
-            <option value="Dubai, UAE" selected>Dubai, UAE</option>
-            <option value="Abu Dhabi, UAE">Abu Dhabi, UAE</option>
-            <option value="Sharjah, UAE">Sharjah, UAE</option>
-            <option value="Ajman, UAE">Ajman, UAE</option>
-            <option value="Doha, Qatar">Doha, Qatar</option>
-            <option value="Riyadh, Saudi Arabia">Riyadh, Saudi Arabia</option>
-            <option value="Jeddah, Saudi Arabia">Jeddah, Saudi Arabia</option>
-            <option value="Dammam, Saudi Arabia">Dammam, Saudi Arabia</option>
-            <option value="Kuwait City, Kuwait">Kuwait City, Kuwait</option>
-            <option value="Muscat, Oman">Muscat, Oman</option>
-            <option value="Manama, Bahrain">Manama, Bahrain</option>
-            <option value="Amman, Jordan">Amman, Jordan</option>
-            <option value="Cairo, Egypt">Cairo, Egypt</option>
-          </optgroup>
-          <optgroup label="🇺🇸 USA">
-            <option value="New York, USA">New York, USA</option>
-            <option value="Los Angeles, USA">Los Angeles, USA</option>
-            <option value="Chicago, USA">Chicago, USA</option>
-            <option value="Austin, Texas, USA">Austin, Texas, USA</option>
-            <option value="Houston, USA">Houston, USA</option>
-            <option value="Miami, USA">Miami, USA</option>
-            <option value="San Francisco, USA">San Francisco, USA</option>
-            <option value="San Jose, USA">San Jose, USA</option>
-            <option value="San Diego, USA">San Diego, USA</option>
-            <option value="Seattle, USA">Seattle, USA</option>
-            <option value="Dallas, USA">Dallas, USA</option>
-            <option value="Atlanta, USA">Atlanta, USA</option>
-            <option value="Boston, USA">Boston, USA</option>
-            <option value="Denver, USA">Denver, USA</option>
-            <option value="Phoenix, USA">Phoenix, USA</option>
-            <option value="Las Vegas, USA">Las Vegas, USA</option>
-            <option value="Orlando, USA">Orlando, USA</option>
-            <option value="Philadelphia, USA">Philadelphia, USA</option>
-            <option value="Washington, DC, USA">Washington, DC, USA</option>
-            <option value="Charlotte, USA">Charlotte, USA</option>
-            <option value="Nashville, USA">Nashville, USA</option>
-          </optgroup>
-          <optgroup label="🇨🇦 Canada">
-            <option value="Toronto, Canada">Toronto, Canada</option>
-            <option value="Vancouver, Canada">Vancouver, Canada</option>
-            <option value="Montreal, Canada">Montreal, Canada</option>
-            <option value="Calgary, Canada">Calgary, Canada</option>
-            <option value="Ottawa, Canada">Ottawa, Canada</option>
-            <option value="Edmonton, Canada">Edmonton, Canada</option>
-            <option value="Winnipeg, Canada">Winnipeg, Canada</option>
-            <option value="Halifax, Canada">Halifax, Canada</option>
-          </optgroup>
-          <optgroup label="🇬🇧 UK & Ireland">
-            <option value="London, UK">London, UK</option>
-            <option value="Manchester, UK">Manchester, UK</option>
-            <option value="Birmingham, UK">Birmingham, UK</option>
-            <option value="Leeds, UK">Leeds, UK</option>
-            <option value="Glasgow, UK">Glasgow, UK</option>
-            <option value="Edinburgh, UK">Edinburgh, UK</option>
-            <option value="Bristol, UK">Bristol, UK</option>
-            <option value="Liverpool, UK">Liverpool, UK</option>
-            <option value="Dublin, Ireland">Dublin, Ireland</option>
-          </optgroup>
-          <optgroup label="🇪🇺 Europe">
-            <option value="Berlin, Germany">Berlin, Germany</option>
-            <option value="Munich, Germany">Munich, Germany</option>
-            <option value="Frankfurt, Germany">Frankfurt, Germany</option>
-            <option value="Hamburg, Germany">Hamburg, Germany</option>
-            <option value="Paris, France">Paris, France</option>
-            <option value="Lyon, France">Lyon, France</option>
-            <option value="Amsterdam, Netherlands">Amsterdam, Netherlands</option>
-            <option value="Rotterdam, Netherlands">Rotterdam, Netherlands</option>
-            <option value="Madrid, Spain">Madrid, Spain</option>
-            <option value="Barcelona, Spain">Barcelona, Spain</option>
-            <option value="Lisbon, Portugal">Lisbon, Portugal</option>
-            <option value="Rome, Italy">Rome, Italy</option>
-            <option value="Milan, Italy">Milan, Italy</option>
-            <option value="Zurich, Switzerland">Zurich, Switzerland</option>
-            <option value="Geneva, Switzerland">Geneva, Switzerland</option>
-            <option value="Vienna, Austria">Vienna, Austria</option>
-            <option value="Brussels, Belgium">Brussels, Belgium</option>
-            <option value="Stockholm, Sweden">Stockholm, Sweden</option>
-            <option value="Copenhagen, Denmark">Copenhagen, Denmark</option>
-            <option value="Oslo, Norway">Oslo, Norway</option>
-            <option value="Warsaw, Poland">Warsaw, Poland</option>
-            <option value="Prague, Czechia">Prague, Czechia</option>
-          </optgroup>
-          <optgroup label="🌏 Australia & Asia-Pacific">
-            <option value="Sydney, Australia">Sydney, Australia</option>
-            <option value="Melbourne, Australia">Melbourne, Australia</option>
-            <option value="Brisbane, Australia">Brisbane, Australia</option>
-            <option value="Perth, Australia">Perth, Australia</option>
-            <option value="Adelaide, Australia">Adelaide, Australia</option>
-            <option value="Auckland, New Zealand">Auckland, New Zealand</option>
-            <option value="Wellington, New Zealand">Wellington, New Zealand</option>
-            <option value="Singapore">Singapore</option>
-            <option value="Kuala Lumpur, Malaysia">Kuala Lumpur, Malaysia</option>
-            <option value="Bangkok, Thailand">Bangkok, Thailand</option>
-            <option value="Jakarta, Indonesia">Jakarta, Indonesia</option>
-            <option value="Manila, Philippines">Manila, Philippines</option>
-            <option value="Ho Chi Minh City, Vietnam">Ho Chi Minh City, Vietnam</option>
-            <option value="Tokyo, Japan">Tokyo, Japan</option>
-            <option value="Seoul, South Korea">Seoul, South Korea</option>
-            <option value="Hong Kong">Hong Kong</option>
-            <option value="Taipei, Taiwan">Taipei, Taiwan</option>
-          </optgroup>
-          <optgroup label="🌎 Latin America & Africa">
-            <option value="Mexico City, Mexico">Mexico City, Mexico</option>
-            <option value="Sao Paulo, Brazil">Sao Paulo, Brazil</option>
-            <option value="Buenos Aires, Argentina">Buenos Aires, Argentina</option>
-            <option value="Bogota, Colombia">Bogota, Colombia</option>
-            <option value="Santiago, Chile">Santiago, Chile</option>
-            <option value="Johannesburg, South Africa">Johannesburg, South Africa</option>
-            <option value="Cape Town, South Africa">Cape Town, South Africa</option>
-            <option value="Nairobi, Kenya">Nairobi, Kenya</option>
-            <option value="Lagos, Nigeria">Lagos, Nigeria</option>
-          </optgroup>
-          <option value="__custom__">✏️ Custom area...</option>
-        </select>
-      </label>
-      <label>Or type custom area<input id="area" value="Dubai, UAE" style="min-width:190px" /></label>
-      <label>Niche<select id="category"></select></label>
+      <label>Locations (Multi-Select: States & Cities)<div class="ms" id="areaMS"></div></label>
+      <label>Niches / Categories (Multi-Select)<div class="ms" id="catMS"></div></label>
       <label>Platform / Tech / Need
         <select id="platform" style="min-width:230px">
           <optgroup label="CMS & E-Commerce">
@@ -377,13 +229,60 @@ document.querySelectorAll('.tab').forEach((t) => t.onclick = () => {
   if (t.dataset.p === 'profile') loadProfile();
 });
 
+const LOC_GROUPS = [
+  ['🇮🇳 Indian States & UTs', ['Madhya Pradesh, India','Maharashtra, India','Gujarat, India','Rajasthan, India','Karnataka, India','Tamil Nadu, India','Telangana, India','Andhra Pradesh, India','Uttar Pradesh, India','West Bengal, India','Punjab, India','Haryana, India','Kerala, India','Bihar, India','Odisha, India','Assam, India','Jharkhand, India','Chhattisgarh, India','Uttarakhand, India','Himachal Pradesh, India','Jammu and Kashmir, India','Goa, India','Tripura, India','Meghalaya, India','Manipur, India','Nagaland, India','Arunachal Pradesh, India','Mizoram, India','Sikkim, India','Puducherry, India','Delhi, India','Chandigarh, India']],
+  ['🇮🇳 Indian Cities', ['Indore, India','Mumbai, India','New Delhi, India','Bengaluru, India','Pune, India','Hyderabad, India','Jaipur, India','Ahmedabad, India','Surat, India','Chennai, India','Kolkata, India','Noida, India','Gurugram, India','Faridabad, India','Ghaziabad, India','Lucknow, India','Kanpur, India','Bhopal, India','Ujjain, India','Raipur, India','Nagpur, India','Nashik, India','Vadodara, India','Rajkot, India','Kochi, India','Thiruvananthapuram, India','Coimbatore, India','Madurai, India','Visakhapatnam, India','Vijayawada, India','Bhubaneswar, India','Patna, India','Ranchi, India','Guwahati, India','Dehradun, India','Ludhiana, India','Amritsar, India']],
+  ['🇦🇪 UAE & Middle East', ['Dubai, UAE','Abu Dhabi, UAE','Sharjah, UAE','Ajman, UAE','Doha, Qatar','Riyadh, Saudi Arabia','Jeddah, Saudi Arabia','Dammam, Saudi Arabia','Kuwait City, Kuwait','Muscat, Oman','Manama, Bahrain','Amman, Jordan','Cairo, Egypt']],
+  ['🇺🇸 US States', ['California, USA','Texas, USA','Florida, USA','New York State, USA','Illinois, USA','Pennsylvania, USA','Ohio, USA','Georgia, USA','North Carolina, USA','Michigan, USA','New Jersey, USA','Virginia, USA','Washington State, USA','Arizona, USA','Massachusetts, USA','Colorado, USA','Nevada, USA','Tennessee, USA','Maryland, USA','Minnesota, USA','Oregon, USA']],
+  ['🇺🇸 US Cities', ['New York, USA','Los Angeles, USA','Chicago, USA','Austin, Texas, USA','Houston, USA','Miami, USA','San Francisco, USA','San Jose, USA','San Diego, USA','Seattle, USA','Dallas, USA','Atlanta, USA','Boston, USA','Denver, USA','Phoenix, USA','Las Vegas, USA','Orlando, USA','Philadelphia, USA','Washington, DC, USA','Charlotte, USA','Nashville, USA']],
+  ['🇨🇦 Canada (Provinces & Cities)', ['Ontario, Canada','British Columbia, Canada','Quebec, Canada','Alberta, Canada','Manitoba, Canada','Nova Scotia, Canada','Toronto, Canada','Vancouver, Canada','Montreal, Canada','Calgary, Canada','Ottawa, Canada','Edmonton, Canada','Winnipeg, Canada','Halifax, Canada']],
+  ['🇬🇧 UK & 🇪🇺 Europe', ['London, UK','Manchester, UK','Birmingham, UK','Leeds, UK','Glasgow, UK','Edinburgh, UK','Bristol, UK','Liverpool, UK','Dublin, Ireland','Berlin, Germany','Munich, Germany','Frankfurt, Germany','Hamburg, Germany','Paris, France','Lyon, France','Amsterdam, Netherlands','Rotterdam, Netherlands','Madrid, Spain','Barcelona, Spain','Lisbon, Portugal','Rome, Italy','Milan, Italy','Zurich, Switzerland','Geneva, Switzerland','Vienna, Austria','Brussels, Belgium','Stockholm, Sweden','Copenhagen, Denmark','Oslo, Norway','Warsaw, Poland','Prague, Czechia']],
+  ['🌏 Australia, APAC, LATAM & Africa', ['Sydney, Australia','Melbourne, Australia','Brisbane, Australia','Perth, Australia','Adelaide, Australia','Auckland, New Zealand','Wellington, New Zealand','Singapore','Kuala Lumpur, Malaysia','Bangkok, Thailand','Jakarta, Indonesia','Manila, Philippines','Ho Chi Minh City, Vietnam','Tokyo, Japan','Seoul, South Korea','Hong Kong','Taipei, Taiwan','Mexico City, Mexico','Sao Paulo, Brazil','Buenos Aires, Argentina','Bogota, Colombia','Santiago, Chile','Johannesburg, South Africa','Cape Town, South Africa','Nairobi, Kenya','Lagos, Nigeria']],
+];
+
+function makeMultiSelect(elId, groups, initial, { allowCustom = false, placeholder = 'Search...' } = {}) {
+  const el = $(elId);
+  const selected = new Set(initial);
+  const custom = [];
+  el.innerHTML = `<button type="button" class="ms-btn"><span class="ms-lbl"></span><span>▾</span></button>
+    <div class="ms-drop"><input type="text" class="ms-q" placeholder="${placeholder}" />
+      <div class="ms-bar"><button type="button" class="sec ms-all">Select All</button><button type="button" class="sec ms-clr">Clear</button>${allowCustom ? '<button type="button" class="sec ms-add">+ Add typed</button>' : ''}</div>
+      <div class="ms-list"></div></div>`;
+  const btn = el.querySelector('.ms-btn'), lbl = el.querySelector('.ms-lbl'), q = el.querySelector('.ms-q'), list = el.querySelector('.ms-list');
+  const updateLabel = () => {
+    const arr = [...selected];
+    lbl.textContent = arr.length ? (arr.length <= 2 ? arr.map((x) => x.replace(/_/g, ' ')).join(', ') : `${arr[0].replace(/_/g, ' ')} (+${arr.length - 1} more)`) : 'Select...';
+  };
+  const render = () => {
+    const f = q.value.trim().toLowerCase();
+    let html = '';
+    const allGrps = custom.length ? [['Custom', custom], ...groups] : groups;
+    for (const [g, items] of allGrps) {
+      const hits = items.filter((it) => !f || it.toLowerCase().includes(f));
+      if (!hits.length) continue;
+      html += `<div class="ms-grp">${esc(g)}</div>` + hits.map((it) => `<label class="ms-item"><input type="checkbox" value="${esc(it)}" ${selected.has(it) ? 'checked' : ''} /><span>${esc(it.replace(/_/g, ' / '))}</span></label>`).join('');
+    }
+    list.innerHTML = html || '<div class="small" style="padding:6px">No match — click "+ Add typed"</div>';
+    list.querySelectorAll('input').forEach((cb) => cb.onchange = () => { cb.checked ? selected.add(cb.value) : selected.delete(cb.value); updateLabel(); });
+    updateLabel();
+  };
+  btn.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.ms.open').forEach((m) => m !== el && m.classList.remove('open')); el.classList.toggle('open'); if (el.classList.contains('open')) q.focus(); };
+  el.querySelector('.ms-drop').onclick = (e) => e.stopPropagation();
+  q.oninput = render;
+  el.querySelector('.ms-all').onclick = () => { const f = q.value.trim().toLowerCase(); groups.flatMap((g) => g[1]).filter((it) => !f || it.toLowerCase().includes(f)).slice(0, 30).forEach((it) => selected.add(it)); render(); };
+  el.querySelector('.ms-clr').onclick = () => { selected.clear(); render(); };
+  if (allowCustom) el.querySelector('.ms-add').onclick = () => { const v = q.value.trim(); if (v) { custom.unshift(v); selected.add(v); q.value = ''; render(); } };
+  document.addEventListener('click', () => el.classList.remove('open'));
+  render();
+  return { get: () => [...selected] };
+}
+
+const areaMS = makeMultiSelect('areaMS', LOC_GROUPS, ['Dubai, UAE'], { allowCustom: true, placeholder: 'Search state, city or type custom...' });
+let catMS = makeMultiSelect('catMS', [['Niches', ['restaurant', 'jewelry', 'shopping']]], ['restaurant'], { placeholder: 'Search niche...' });
+
 fetch('/api/meta').then((r) => r.json()).then((m) => {
-  $('category').innerHTML = m.categories.map((c) => `<option value="${c}">${c.replace(/_/g, ' / ')}</option>`).join('');
+  catMS = makeMultiSelect('catMS', [['All Niches', m.categories]], ['restaurant'], { placeholder: 'Search niche...' });
 });
-$('areaSelect').onchange = () => {
-  if ($('areaSelect').value !== '__custom__') $('area').value = $('areaSelect').value;
-  else { $('area').value = ''; $('area').focus(); }
-};
 $('skillPreset').onchange = () => { $('kws').value = $('skillPreset').value; };
 
 // ---------- Safe LinkedIn Search Helpers (uses your own logged-in browser) ----------
@@ -405,8 +304,8 @@ function searchLinkedInPosts() {
   window.open(`https://www.linkedin.com/search/results/content/?keywords=${encodeURIComponent('hiring ' + kws)}&sortBy=%22date_posted%22`, '_blank');
 }
 function searchLinkedInLeads() {
-  const area = $('area').value.trim();
-  const cat = $('category').value.replace(/_/g, ' ');
+  const area = areaMS.get()[0] || 'Dubai, UAE';
+  const cat = (catMS.get()[0] || 'restaurant').replace(/_/g, ' ');
   window.open(`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(`${cat} founder owner ${area}`)}`, '_blank');
 }
 function findOwner(kind, idx) {
@@ -414,8 +313,8 @@ function findOwner(kind, idx) {
   window.open(`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(`${l.name} founder owner ceo`)}`, '_blank');
 }
 function searchGoogleMapsLeads() {
-  const area = $('area').value.trim();
-  const cat = $('category').value.replace(/_/g, ' ');
+  const area = areaMS.get()[0] || 'Dubai, UAE';
+  const cat = (catMS.get()[0] || 'restaurant').replace(/_/g, ' ');
   window.open(`https://www.google.com/maps/search/${encodeURIComponent(`${cat} in ${area}`)}`, '_blank');
 }
 function searchPortal(portal) {
@@ -473,7 +372,7 @@ $('onlyEmail').onchange = renderLeads;
 $('goLeads').onclick = async () => {
   const btn = $('goLeads'); btn.disabled = true; data.leads = []; $('log').innerHTML = ''; $('bar').style.width = '0'; renderLeads();
   try {
-    await streamPost('/api/leads', { area: $('area').value, category: $('category').value, platform: $('platform').value, maxScan: $('maxScan').value }, (m) => {
+    await streamPost('/api/leads', { areas: areaMS.get(), categories: catMS.get(), platform: $('platform').value, maxScan: $('maxScan').value }, (m) => {
       if (m.stage === 'lead') { data.leads.push(m.lead); renderLeads(); }
       else if (m.stage === 'progress') $('bar').style.width = (m.done / m.total * 100) + '%';
       else if (m.stage === 'result') { data.leads = m.leads; lsSet('leads', data.leads); renderLeads(); $('bar').style.width = '100%'; }
