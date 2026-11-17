@@ -209,10 +209,13 @@
         </select></label>
       <label>Max sites to scan<input id="maxScan" type="number" value="200" min="10" max="500" style="min-width:90px" /></label>
       <button id="goLeads">Find Leads</button>
+      <button id="stopLeads" class="sec" style="display:none;color:#b91c1c;border-color:#fecaca;background:#fef2f2">⏹ Stop</button>
       <button class="sec" onclick="searchGoogleMapsLeads()">📍 Google Maps</button>
       <button class="sec" onclick="searchLinkedInLeads()">in LinkedIn Leads</button>
       <button class="sec" onclick="exportCSV('leads')">⬇ CSV</button>
       <label class="chk"><input type="checkbox" id="onlyEmail" /> Only with email</label>
+      <label class="chk"><input type="checkbox" id="hidePitched" /> Hide pitched</label>
+      <input id="leadFilter" placeholder="🔍 Filter leads (name, city, issue)..." style="min-width:210px" />
     </div>
     <div class="bar"><div id="bar"></div></div>
     <div id="log"></div>
@@ -447,8 +450,8 @@ function searchPortal(portal) {
   }
 }
 
-async function streamPost(url, payload, onMsg) {
-  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+async function streamPost(url, payload, onMsg, signal) {
+  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal });
   const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
   while (true) {
     const { done, value } = await reader.read(); if (done) break;
@@ -478,25 +481,41 @@ function leadRow(l, kind, idx) {
 const LHEAD = '<tr><th>Business</th><th>Website</th><th>Platform</th><th>Email</th><th>Phone</th><th>Social</th><th>Pitch opportunities</th><th></th></tr>';
 
 function renderLeads() {
-  const list = data.leads.map((l, i) => [l, i]).filter(([l]) => !$('onlyEmail').checked || (l.emails || []).length);
+  const q = ($('leadFilter')?.value || '').trim().toLowerCase();
+  const tm = trackedMap();
+  const list = data.leads.map((l, i) => [l, i]).filter(([l]) => {
+    if ($('onlyEmail').checked && !(l.emails || []).length) return false;
+    if ($('hidePitched')?.checked && tm.has(l.website || l.osm || l.name)) return false;
+    if (q && !`${l.name} ${l.address} ${l.platform} ${(l.opportunities || []).join(' ')}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
   $('ltable').innerHTML = LHEAD + list.map(([l, i]) => leadRow(l, 'leads', i)).join('');
   const c = (p) => data.leads.filter((l) => l.platform === p).length;
   $('lstats').innerHTML = `<div class="stat"><b>${data.leads.length}</b> leads</div><div class="stat"><b>${c('WordPress')}</b> WordPress</div><div class="stat"><b>${c('Shopify')}</b> Shopify</div><div class="stat"><b>${data.leads.filter((l) => (l.emails||[]).length).length}</b> with email</div>`;
 }
 $('onlyEmail').onchange = renderLeads;
+$('hidePitched').onchange = renderLeads;
+$('leadFilter').oninput = renderLeads;
 
+let leadAbort = null;
+$('stopLeads').onclick = () => { if (leadAbort) leadAbort.abort(); };
 $('goLeads').onclick = async () => {
-  const btn = $('goLeads'); btn.disabled = true; data.leads = []; $('log').innerHTML = ''; $('bar').style.width = '0'; renderLeads();
+  const btn = $('goLeads'), stop = $('stopLeads');
+  btn.disabled = true; stop.style.display = 'inline-block';
+  leadAbort = new AbortController();
+  data.leads = []; $('log').innerHTML = ''; $('bar').style.width = '0'; renderLeads();
   try {
     await streamPost('/api/leads', { areas: areaMS.get(), categories: catMS.get(), platform: $('platform').value, maxScan: $('maxScan').value }, (m) => {
-      if (m.stage === 'lead') { data.leads.push(m.lead); renderLeads(); }
+      if (m.stage === 'lead') { data.leads.push(m.lead); lsSet('leads', data.leads); renderLeads(); }
       else if (m.stage === 'progress') $('bar').style.width = (m.done / m.total * 100) + '%';
       else if (m.stage === 'result') { data.leads = m.leads; lsSet('leads', data.leads); renderLeads(); $('bar').style.width = '100%'; }
       else if (m.msg) log('log', (m.stage === 'error' ? '❌ ' : '• ') + m.msg);
-    });
-  } catch (e) { log('log', '❌ ' + e.message); }
+    }, leadAbort.signal);
+  } catch (e) {
+    log('log', e.name === 'AbortError' ? `⏹ Stopped — ${data.leads.length} leads kept.` : '❌ ' + e.message);
+  }
   lsSet('leads', data.leads);
-  btn.disabled = false;
+  btn.disabled = false; stop.style.display = 'none'; leadAbort = null;
 };
 
 $('goCheck').onclick = async () => {

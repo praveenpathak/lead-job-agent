@@ -36,11 +36,13 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && req.url === '/api/leads') {
       const b = await body(req);
       const send = stream(res);
+      const ctrl = new AbortController();
+      req.on('close', () => ctrl.abort());
       try {
-        const r = await findLeads({ ...b, maxScan: Math.min(Number(b.maxScan) || 120, 500), onProgress: send });
-        send({ stage: 'result', ...r });
-      } catch (e) { send({ stage: 'error', msg: e.message }); }
-      return res.end();
+        const r = await findLeads({ ...b, maxScan: Math.min(Number(b.maxScan) || 200, 500), signal: ctrl.signal, onProgress: (m) => !res.writableEnded && send(m) });
+        if (!res.writableEnded) send({ stage: 'result', ...r });
+      } catch (e) { if (!res.writableEnded) send({ stage: 'error', msg: e.message }); }
+      return !res.writableEnded && res.end();
     }
     if (req.method === 'POST' && req.url === '/api/check-urls') {
       const b = await body(req);
