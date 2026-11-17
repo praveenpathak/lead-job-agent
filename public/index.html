@@ -213,6 +213,7 @@
       <label>Max sites to scan<input id="maxScan" type="number" value="200" min="10" max="500" style="min-width:90px" /></label>
       <button id="goLeads">Find Leads</button>
       <button id="stopLeads" class="sec" style="display:none;color:#b91c1c;border-color:#fecaca;background:#fef2f2">⏹ Stop</button>
+      <button class="sec" onclick="startPitchQueue()" title="Pitch unpitched leads one-by-one">⚡ Pitch Queue</button>
       <button class="sec" onclick="searchGoogleMapsLeads()">📍 Google Maps</button>
       <button class="sec" onclick="searchLinkedInLeads()">in LinkedIn Leads</button>
       <button class="sec" onclick="exportCSV('leads')">⬇ CSV</button>
@@ -299,6 +300,7 @@
       <button class="sec" onclick="exportCSV('apps')">⬇ Excel / CSV</button>
       <button class="sec" onclick="copySyncCode(this)">📋 Copy Sync Code</button>
       <button class="sec" onclick="restoreSyncCode()">📥 Restore Sync Code</button>
+      <button class="sec" onclick="openCallScript()">📞 Call Script</button>
       <label class="chk"><select id="appFilter" onchange="renderApps()" style="min-width:160px"><option value="">All</option><option>Job</option><option>Lead</option><option value="DUE">⏰ Follow-up Due (3d+)</option></select></label>
     </div>
     <div class="stats" id="astats"></div>
@@ -717,6 +719,37 @@ function printAuditReport() {
   w.document.close();
 }
 
+let pitchQueue = [];
+function startPitchQueue() {
+  const tm = trackedMap();
+  pitchQueue = data.leads.map((l, i) => ({ l, i })).filter(({ l }) => !tm.has(l.website || l.osm || l.name))
+    .sort((a, b) => ((b.l.emails||[]).length > 0) - ((a.l.emails||[]).length > 0) || (b.l.opportunities||[]).length - (a.l.opportunities||[]).length)
+    .map((x) => x.i);
+  if (!pitchQueue.length) return alert('No unpitched leads in table! Run Find Leads first.');
+  openPitch('leads', pitchQueue.shift());
+}
+function nextInQueue() {
+  if (!pitchQueue.length) { closeModal(); return showToast('🎉 Queue complete!'); }
+  openPitch('leads', pitchQueue.shift());
+}
+function printQuote() {
+  if (!currentAudit) return;
+  const { lead } = currentAudit;
+  const plat = ['WordPress', 'Shopify'].includes(lead.platform) ? lead.platform : 'WordPress / Shopify';
+  const w = window.open('', '_blank');
+  w.document.write(`<!doctype html><html><head><title>Proposal &amp; Quote – ${esc(lead.name)}</title><style>body{font-family:Segoe UI,sans-serif;max-width:780px;margin:36px auto;color:#0f172a;line-height:1.5}h1{margin:0;color:#4f46e5}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}.pkg{border:1px solid #cbd5e1;border-radius:12px;padding:16px;background:#f8fafc}.pkg h3{margin:0 0 6px;color:#4f46e5}.price{font-size:20px;font-weight:700;margin:8px 0}@media print{button{display:none}}</style></head><body>
+    <button onclick="window.print()" style="float:right;padding:8px 14px;background:#4f46e5;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨 Save PDF / Print</button>
+    <h1>Project Proposal &amp; Price Quote</h1>
+    <p>Prepared for <b>${esc(lead.name)}</b> (${esc(lead.website || '')}) · By <b>Praveen Pathak</b> (Sr. Web Designer · 14.5+ yrs)</p>
+    <div class="grid">
+      <div class="pkg"><h3>1. Quick Fix &amp; Speed</h3><div class="price">\$99 / ₹4,999</div><p>Fix SSL, SEO meta/H1, OpenGraph tags, image compression &amp; mobile responsiveness on ${esc(plat)}.<br><b>Delivery:</b> 2–3 Days</p></div>
+      <div class="pkg" style="border-color:#4f46e5;background:#eef2ff"><h3>2. Full Redesign</h3><div class="price">\$499 / ₹24,999</div><p>Modern conversion-focused ${esc(plat)} redesign, speed optimization, WhatsApp/lead forms &amp; SEO setup.<br><b>Delivery:</b> 7–10 Days</p></div>
+      <div class="pkg"><h3>3. Monthly Care</h3><div class="price">\$149/mo / ₹6,999/mo</div><p>Weekly updates, daily backups, uptime &amp; speed monitoring + up to 4 banner/page updates/mo.<br><b>Ongoing</b></p></div>
+    </div>
+    <p><b>Next Step:</b> Reply with your preferred option (1, 2, or 3) to start right away.<br>Contact: parvpathak12@gmail.com | +91 8109567672</p></body></html>`);
+  w.document.close();
+}
+
 async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
   const l = data[kind][idx];
   const r = await fetch('/api/pitch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: l, tone }) }).then((x) => x.json());
@@ -742,10 +775,12 @@ async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
     ${waUrl ? `<a target="_blank" href="${esc(waUrl)}" onclick="autoTrack()"><button type="button">💬 WhatsApp</button></a>` : ''}
     ${l.socials?.instagram ? `<a target="_blank" href="${esc(l.socials.instagram)}" onclick="autoTrack()"><button class="sec" type="button">📸 Instagram</button></a>` : ''}
     ${l.socials?.facebook ? `<a target="_blank" href="${esc(l.socials.facebook)}" onclick="autoTrack()"><button class="sec" type="button">📘 Facebook</button></a>` : ''}
-    ${l.website ? `<a target="_blank" href="${esc(l.website)}" onclick="autoTrack()"><button class="sec" type="button">🌐 Website / Contact Form</button></a>` : ''}
+    ${l.website ? `<a target="_blank" href="${esc(l.website)}" onclick="autoTrack()"><button class="sec" type="button">🌐 Contact Form</button></a><a target="_blank" href="https://pagespeed.web.dev/analysis?url=${encodeURIComponent(l.website)}"><button class="sec" type="button">📊 Speed Proof</button></a>` : ''}
     <button class="sec" onclick="printAuditReport()">📄 Audit PDF</button>
+    <button class="sec" onclick="printQuote()">💵 Quote PDF</button>
     <button class="sec" onclick="autoTrack();findOwner('${kind}',${idx})">in Find Owner</button>
-    <button class="sec" id="saveLeadBtn">✔ Mark Pitched</button>`;
+    <button class="sec" id="saveLeadBtn">✔ Mark Pitched</button>
+    ${pitchQueue.length ? `<button onclick="nextInQueue()">⏭ Next Lead (${pitchQueue.length})</button>` : ''}`;
   $('saveLeadBtn').onclick = () => trackApp(item);
   $('m_steps').innerHTML = (l.emails || []).length
     ? '<b>Easy Pitch:</b> Email ke liye "Open in Gmail" dabayein, ya WhatsApp / Instagram / LinkedIn se bhejein!'
@@ -817,15 +852,33 @@ function openFollowUp(idx) {
   $('m_steps').innerHTML = 'Sending a polite follow-up updates the date automatically.';
   $('modal').style.display = 'flex';
 }
+function openCallScript() {
+  $('m_toneWrap').style.display = 'none';
+  $('m_title').textContent = '📞 10-Min Discovery Call Script (How to Close Clients)';
+  $('m_info').innerHTML = 'Follow this 4-step flow on Zoom / WhatsApp / Phone calls:';
+  $('m_to').value = '';
+  $('m_subject').value = 'Discovery Call Checklist';
+  $('m_body').value = `1. ICEBREAKER (1 min)\n"Thanks for hopping on! I checked your site and really liked your brand — before I share the fixes I spotted, tell me: how do most of your customers find you right now (Google, Instagram, referrals)?"\n\n2. PAIN & GOAL (3 mins)\n• "Are you happy with the number of website enquiries / online orders you get each week?"\n• "What's the biggest headache with your current site (slow speed, hard to update, low Google visibility)?"\n\n3. VALUE DEMO (3 mins)\n• Share screen & show their Google PageSpeed / mobile view + 2 quick fixes.\n• Show 1–2 of your similar live sites (WordPress or Shopify).\n\n4. CLOSE WITH 2 OPTIONS (3 mins)\n"We can do this two ways:\nOption A: Quick Fix & Speed Pack ($99 / ₹4,999) — live in 3 days.\nOption B: Full Conversion Redesign ($499 / ₹24,999) — live in 7–10 days.\nWhich one makes more sense for you right now?"`;
+  $('m_actions').innerHTML = `<button onclick="copyText($('m_body').value, this)">📋 Copy Script</button>`;
+  $('m_steps').innerHTML = 'Tip: Let the client talk 60% of the time, then present Option A vs Option B.';
+  $('modal').style.display = 'flex';
+}
+async function updateAppNote(url, notes) {
+  const i = data.apps.findIndex((a) => a.url === url);
+  if (i >= 0) { data.apps[i].notes = notes; lsSet('apps', data.apps); }
+  try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, notes }) }); } catch {}
+  showToast('✔ Note saved');
+}
 function renderApps() {
   const f = $('appFilter').value;
   const dueCount = data.apps.filter(isDue).length;
   const list = data.apps.map((a, i) => [a, i]).filter(([a]) => f === 'DUE' ? isDue(a) : (!f || a.kind === f));
-  $('atable').innerHTML = '<tr><th>Type</th><th>Title</th><th>Company / Email</th><th>Status</th><th>Date</th><th></th></tr>' + list.map(([a, i]) => {
+  $('atable').innerHTML = '<tr><th>Type</th><th>Title &amp; Call Notes</th><th>Company / Email</th><th>Status</th><th>Date</th><th></th></tr>' + list.map(([a, i]) => {
     const due = isDue(a);
     return `<tr>
     <td><span class="pill ${a.kind === 'Job' ? 'WordPress' : 'Shopify'}">${esc(a.kind)}</span></td>
-    <td><a target="_blank" href="${esc(a.url)}"><b>${esc(a.title)}</b></a> ${due ? '<span class="pill op">⏰ Follow-up Due</span>' : ''}<div class="small">${esc(a.notes)}</div></td>
+    <td><a target="_blank" href="${esc(a.url)}"><b>${esc(a.title)}</b></a> ${due ? '<span class="pill op">⏰ Follow-up Due</span>' : ''}
+      <input value="${esc(a.notes || '')}" placeholder="Add call / follow-up note..." onchange="updateAppNote(${JSON.stringify(a.url)}, this.value)" style="width:100%;margin-top:5px;padding:5px 8px;font-size:12px" /></td>
     <td class="small">${esc(a.company)}<br>${esc(a.location)}</td>
     <td><select onchange="updateAppStatus(${JSON.stringify(a.url)}, this.value)" style="min-width:120px">
       ${['Applied','Pitched','Replied','Interview','Offer','Rejected'].map((s) => `<option ${a.status===s?'selected':''}>${s}</option>`).join('')}
