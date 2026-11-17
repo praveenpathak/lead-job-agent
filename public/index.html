@@ -179,6 +179,7 @@
       <div class="badge-live">● Live & Auto-Saved</div>
     </header>
     <main>
+  <div id="dueBanner" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;align-items:center;justify-content:space-between;gap:10px"></div>
   <!-- LEADS -->
   <section class="panel active" id="leads">
     <div class="row">
@@ -326,6 +327,8 @@
     <label style="margin-top:10px">Google Sheets Auto-Sync Webhook URL (Optional — auto-saves every Pitch & Job Apply to your Google Sheet)
       <div class="row"><input id="p_gsheetUrl" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1" /><button type="button" class="sec" onclick="showGSheetGuide()">❓ 30-sec Setup</button></div>
     </label>
+    <label style="margin-top:10px">Custom Pitch Template (Optional — placeholders: <code>{name}</code>, <code>{website}</code>, <code>{platform}</code>, <code>{issue}</code>)
+      <textarea id="p_customTpl" placeholder="Hi {name} Team,&#10;&#10;Checked {website} and noticed {issue}..." style="min-height:90px"></textarea></label>
     <label style="margin-top:10px">Projects (one per line: Name | URL | tags)<textarea id="p_projects"></textarea></label>
     <div class="row" style="margin-top:10px"><button onclick="saveProfile()">💾 Save Profile</button><span id="psaved" class="small"></span></div>
   </section>
@@ -343,6 +346,7 @@
         <option value="friendly">😊 Friendly & Positive (Default)</option>
         <option value="corporate">💼 USA / Dubai Corporate (ROI)</option>
         <option value="hinglish">🇮🇳 Indian Business (Hinglish Warm)</option>
+        <option value="custom">✏️ My Custom Template</option>
       </select></label></div>
     <label>To<input id="m_to" style="width:100%" /></label>
     <label style="margin-top:8px">Subject<input id="m_subject" style="width:100%" /></label>
@@ -686,7 +690,21 @@ async function openApply(idx) {
   $('m_to').value = j.applyEmail || '';
   $('m_to').placeholder = j.applyEmail ? '' : 'No direct email — click "Open Job Apply Page" below to apply online!';
   $('m_subject').value = r.subject;
-  $('m_body').value = r.body;
+  if (tone === 'custom') {
+    const tpl = lsGet('profile', {})?.customTpl || $('p_customTpl')?.value?.trim();
+    if (tpl) {
+      $('m_body').value = tpl
+        .replace(/\{name\}/gi, l.name)
+        .replace(/\{website\}/gi, l.website || l.name)
+        .replace(/\{platform\}/gi, l.platform || 'WordPress / Shopify')
+        .replace(/\{issue\}/gi, (l.opportunities || [])[0] || 'a quick growth opportunity');
+    } else {
+      $('m_body').value = r.body;
+      showToast('Tip: Save your custom template in My Profile first!');
+    }
+  } else {
+    $('m_body').value = r.body;
+  }
   const item = { kind: 'Job', title: j.title, company: j.company, location: j.location, url: j.url, status: 'Applied', notes: `Match ${j.score}%` };
   currentTrack = item;
   $('m_actions').innerHTML = `
@@ -762,7 +780,21 @@ async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
   $('m_to').value = (l.emails || []).join(', ');
   $('m_to').placeholder = (l.emails || []).length ? '' : 'No email — use WhatsApp, Instagram, Website Contact Form, or LinkedIn below!';
   $('m_subject').value = r.subject;
-  $('m_body').value = r.body;
+  if (tone === 'custom') {
+    const tpl = lsGet('profile', {})?.customTpl || $('p_customTpl')?.value?.trim();
+    if (tpl) {
+      $('m_body').value = tpl
+        .replace(/\{name\}/gi, l.name)
+        .replace(/\{website\}/gi, l.website || l.name)
+        .replace(/\{platform\}/gi, l.platform || 'WordPress / Shopify')
+        .replace(/\{issue\}/gi, (l.opportunities || [])[0] || 'a quick growth opportunity');
+    } else {
+      $('m_body').value = r.body;
+      showToast('Tip: Save your custom template in My Profile first!');
+    }
+  } else {
+    $('m_body').value = r.body;
+  }
   const item = { kind: 'Lead', title: `${l.name} (${l.platform})`, company: (l.emails||[]).join(', ') || (l.phones||[])[0] || '', location: l.address, url: l.website || l.osm || l.name, status: 'Pitched', notes: (l.opportunities||[]).join('; ') };
   currentTrack = item;
   currentShortDM = r.linkedinNote || '';
@@ -869,27 +901,48 @@ async function updateAppNote(url, notes) {
   try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, notes }) }); } catch {}
   showToast('✔ Note saved');
 }
+async function updateAppDeal(url, deal) {
+  const i = data.apps.findIndex((a) => a.url === url);
+  if (i >= 0) { data.apps[i].deal = Number(deal) || 0; lsSet('apps', data.apps); }
+  try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, deal: Number(deal) || 0 }) }); } catch {}
+  renderApps();
+}
+function openDueList() {
+  document.querySelector('.tab[data-p="apps"]').click();
+  $('appFilter').value = 'DUE'; renderApps();
+}
 function renderApps() {
   const f = $('appFilter').value;
   const dueCount = data.apps.filter(isDue).length;
+  const db = $('dueBanner');
+  if (db) {
+    if (dueCount > 0) {
+      db.style.display = 'flex';
+      db.innerHTML = `<span>⏰ <b>${dueCount} client(s)</b> need a follow-up today (3+ days since last pitch).</span><button class="sec" style="padding:5px 12px;font-size:12px" onclick="openDueList()">View Due List</button>`;
+    } else db.style.display = 'none';
+  }
   const list = data.apps.map((a, i) => [a, i]).filter(([a]) => f === 'DUE' ? isDue(a) : (!f || a.kind === f));
-  $('atable').innerHTML = '<tr><th>Type</th><th>Title &amp; Call Notes</th><th>Company / Email</th><th>Status</th><th>Date</th><th></th></tr>' + list.map(([a, i]) => {
+  $('atable').innerHTML = '<tr><th>Type</th><th>Title &amp; Call Notes</th><th>Company / Email</th><th>Deal ($)</th><th>Status</th><th>Date</th><th></th></tr>' + list.map(([a, i]) => {
     const due = isDue(a);
     return `<tr>
     <td><span class="pill ${a.kind === 'Job' ? 'WordPress' : 'Shopify'}">${esc(a.kind)}</span></td>
     <td><a target="_blank" href="${esc(a.url)}"><b>${esc(a.title)}</b></a> ${due ? '<span class="pill op">⏰ Follow-up Due</span>' : ''}
       <input value="${esc(a.notes || '')}" placeholder="Add call / follow-up note..." onchange="updateAppNote(${JSON.stringify(a.url)}, this.value)" style="width:100%;margin-top:5px;padding:5px 8px;font-size:12px" /></td>
     <td class="small">${esc(a.company)}<br>${esc(a.location)}</td>
-    <td><select onchange="updateAppStatus(${JSON.stringify(a.url)}, this.value)" style="min-width:120px">
-      ${['Applied','Pitched','Replied','Interview','Offer','Rejected'].map((s) => `<option ${a.status===s?'selected':''}>${s}</option>`).join('')}
+    <td><input type="number" min="0" value="${esc(a.deal || '')}" placeholder="0" onchange="updateAppDeal(${JSON.stringify(a.url)}, this.value)" style="width:78px;min-width:78px;padding:5px 8px;font-size:12px" /></td>
+    <td><select onchange="updateAppStatus(${JSON.stringify(a.url)}, this.value)" style="min-width:115px">
+      ${['Applied','Pitched','Replied','Interview','Offer','Won','Rejected'].map((s) => `<option ${a.status===s?'selected':''}>${s}</option>`).join('')}
     </select></td>
     <td class="small">${a.updatedAt ? new Date(a.updatedAt).toLocaleDateString() : ''}</td>
     <td>${due || a.status === 'Pitched' ? `<button class="sec" style="padding:5px 9px;font-size:12px" onclick="openFollowUp(${i})">↩ Follow-up</button> ` : ''}<button class="sec" style="padding:5px 9px;font-size:12px" onclick="delApp(${JSON.stringify(a.url)})">🗑</button></td></tr>`;
   }).join('');
+  const pipe = data.apps.filter((a) => !['Rejected','Won'].includes(a.status)).reduce((s, a) => s + (Number(a.deal) || 0), 0);
+  const won = data.apps.filter((a) => a.status === 'Won').reduce((s, a) => s + (Number(a.deal) || 0), 0);
   $('astats').innerHTML = `<div class="stat"><b>${data.apps.length}</b> total tracked</div>
     <div class="stat"><b>${data.apps.filter((a) => a.kind === 'Job').length}</b> jobs</div>
     <div class="stat"><b>${data.apps.filter((a) => a.kind === 'Lead').length}</b> leads pitched</div>
-    <div class="stat" style="border-left:4px solid #f59e0b"><b>${dueCount}</b> follow-ups due (3d+)</div>`;
+    <div class="stat" style="border-left:4px solid #f59e0b"><b>${dueCount}</b> follow-ups due (3d+)</div>
+    <div class="stat" style="border-left:4px solid #10b981"><b>$${pipe.toLocaleString()}</b> pipeline · <b>$${won.toLocaleString()}</b> won</div>`;
 }
 
 // ---------- Profile ----------
@@ -900,13 +953,13 @@ async function loadProfile() {
   const p = await fetch('/api/profile').then((r) => r.json());
   const localP = lsGet('profile', {});
   const merged = { ...p, ...localP };
-  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl']) if ($('p_' + k)) $('p_' + k).value = merged[k] || '';
+  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl','customTpl']) if ($('p_' + k)) $('p_' + k).value = merged[k] || '';
   $('p_skills').value = (merged.skills || []).join(', ');
   $('p_projects').value = (merged.projects || []).map((x) => `${x.name} | ${x.url} | ${(x.tags || []).join(', ')}`).join('\n');
 }
 async function saveProfile() {
   const p = {};
-  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl']) if ($('p_' + k)) p[k] = $('p_' + k).value.trim();
+  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl','customTpl']) if ($('p_' + k)) p[k] = $('p_' + k).value.trim();
   p.skills = $('p_skills').value.split(',').map((s) => s.trim()).filter(Boolean);
   p.projects = $('p_projects').value.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
     const [name, url, tags] = l.split('|').map((s) => (s || '').trim());
