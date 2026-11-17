@@ -366,6 +366,9 @@
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const data = { leads: [], check: [], jobs: [], apps: [] };
+const lsGet = (k, fb) => { try { return JSON.parse(localStorage.getItem('lga_' + k)) ?? fb; } catch { return fb; } };
+const lsSet = (k, v) => { try { localStorage.setItem('lga_' + k, JSON.stringify(v)); } catch {} };
+const trackedMap = () => new Map((data.apps || []).map((a) => [a.url, a.status]));
 
 document.querySelectorAll('.tab').forEach((t) => t.onclick = () => {
   document.querySelectorAll('.tab,.panel').forEach((e) => e.classList.remove('active'));
@@ -445,8 +448,10 @@ function leadRow(l, kind, idx) {
     + (l.woocommerce ? '<span class="pill WordPress">WooCommerce</span>' : '')
     + (l.theme ? `<div class="small">theme: ${esc(l.theme)}</div>` : '') + (l.wpVersion ? `<div class="small">WP ${esc(l.wpVersion)}</div>` : '');
   const soc = Object.entries(l.socials || {}).map(([k, v]) => `<a target="_blank" href="${esc(v)}">${k}</a>`).join(' · ');
+  const key = l.website || l.osm || l.name;
+  const st = trackedMap().get(key);
   return `<tr>
-    <td><b>${esc(l.name)}</b><div class="small">${esc(l.category)}</div><div class="small">${esc(l.address)}</div></td>
+    <td><b>${esc(l.name)}</b> ${st ? `<span class="pill Shopify">✔ ${esc(st)}</span>` : ''}<div class="small">${esc(l.category)}</div><div class="small">${esc(l.address)}</div></td>
     <td>${l.website ? `<a target="_blank" href="${esc(l.website)}">${esc(l.website.replace(/^https?:\/\/(www\.)?/, '').slice(0, 40))}</a>` : '—'}</td>
     <td>${plat}</td>
     <td>${(l.emails || []).map((e) => `<a target="_blank" href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(e)}">${esc(e)}</a>`).join('<br>') || '—'}</td>
@@ -471,17 +476,18 @@ $('goLeads').onclick = async () => {
     await streamPost('/api/leads', { area: $('area').value, category: $('category').value, platform: $('platform').value, maxScan: $('maxScan').value }, (m) => {
       if (m.stage === 'lead') { data.leads.push(m.lead); renderLeads(); }
       else if (m.stage === 'progress') $('bar').style.width = (m.done / m.total * 100) + '%';
-      else if (m.stage === 'result') { data.leads = m.leads; renderLeads(); $('bar').style.width = '100%'; }
+      else if (m.stage === 'result') { data.leads = m.leads; lsSet('leads', data.leads); renderLeads(); $('bar').style.width = '100%'; }
       else if (m.msg) log('log', (m.stage === 'error' ? '❌ ' : '• ') + m.msg);
     });
   } catch (e) { log('log', '❌ ' + e.message); }
+  lsSet('leads', data.leads);
   btn.disabled = false;
 };
 
 $('goCheck').onclick = async () => {
   const btn = $('goCheck'); btn.disabled = true; data.check = []; $('clog').innerHTML = ''; $('ctable').innerHTML = LHEAD;
   await streamPost('/api/check-urls', { urls: $('urls').value }, (m) => {
-    if (m.stage === 'lead') { data.check.push(m.lead); $('ctable').innerHTML = LHEAD + data.check.map((l, i) => leadRow(l, 'check', i)).join(''); }
+    if (m.stage === 'lead') { data.check.push(m.lead); lsSet('check', data.check); $('ctable').innerHTML = LHEAD + data.check.map((l, i) => leadRow(l, 'check', i)).join(''); }
     else if (m.stage === 'progress') $('cbar').style.width = (m.done / m.total * 100) + '%';
     else if (m.msg) log('clog', '• ' + m.msg);
   });
@@ -489,15 +495,20 @@ $('goCheck').onclick = async () => {
 };
 
 function renderJobs() {
-  $('jtable').innerHTML = '<tr><th>Job</th><th>Match</th><th>Company</th><th>Location</th><th>Salary</th><th>Posted</th><th>Source</th><th></th></tr>' + data.jobs.map((j, i) => `<tr>
+  const tm = trackedMap();
+  $('jtable').innerHTML = '<tr><th>Job</th><th>Match</th><th>Company</th><th>Location</th><th>Salary</th><th>Posted</th><th>Source</th><th></th></tr>' + data.jobs.map((j, i) => {
+    const st = tm.get(j.url);
+    return `<tr>
     <td><b>${esc(j.title)}</b> <span class="pill ${j.relevance}">${j.relevance}</span>
       ${j.eligibility ? `<span class="pill ${j.eligibility}">${j.eligibility}</span>` : ''}
+      ${st ? `<span class="pill Shopify">✔ ${esc(st)}</span>` : ''}
       <div class="small">${esc((j.skillHits || j.matched || []).join(', '))} ${j.type ? '· ' + esc(j.type) : ''}</div>
       <div class="small">${esc(j.description.slice(0, 160))}…</div></td>
     <td><b>${j.score ?? '—'}%</b></td>
     <td>${esc(j.company)}</td><td>${esc(j.location)}</td><td>${esc(j.salary) || '—'}</td>
     <td class="small">${j.date ? esc(new Date(j.date).toLocaleDateString()) : ''}</td><td class="small">${esc(j.source)}</td>
-    <td><button onclick="openApply(${i})">🚀 Apply</button></td></tr>`).join('');
+    <td><button onclick="openApply(${i})">🚀 Apply</button></td></tr>`;
+  }).join('');
   $('jstats').innerHTML = `<div class="stat"><b>${data.jobs.length}</b> jobs</div>
     <div class="stat"><b>${data.jobs.filter((j) => j.eligibility === 'Eligible').length}</b> worldwide/India eligible</div>
     <div class="stat"><b>${data.jobs.filter((j) => (j.score || 0) >= 50).length}</b> 50%+ match</div>`;
@@ -506,7 +517,7 @@ function renderJobs() {
 $('goJobs').onclick = async () => {
   const btn = $('goJobs'); btn.disabled = true; data.jobs = []; $('jlog').innerHTML = ''; renderJobs();
   await streamPost('/api/jobs', { keywords: $('kws').value.split(','), region: $('region').value, jobType: $('jobType').value, workMode: $('workMode').value, includeWorldwide: $('ww').checked, strict: $('strict').checked }, (m) => {
-    if (m.stage === 'result') { data.jobs = m.jobs; renderJobs(); log('jlog', `✅ ${m.jobs.length} matching jobs`); }
+    if (m.stage === 'result') { data.jobs = m.jobs; lsSet('jobs', data.jobs); renderJobs(); log('jlog', `✅ ${m.jobs.length} matching jobs`); }
     else if (m.msg) log('jlog', m.msg);
   });
   btn.disabled = false;
@@ -530,10 +541,18 @@ function openMailto() {
   const body = encodeURIComponent($('m_body').value);
   window.open(`mailto:${encodeURIComponent(to)}?subject=${sub}&body=${body}`, '_blank');
 }
-async function trackApp(item) {
-  await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) });
-  alert('Saved to My Applications!');
+async function trackApp(item, quiet = false) {
+  const rec = { ...item, updatedAt: new Date().toISOString() };
+  const i = data.apps.findIndex((a) => a.url === rec.url);
+  if (i >= 0) data.apps[i] = { ...data.apps[i], ...rec }; else data.apps.unshift(rec);
+  lsSet('apps', data.apps);
+  renderLeads(); renderJobs();
+  try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec) }); } catch {}
+  if (!quiet) alert('Saved to My Applications!');
 }
+
+let currentTrack = null;
+function autoTrack() { if (currentTrack) trackApp(currentTrack, true); }
 
 async function openApply(idx) {
   const j = data.jobs[idx];
@@ -544,13 +563,15 @@ async function openApply(idx) {
   $('m_to').placeholder = j.applyEmail ? '' : 'No direct email — click "Open Job Apply Page" below to apply online!';
   $('m_subject').value = r.subject;
   $('m_body').value = r.body;
+  const item = { kind: 'Job', title: j.title, company: j.company, location: j.location, url: j.url, status: 'Applied', notes: `Match ${j.score}%` };
+  currentTrack = item;
   $('m_actions').innerHTML = `
     <button onclick="copyText($('m_body').value, this)">📋 Copy Cover Letter</button>
-    <a target="_blank" href="${esc(j.url)}"><button type="button">🌐 Open Job Apply Page</button></a>
-    ${j.applyEmail ? `<button onclick="openGmail()">📧 Open in Gmail</button><button class="sec" onclick="openMailto()">Mail App</button>` : ''}
+    <a target="_blank" href="${esc(j.url)}" onclick="autoTrack()"><button type="button">🌐 Open Job Apply Page</button></a>
+    ${j.applyEmail ? `<button onclick="autoTrack();openGmail()">📧 Open in Gmail</button><button class="sec" onclick="autoTrack();openMailto()">Mail App</button>` : ''}
     <a href="/api/resume" download><button class="sec" type="button">⬇ Download Resume</button></a>
     <button class="sec" id="saveAppBtn">✔ Mark Applied</button>`;
-  $('saveAppBtn').onclick = () => trackApp({ kind: 'Job', title: j.title, company: j.company, location: j.location, url: j.url, status: 'Applied', notes: `Match ${j.score}%` });
+  $('saveAppBtn').onclick = () => trackApp(item);
   $('m_steps').innerHTML = 'Steps: 1) Copy Cover Letter → 2) Open Job Apply Page → 3) Attach resume (<code>Praveen-Pathak-Sr.WebDesigner.docx</code>) → 4) Click "Mark Applied" to track.';
   $('modal').style.display = 'flex';
 }
@@ -563,30 +584,45 @@ async function openPitch(kind, idx) {
   $('m_to').value = (l.emails || []).join(', ');
   $('m_subject').value = r.subject;
   $('m_body').value = r.body;
+  const item = { kind: 'Lead', title: `${l.name} (${l.platform})`, company: (l.emails||[]).join(', '), location: l.address, url: l.website || l.osm || l.name, status: 'Pitched', notes: (l.opportunities||[]).join('; ') };
+  currentTrack = item;
   $('m_actions').innerHTML = `
     <button onclick="copyText($('m_body').value, this)">📋 Copy Email Pitch</button>
     <button onclick="copyText(${JSON.stringify(r.linkedinNote || '')}, this)">📋 Copy LinkedIn Note (300c)</button>
-    <button onclick="openGmail()">📧 Open in Gmail</button>
-    <button class="sec" onclick="openMailto()">Mail App</button>
-    <button class="sec" onclick="findOwner('${kind}',${idx})">in Find Owner</button>
-    ${l.socials?.whatsapp ? `<a target="_blank" href="${esc(l.socials.whatsapp)}"><button class="sec" type="button">💬 WhatsApp</button></a>` : ''}
+    <button onclick="autoTrack();openGmail()">📧 Open in Gmail</button>
+    <button class="sec" onclick="autoTrack();openMailto()">Mail App</button>
+    <button class="sec" onclick="autoTrack();findOwner('${kind}',${idx})">in Find Owner</button>
+    ${l.socials?.whatsapp ? `<a target="_blank" href="${esc(l.socials.whatsapp)}" onclick="autoTrack()"><button class="sec" type="button">💬 WhatsApp</button></a>` : ''}
     <button class="sec" id="saveLeadBtn">✔ Mark Pitched</button>`;
-  $('saveLeadBtn').onclick = () => trackApp({ kind: 'Lead', title: `${l.name} (${l.platform})`, company: (l.emails||[]).join(', '), location: l.address, url: l.website || l.osm || l.name, status: 'Pitched', notes: (l.opportunities||[]).join('; ') });
+  $('saveLeadBtn').onclick = () => trackApp(item);
   $('m_steps').innerHTML = '<b>Easy Pitch:</b> Email ke liye "Open Email App" dabayein, ya LinkedIn ke liye "Copy LinkedIn Note" → "in Find Owner" → Connect → Paste!';
   $('modal').style.display = 'flex';
 }
 
-// ---------- Applications Tracker ----------
+// ---------- Applications Tracker (persisted in localStorage + server) ----------
 async function loadApps() {
-  data.apps = await fetch('/api/applications').then((r) => r.json());
-  renderApps();
+  const local = lsGet('apps', []);
+  let remote = [];
+  try { remote = await fetch('/api/applications').then((r) => r.json()); } catch {}
+  const map = new Map();
+  for (const a of [...remote, ...local]) {
+    const prev = map.get(a.url);
+    if (!prev || new Date(a.updatedAt || 0) > new Date(prev.updatedAt || 0)) map.set(a.url, a);
+  }
+  data.apps = [...map.values()].sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+  lsSet('apps', data.apps);
+  renderApps(); renderLeads(); renderJobs();
 }
 async function updateAppStatus(url, status) {
-  await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, status }) });
+  const i = data.apps.findIndex((a) => a.url === url);
+  if (i >= 0) { data.apps[i].status = status; data.apps[i].updatedAt = new Date().toISOString(); lsSet('apps', data.apps); }
+  try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, status }) }); } catch {}
   loadApps();
 }
 async function delApp(url) {
-  await fetch('/api/applications', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+  data.apps = data.apps.filter((a) => a.url !== url);
+  lsSet('apps', data.apps);
+  try { await fetch('/api/applications', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) }); } catch {}
   loadApps();
 }
 function renderApps() {
@@ -622,8 +658,21 @@ async function saveProfile() {
     return { name, url, tags: (tags || '').split(',').map((t) => t.trim().toLowerCase()).filter(Boolean) };
   });
   await fetch('/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+  lsSet('profile', p);
   $('psaved').textContent = '✔ Saved!'; setTimeout(() => $('psaved').textContent = '', 2000);
 }
+
+// Restore saved leads, jobs, check-list & applications immediately on page load / refresh
+(async function initSaved() {
+  data.leads = lsGet('leads', []);
+  data.jobs = lsGet('jobs', []);
+  data.check = lsGet('check', []);
+  data.apps = lsGet('apps', []);
+  await loadApps();
+  if (data.check.length) $('ctable').innerHTML = LHEAD + data.check.map((l, i) => leadRow(l, 'check', i)).join('');
+  const sp = lsGet('profile', null);
+  if (sp) try { await fetch('/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(sp) }); } catch {}
+})();
 
 function exportCSV(kind) {
   const rows = data[kind]; if (!rows.length) return alert('No data yet');
