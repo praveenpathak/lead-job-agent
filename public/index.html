@@ -449,7 +449,7 @@ function leadRow(l, kind, idx) {
     <td><b>${esc(l.name)}</b><div class="small">${esc(l.category)}</div><div class="small">${esc(l.address)}</div></td>
     <td>${l.website ? `<a target="_blank" href="${esc(l.website)}">${esc(l.website.replace(/^https?:\/\/(www\.)?/, '').slice(0, 40))}</a>` : '—'}</td>
     <td>${plat}</td>
-    <td>${(l.emails || []).map((e) => `<a href="mailto:${esc(e)}">${esc(e)}</a>`).join('<br>') || '—'}</td>
+    <td>${(l.emails || []).map((e) => `<a target="_blank" href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(e)}">${esc(e)}</a>`).join('<br>') || '—'}</td>
     <td>${(l.phones || []).map(esc).join('<br>') || '—'}</td>
     <td>${soc || '—'}</td>
     <td>${(l.opportunities || []).map((o) => `<span class="pill op">${esc(o)}</span>`).join('')}</td>
@@ -518,6 +518,12 @@ async function copyText(txt, btn) {
   await navigator.clipboard.writeText(txt);
   const old = btn.textContent; btn.textContent = '✔ Copied'; setTimeout(() => btn.textContent = old, 1500);
 }
+function openGmail() {
+  const to = $('m_to').value.trim();
+  const sub = encodeURIComponent($('m_subject').value);
+  const body = encodeURIComponent($('m_body').value);
+  window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${sub}&body=${body}`, '_blank');
+}
 function openMailto() {
   const to = $('m_to').value.trim();
   const sub = encodeURIComponent($('m_subject').value);
@@ -541,7 +547,7 @@ async function openApply(idx) {
   $('m_actions').innerHTML = `
     <button onclick="copyText($('m_body').value, this)">📋 Copy Cover Letter</button>
     <a target="_blank" href="${esc(j.url)}"><button type="button">🌐 Open Job Apply Page</button></a>
-    ${j.applyEmail ? `<button class="sec" onclick="openMailto()">📧 Open Email App</button>` : ''}
+    ${j.applyEmail ? `<button onclick="openGmail()">📧 Open in Gmail</button><button class="sec" onclick="openMailto()">Mail App</button>` : ''}
     <a href="/api/resume" download><button class="sec" type="button">⬇ Download Resume</button></a>
     <button class="sec" id="saveAppBtn">✔ Mark Applied</button>`;
   $('saveAppBtn').onclick = () => trackApp({ kind: 'Job', title: j.title, company: j.company, location: j.location, url: j.url, status: 'Applied', notes: `Match ${j.score}%` });
@@ -560,7 +566,8 @@ async function openPitch(kind, idx) {
   $('m_actions').innerHTML = `
     <button onclick="copyText($('m_body').value, this)">📋 Copy Email Pitch</button>
     <button onclick="copyText(${JSON.stringify(r.linkedinNote || '')}, this)">📋 Copy LinkedIn Note (300c)</button>
-    <button onclick="openMailto()">📧 Open Email App</button>
+    <button onclick="openGmail()">📧 Open in Gmail</button>
+    <button class="sec" onclick="openMailto()">Mail App</button>
     <button class="sec" onclick="findOwner('${kind}',${idx})">in Find Owner</button>
     ${l.socials?.whatsapp ? `<a target="_blank" href="${esc(l.socials.whatsapp)}"><button class="sec" type="button">💬 WhatsApp</button></a>` : ''}
     <button class="sec" id="saveLeadBtn">✔ Mark Pitched</button>`;
