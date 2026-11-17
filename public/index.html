@@ -423,10 +423,26 @@ $('goJobs').onclick = async () => {
 };
 
 // ---------- Apply / Pitch Modal ----------
+let currentShortDM = '';
+function showToast(msg) {
+  let t = $('toast');
+  if (!t) {
+    t = document.createElement('div'); t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#22c55e;color:#052e16;font-weight:700;padding:10px 18px;border-radius:10px;z-index:99;box-shadow:0 8px 24px #0008;font-size:14px;transition:opacity .2s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.style.opacity = '1'; t.style.display = 'block';
+  clearTimeout(t._tm); t._tm = setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.style.display = 'none', 200); }, 1800);
+}
 function closeModal() { $('modal').style.display = 'none'; }
 async function copyText(txt, btn) {
-  await navigator.clipboard.writeText(txt);
-  const old = btn.textContent; btn.textContent = '✔ Copied'; setTimeout(() => btn.textContent = old, 1500);
+  try { await navigator.clipboard.writeText(txt); }
+  catch {
+    const ta = document.createElement('textarea'); ta.value = txt;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  const old = btn.textContent; btn.textContent = '✔ Copied!'; setTimeout(() => btn.textContent = old, 1500);
+  showToast('✔ Message copied to clipboard!');
 }
 function openGmail() {
   const to = $('m_to').value.trim();
@@ -486,11 +502,12 @@ async function openPitch(kind, idx) {
   $('m_body').value = r.body;
   const item = { kind: 'Lead', title: `${l.name} (${l.platform})`, company: (l.emails||[]).join(', ') || (l.phones||[])[0] || '', location: l.address, url: l.website || l.osm || l.name, status: 'Pitched', notes: (l.opportunities||[]).join('; ') };
   currentTrack = item;
+  currentShortDM = r.linkedinNote || '';
   const phoneDigits = ((l.phones || [])[0] || '').replace(/[^\d]/g, '');
-  const waUrl = l.socials?.whatsapp || (phoneDigits.length >= 8 ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(r.linkedinNote || r.body.slice(0, 350))}` : '');
+  const waUrl = l.socials?.whatsapp || (phoneDigits.length >= 8 ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(currentShortDM || r.body.slice(0, 350))}` : '');
   $('m_actions').innerHTML = `
     <button onclick="copyText($('m_body').value, this)">📋 Copy Pitch</button>
-    <button onclick="copyText(${JSON.stringify(r.linkedinNote || '')}, this)">📋 Copy Short DM (300c)</button>
+    <button onclick="copyText(currentShortDM, this)">📋 Copy Short DM (300c)</button>
     ${(l.emails || []).length ? `<button onclick="autoTrack();openGmail()">📧 Open in Gmail</button><button class="sec" onclick="autoTrack();openMailto()">Mail App</button>` : ''}
     ${waUrl ? `<a target="_blank" href="${esc(waUrl)}" onclick="autoTrack()"><button type="button">💬 WhatsApp</button></a>` : ''}
     ${l.socials?.instagram ? `<a target="_blank" href="${esc(l.socials.instagram)}" onclick="autoTrack()"><button class="sec" type="button">📸 Instagram</button></a>` : ''}
