@@ -481,20 +481,27 @@ async function openPitch(kind, idx) {
   $('m_title').textContent = `Pitch: ${l.name} (${l.platform})`;
   $('m_info').innerHTML = `${esc(l.website || 'No website')} · Phones: ${esc((l.phones||[]).join(', ') || '—')}`;
   $('m_to').value = (l.emails || []).join(', ');
+  $('m_to').placeholder = (l.emails || []).length ? '' : 'No email — use WhatsApp, Instagram, Website Contact Form, or LinkedIn below!';
   $('m_subject').value = r.subject;
   $('m_body').value = r.body;
-  const item = { kind: 'Lead', title: `${l.name} (${l.platform})`, company: (l.emails||[]).join(', '), location: l.address, url: l.website || l.osm || l.name, status: 'Pitched', notes: (l.opportunities||[]).join('; ') };
+  const item = { kind: 'Lead', title: `${l.name} (${l.platform})`, company: (l.emails||[]).join(', ') || (l.phones||[])[0] || '', location: l.address, url: l.website || l.osm || l.name, status: 'Pitched', notes: (l.opportunities||[]).join('; ') };
   currentTrack = item;
+  const phoneDigits = ((l.phones || [])[0] || '').replace(/[^\d]/g, '');
+  const waUrl = l.socials?.whatsapp || (phoneDigits.length >= 8 ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(r.linkedinNote || r.body.slice(0, 350))}` : '');
   $('m_actions').innerHTML = `
-    <button onclick="copyText($('m_body').value, this)">📋 Copy Email Pitch</button>
-    <button onclick="copyText(${JSON.stringify(r.linkedinNote || '')}, this)">📋 Copy LinkedIn Note (300c)</button>
-    <button onclick="autoTrack();openGmail()">📧 Open in Gmail</button>
-    <button class="sec" onclick="autoTrack();openMailto()">Mail App</button>
+    <button onclick="copyText($('m_body').value, this)">📋 Copy Pitch</button>
+    <button onclick="copyText(${JSON.stringify(r.linkedinNote || '')}, this)">📋 Copy Short DM (300c)</button>
+    ${(l.emails || []).length ? `<button onclick="autoTrack();openGmail()">📧 Open in Gmail</button><button class="sec" onclick="autoTrack();openMailto()">Mail App</button>` : ''}
+    ${waUrl ? `<a target="_blank" href="${esc(waUrl)}" onclick="autoTrack()"><button type="button">💬 WhatsApp</button></a>` : ''}
+    ${l.socials?.instagram ? `<a target="_blank" href="${esc(l.socials.instagram)}" onclick="autoTrack()"><button class="sec" type="button">📸 Instagram</button></a>` : ''}
+    ${l.socials?.facebook ? `<a target="_blank" href="${esc(l.socials.facebook)}" onclick="autoTrack()"><button class="sec" type="button">📘 Facebook</button></a>` : ''}
+    ${l.website ? `<a target="_blank" href="${esc(l.website)}" onclick="autoTrack()"><button class="sec" type="button">🌐 Website / Contact Form</button></a>` : ''}
     <button class="sec" onclick="autoTrack();findOwner('${kind}',${idx})">in Find Owner</button>
-    ${l.socials?.whatsapp ? `<a target="_blank" href="${esc(l.socials.whatsapp)}" onclick="autoTrack()"><button class="sec" type="button">💬 WhatsApp</button></a>` : ''}
     <button class="sec" id="saveLeadBtn">✔ Mark Pitched</button>`;
   $('saveLeadBtn').onclick = () => trackApp(item);
-  $('m_steps').innerHTML = '<b>Easy Pitch:</b> Email ke liye "Open Email App" dabayein, ya LinkedIn ke liye "Copy LinkedIn Note" → "in Find Owner" → Connect → Paste!';
+  $('m_steps').innerHTML = (l.emails || []).length
+    ? '<b>Easy Pitch:</b> Email ke liye "Open in Gmail" dabayein, ya WhatsApp / Instagram / LinkedIn se bhejein!'
+    : '<b>No Email? No Problem:</b> 1) <b>💬 WhatsApp</b> dabayein (message pre-filled khulega), ya 2) <b>Copy Short DM → Instagram/LinkedIn</b>, ya 3) <b>🌐 Website / Contact Form</b> par paste karein!';
   $('modal').style.display = 'flex';
 }
 
