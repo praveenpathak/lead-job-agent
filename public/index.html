@@ -217,6 +217,7 @@
       <label class="chk"><input type="checkbox" id="hidePitched" /> Hide pitched</label>
       <input id="leadFilter" placeholder="🔍 Filter leads (name, city, issue)..." style="min-width:210px" />
     </div>
+    <div id="presetBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center"></div>
     <div class="bar"><div id="bar"></div></div>
     <div id="log"></div>
     <div class="stats" id="lstats"></div>
@@ -290,8 +291,13 @@
 
   <!-- APPLICATIONS -->
   <section class="panel" id="apps">
-    <div class="row"><button class="sec" onclick="loadApps()">↻ Refresh</button><button class="sec" onclick="exportCSV('apps')">⬇ CSV</button>
-      <label class="chk"><select id="appFilter" onchange="renderApps()" style="min-width:140px"><option value="">All</option><option>Job</option><option>Lead</option></select></label></div>
+    <div class="row">
+      <button class="sec" onclick="loadApps()">↻ Refresh</button>
+      <button class="sec" onclick="exportCSV('apps')">⬇ Excel / CSV</button>
+      <button class="sec" onclick="copySyncCode(this)">📋 Copy Sync Code</button>
+      <button class="sec" onclick="restoreSyncCode()">📥 Restore Sync Code</button>
+      <label class="chk"><select id="appFilter" onchange="renderApps()" style="min-width:160px"><option value="">All</option><option>Job</option><option>Lead</option><option value="DUE">⏰ Follow-up Due (3d+)</option></select></label>
+    </div>
     <div class="stats" id="astats"></div>
     <div class="wrap"><table id="atable"></table></div>
   </section>
@@ -393,7 +399,10 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
   if (allowCustom) el.querySelector('.ms-add').onclick = () => { const v = q.value.trim(); if (v) { custom.unshift(v); selected.add(v); q.value = ''; render(); } };
   document.addEventListener('click', () => el.classList.remove('open'));
   render();
-  return { get: () => [...selected] };
+  return {
+    get: () => [...selected],
+    set: (arr) => { selected.clear(); (arr || []).forEach((v) => selected.add(v)); render(); },
+  };
 }
 
 const areaMS = makeMultiSelect('areaMS', LOC_GROUPS, ['Dubai, UAE'], { allowCustom: true, placeholder: 'Search state, city or type custom...' });
@@ -403,6 +412,31 @@ fetch('/api/meta').then((r) => r.json()).then((m) => {
   catMS = makeMultiSelect('catMS', [['All Niches', m.categories]], ['restaurant'], { placeholder: 'Search niche...' });
 });
 $('skillPreset').onchange = () => { $('kws').value = $('skillPreset').value; };
+const DEFAULT_PRESETS = [
+  { name: '🇺🇸 USA Roofing (WP)', areas: ['Texas, USA', 'Florida, USA', 'California, USA'], cats: ['roofing_construction'], platform: 'wordpress' },
+  { name: '🇦🇪 Dubai Jewelry (Shopify)', areas: ['Dubai, UAE'], cats: ['jewelry'], platform: 'shopify' },
+  { name: '🇮🇳 India Restaurants (All)', areas: ['Indore, India', 'Mumbai, India', 'Delhi, India'], cats: ['restaurant'], platform: 'all' },
+];
+let presets = lsGet('presets', DEFAULT_PRESETS);
+function renderPresets() {
+  const bar = $('presetBar');
+  if (!bar) return;
+  bar.innerHTML = `<span class="small" style="font-weight:600">⭐ Saved:</span>`
+    + presets.map((p, i) => `<button class="sec" style="padding:5px 10px;font-size:12px" onclick="applyPreset(${i})">${esc(p.name)}</button>`).join('')
+    + `<button class="sec" style="padding:5px 10px;font-size:12px;color:var(--acc)" onclick="savePreset()">+ Save Current</button>`;
+}
+function applyPreset(i) {
+  const p = presets[i]; if (!p) return;
+  areaMS.set(p.areas); catMS.set(p.cats); $('platform').value = p.platform;
+  showToast(`Loaded preset: ${p.name}`);
+}
+function savePreset() {
+  const name = prompt('Preset name (e.g. "Canada Real Estate WP"):');
+  if (!name) return;
+  presets.push({ name: name.trim(), areas: areaMS.get(), cats: catMS.get(), platform: $('platform').value });
+  lsSet('presets', presets); renderPresets(); showToast('✔ Search preset saved!');
+}
+renderPresets();
 
 // ---------- Safe LinkedIn Search Helpers (uses your own logged-in browser) ----------
 const LI_LOC = {
@@ -683,21 +717,64 @@ async function delApp(url) {
   try { await fetch('/api/applications', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) }); } catch {}
   loadApps();
 }
+// ---------- Sync Code Backup (no .json file needed — save in WhatsApp / Notes / Gmail Draft) ----------
+function copySyncCode(btn) {
+  const payload = { apps: data.apps, profile: lsGet('profile', null), presets };
+  const code = 'LGA1:' + btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  copyText(code, btn);
+}
+async function restoreSyncCode() {
+  const code = prompt('Paste your LGA1:... Sync Code here:');
+  if (!code || !code.trim().startsWith('LGA1:')) return code ? alert('Invalid sync code') : null;
+  try {
+    const obj = JSON.parse(decodeURIComponent(escape(atob(code.trim().slice(5)))));
+    if (Array.isArray(obj.apps)) { data.apps = obj.apps; lsSet('apps', data.apps); }
+    if (obj.profile) { lsSet('profile', obj.profile); try { await fetch('/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj.profile) }); } catch {} }
+    if (Array.isArray(obj.presets)) { presets = obj.presets; lsSet('presets', presets); renderPresets(); }
+    renderApps(); renderLeads(); renderJobs();
+    showToast(`✔ Restored ${data.apps.length} records!`);
+  } catch { alert('Could not read sync code.'); }
+}
+
+function isDue(a) {
+  if (!['Pitched', 'Applied'].includes(a.status) || !a.updatedAt) return false;
+  return (Date.now() - new Date(a.updatedAt).getTime()) > 3 * 86400 * 1000;
+}
+function openFollowUp(idx) {
+  const a = data.apps[idx];
+  $('m_title').textContent = `Follow-up: ${a.title}`;
+  $('m_info').innerHTML = `${esc(a.url)} · Last contacted: ${new Date(a.updatedAt).toLocaleDateString()}`;
+  $('m_to').value = /@/.test(a.company || '') ? a.company : '';
+  $('m_subject').value = `Re: Quick follow-up — ${a.title.replace(/\s*\([^)]+\)$/, '')}`;
+  $('m_body').value = `Hi ${a.title.replace(/\s*\([^)]+\)$/, '')} Team,\n\nJust floating this back to the top of your inbox in case my last note got buried.\n\nHappy to send over that free 2-minute fix/growth checklist whenever you have a moment — just reply "Yes"!\n\nWarm regards,\nPraveen Pathak\nparvpathak12@gmail.com | +91 8109567672`;
+  currentTrack = { ...a, status: 'Pitched' };
+  $('m_actions').innerHTML = `
+    <button onclick="copyText($('m_body').value, this)">📋 Copy Follow-up</button>
+    <button onclick="autoTrack();openGmail()">📧 Open in Gmail</button>
+    <button class="sec" onclick="autoTrack();openMailto()">Mail App</button>`;
+  $('m_steps').innerHTML = 'Sending a polite follow-up updates the date automatically.';
+  $('modal').style.display = 'flex';
+}
 function renderApps() {
   const f = $('appFilter').value;
-  const list = data.apps.filter((a) => !f || a.kind === f);
-  $('atable').innerHTML = '<tr><th>Type</th><th>Title</th><th>Company / Email</th><th>Status</th><th>Date</th><th></th></tr>' + list.map((a) => `<tr>
+  const dueCount = data.apps.filter(isDue).length;
+  const list = data.apps.map((a, i) => [a, i]).filter(([a]) => f === 'DUE' ? isDue(a) : (!f || a.kind === f));
+  $('atable').innerHTML = '<tr><th>Type</th><th>Title</th><th>Company / Email</th><th>Status</th><th>Date</th><th></th></tr>' + list.map(([a, i]) => {
+    const due = isDue(a);
+    return `<tr>
     <td><span class="pill ${a.kind === 'Job' ? 'WordPress' : 'Shopify'}">${esc(a.kind)}</span></td>
-    <td><a target="_blank" href="${esc(a.url)}"><b>${esc(a.title)}</b></a><div class="small">${esc(a.notes)}</div></td>
+    <td><a target="_blank" href="${esc(a.url)}"><b>${esc(a.title)}</b></a> ${due ? '<span class="pill op">⏰ Follow-up Due</span>' : ''}<div class="small">${esc(a.notes)}</div></td>
     <td class="small">${esc(a.company)}<br>${esc(a.location)}</td>
     <td><select onchange="updateAppStatus(${JSON.stringify(a.url)}, this.value)" style="min-width:120px">
       ${['Applied','Pitched','Replied','Interview','Offer','Rejected'].map((s) => `<option ${a.status===s?'selected':''}>${s}</option>`).join('')}
     </select></td>
     <td class="small">${a.updatedAt ? new Date(a.updatedAt).toLocaleDateString() : ''}</td>
-    <td><button class="sec" onclick="delApp(${JSON.stringify(a.url)})">🗑</button></td></tr>`).join('');
+    <td>${due || a.status === 'Pitched' ? `<button class="sec" style="padding:5px 9px;font-size:12px" onclick="openFollowUp(${i})">↩ Follow-up</button> ` : ''}<button class="sec" style="padding:5px 9px;font-size:12px" onclick="delApp(${JSON.stringify(a.url)})">🗑</button></td></tr>`;
+  }).join('');
   $('astats').innerHTML = `<div class="stat"><b>${data.apps.length}</b> total tracked</div>
     <div class="stat"><b>${data.apps.filter((a) => a.kind === 'Job').length}</b> jobs</div>
-    <div class="stat"><b>${data.apps.filter((a) => a.kind === 'Lead').length}</b> leads pitched</div>`;
+    <div class="stat"><b>${data.apps.filter((a) => a.kind === 'Lead').length}</b> leads pitched</div>
+    <div class="stat" style="border-left:4px solid #f59e0b"><b>${dueCount}</b> follow-ups due (3d+)</div>`;
 }
 
 // ---------- Profile ----------
