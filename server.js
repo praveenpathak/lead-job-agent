@@ -8,6 +8,18 @@ import { findJobs, REGIONS } from './lib/jobs.js';
 import { analyzeSite, pool } from './lib/detect.js';
 import { execFile } from 'node:child_process';
 import { getProfile, saveProfile, getApplications, upsertApplication, upsertApplications, deleteApplication, coverLetter, pitchEmail } from './lib/apply.js';
+import {
+  registerUser,
+  loginUser,
+  verifyToken,
+  getUserById,
+  getUserProfile,
+  saveUserProfile,
+  getUserApplications,
+  upsertUserApplication,
+  deleteUserApplication,
+  upsertUserApplicationsBulk
+} from './lib/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3777;
@@ -16,6 +28,13 @@ async function body(req) {
   let s = '';
   for await (const c of req) s += c;
   return s ? JSON.parse(s) : {};
+}
+
+async function getAuthUserId(req) {
+  const h = req.headers['authorization'] || '';
+  const token = h.startsWith('Bearer ') ? h.slice(7).trim() : null;
+  if (!token) return null;
+  return await verifyToken(token);
 }
 
 function stream(res) {
@@ -62,32 +81,95 @@ const server = http.createServer(async (req, res) => {
       const b = await body(req);
       const send = stream(res);
       try {
-        const r = await findJobs({ ...b, profile: await getProfile(), onProgress: send });
+        const uid = await getAuthUserId(req);
+        const prof = uid ? await getUserProfile(uid) : await getProfile();
+        const r = await findJobs({ ...b, profile: prof, onProgress: send });
         send({ stage: 'result', ...r });
       } catch (e) { send({ stage: 'error', msg: e.message }); }
       return res.end();
     }
-    // ----- Apply assistant -----
+    // ----- Apply assistant & Auth -----
     const json = (obj) => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); };
+
+    // Auth endpoints
+    if (req.method === 'POST' && req.url === '/api/auth/register') {
+      const b = await body(req);
+      try {
+        const r = await registerUser(b);
+        return json(r);
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message }));
+      }
+    }
+    if (req.method === 'POST' && req.url === '/api/auth/login') {
+      const b = await body(req);
+      try {
+        const r = await loginUser(b);
+        return json(r);
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message }));
+      }
+    }
+    if (req.method === 'GET' && req.url === '/api/auth/me') {
+      const uid = await getAuthUserId(req);
+      if (!uid) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Unauthorized' }));
+      }
+      const user = await getUserById(uid);
+      const profile = await getUserProfile(uid);
+      return json({ user, profile });
+    }
+
     if (req.url === '/api/profile') {
-      if (req.method === 'POST') { await saveProfile(await body(req)); }
+      const uid = await getAuthUserId(req);
+      if (req.method === 'POST') {
+        const b = await body(req);
+        if (uid) {
+          await saveUserProfile(uid, b);
+          return json(await getUserProfile(uid));
+        } else {
+          await saveProfile(b);
+          return json(await getProfile());
+        }
+      }
+      if (uid) return json(await getUserProfile(uid));
       return json(await getProfile());
     }
     if (req.method === 'POST' && req.url === '/api/cover-letter') {
+      const uid = await getAuthUserId(req);
+      const prof = uid ? await getUserProfile(uid) : await getProfile();
       const { job } = await body(req);
-      return json(coverLetter(job, await getProfile()));
+      return json(coverLetter(job, prof));
     }
     if (req.method === 'POST' && req.url === '/api/pitch') {
+      const uid = await getAuthUserId(req);
+      const prof = uid ? await getUserProfile(uid) : await getProfile();
       const { lead, tone } = await body(req);
-      return json(pitchEmail(lead, await getProfile(), tone));
+      return json(pitchEmail(lead, prof, tone));
     }
     if (req.url === '/api/applications') {
-      if (req.method === 'POST') { const a = await body(req); return json(await upsertApplication(a)); }
-      if (req.method === 'DELETE') { const a = await body(req); await deleteApplication(a.url); return json({ ok: true }); }
+      const uid = await getAuthUserId(req);
+      if (req.method === 'POST') {
+        const a = await body(req);
+        if (uid) return json(await upsertUserApplication(uid, a));
+        return json(await upsertApplication(a));
+      }
+      if (req.method === 'DELETE') {
+        const a = await body(req);
+        if (uid) await deleteUserApplication(uid, a.url);
+        else await deleteApplication(a.url);
+        return json({ ok: true });
+      }
+      if (uid) return json(await getUserApplications(uid));
       return json(await getApplications());
     }
     if (req.url === '/api/applications/bulk' && req.method === 'POST') {
+      const uid = await getAuthUserId(req);
       const { list } = await body(req);
+      if (uid) return json(await upsertUserApplicationsBulk(uid, list || []));
       return json(await upsertApplications(list || []));
     }
     if (req.method === 'POST' && req.url === '/api/open-resume') {

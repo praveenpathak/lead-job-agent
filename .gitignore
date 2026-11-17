@@ -1,3 +1,8 @@
 node_modules/
 .DS_Store
 *.log
+data/*.key
+data/users.json
+data/applications.json
+data/profile.json
+

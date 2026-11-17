@@ -167,16 +167,24 @@
     </div>
     <div>
       <div id="dailyGoal" style="padding:10px;border-radius:10px;background:#f8fafc;border:1px solid var(--bd);font-size:11.5px;margin-bottom:10px"></div>
-      <div class="user-card" style="margin-top:0">
-        <div class="avatar">PP</div>
-        <div><b>Praveen Pathak</b><span>Sr. Web Designer · 14.5 yrs</span></div>
+      <div class="user-card" id="sidebarUserCard" style="margin-top:0;cursor:pointer" onclick="openAuthModal()">
+        <div class="avatar" id="sidebarAvatar">PP</div>
+        <div><b id="sidebarUserName">Praveen Pathak</b><span id="sidebarUserSubtitle">Sr. Web Designer · 14.5 yrs</span></div>
       </div>
     </div>
   </aside>
   <div class="content">
     <header>
       <h2 id="pageTitle">🏪 Business Leads</h2>
-      <div class="badge-live">● Live & Auto-Saved</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <a href="https://docs.google.com/spreadsheets/d/1qyaz_ecGGaj80m6r207WKzYuytHO53r91MMnyHWmQBQ/edit?usp=sharing" target="_blank" style="text-decoration:none">
+          <button type="button" class="sec" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;font-size:12px;color:#047857;background:#ecfdf5;border-color:#a7f3d0">
+            📊 Open Connected Sheet
+          </button>
+        </a>
+        <div id="authHeaderWrap" style="display:flex;align-items:center;gap:8px"></div>
+        <div class="badge-live">● Live & Auto-Saved</div>
+      </div>
     </header>
     <main>
   <div id="dueBanner" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;align-items:center;justify-content:space-between;gap:10px"></div>
@@ -480,14 +488,244 @@ hello@roofersllc.com"></textarea>
   </div>
 </div>
 
+<!-- LOGIN & REGISTRATION MODAL -->
+<div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.48);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+  <div style="background:#ffffff;color:var(--txt);border:1px solid var(--bd);border-radius:16px;padding:26px;width:min(460px,94vw);box-shadow:0 24px 60px rgba(15,23,42,0.22)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:24px">🔐</div>
+        <div>
+          <h3 id="authModalTitle" style="margin:0;font-size:17px;font-weight:700">Sign In to Your Account</h3>
+          <span style="font-size:12px;color:var(--muted)">Saved pitches &amp; Google Sheet sync</span>
+        </div>
+      </div>
+      <button class="sec" type="button" onclick="$('authModal').style.display='none'">✕</button>
+    </div>
+
+    <!-- TABS -->
+    <div style="display:flex;gap:8px;margin-bottom:18px;background:#f1f5f9;padding:4px;border-radius:10px">
+      <button type="button" id="tabLoginBtn" onclick="switchAuthTab('login')" style="flex:1;padding:7px;font-size:12.5px;border-radius:7px">🔑 Sign In</button>
+      <button type="button" class="sec" id="tabRegisterBtn" onclick="switchAuthTab('register')" style="flex:1;padding:7px;font-size:12.5px;border-radius:7px">📝 Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="authLoginWrap">
+      <form onsubmit="event.preventDefault(); submitLogin();">
+        <label>Email Address
+          <input type="email" id="login_email" placeholder="parvpathak12@gmail.com" required style="width:100%" />
+        </label>
+        <label style="margin-top:12px">Password
+          <input type="password" id="login_password" placeholder="••••••••" required style="width:100%" />
+        </label>
+        <div id="loginErr" style="color:#ef4444;font-size:12px;margin-top:8px;display:none"></div>
+        <button type="submit" id="loginSubmitBtn" style="width:100%;margin-top:16px;padding:10px">Sign In</button>
+      </form>
+      <div style="text-align:center;margin-top:14px;font-size:12.5px;color:var(--muted)">
+        Don't have an account? <a href="javascript:void(0)" onclick="switchAuthTab('register')">Create one now</a>
+      </div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="authRegisterWrap" style="display:none">
+      <form onsubmit="event.preventDefault(); submitRegister();">
+        <label>Full Name
+          <input type="text" id="reg_name" placeholder="Praveen Pathak" required style="width:100%" />
+        </label>
+        <label style="margin-top:10px">Email Address
+          <input type="email" id="reg_email" placeholder="parvpathak12@gmail.com" required style="width:100%" />
+        </label>
+        <label style="margin-top:10px">Phone Number (Optional)
+          <input type="text" id="reg_phone" placeholder="+91 8109567672" style="width:100%" />
+        </label>
+        <label style="margin-top:10px">Password (min 4 chars)
+          <input type="password" id="reg_password" placeholder="••••••••" minlength="4" required style="width:100%" />
+        </label>
+        <div id="regErr" style="color:#ef4444;font-size:12px;margin-top:8px;display:none"></div>
+        <button type="submit" id="regSubmitBtn" style="width:100%;margin-top:16px;padding:10px">Create Account &amp; Sign In</button>
+      </form>
+      <div style="text-align:center;margin-top:14px;font-size:12.5px;color:var(--muted)">
+        Already have an account? <a href="javascript:void(0)" onclick="switchAuthTab('login')">Sign in here</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const data = { leads: [], check: [], jobs: [], apps: [] };
+let currentUser = null;
+
+const authHeaders = () => {
+  const token = localStorage.getItem('lga_token');
+  return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+};
+const getUserAppsKey = () => currentUser ? `apps_${currentUser.id}` : 'apps';
+const getUserProfileKey = () => currentUser ? `profile_${currentUser.id}` : 'profile';
+
 const lsGet = (k, fb) => { try { return JSON.parse(localStorage.getItem('lga_' + k)) ?? fb; } catch { return fb; } };
 const lsSet = (k, v) => { try { localStorage.setItem('lga_' + k, JSON.stringify(v)); } catch {} };
 const trackedMap = () => new Map((data.apps || []).map((a) => [a.url, a.status]));
+
+function openAuthModal(tab = 'login') {
+  $('authModal').style.display = 'flex';
+  switchAuthTab(tab);
+}
+
+function switchAuthTab(tab) {
+  $('loginErr').style.display = 'none';
+  $('regErr').style.display = 'none';
+  if (tab === 'register') {
+    $('authLoginWrap').style.display = 'none';
+    $('authRegisterWrap').style.display = 'block';
+    $('tabRegisterBtn').className = '';
+    $('tabLoginBtn').className = 'sec';
+    $('authModalTitle').textContent = 'Create New Account';
+  } else {
+    $('authLoginWrap').style.display = 'block';
+    $('authRegisterWrap').style.display = 'none';
+    $('tabLoginBtn').className = '';
+    $('tabRegisterBtn').className = 'sec';
+    $('authModalTitle').textContent = 'Sign In to Your Account';
+  }
+}
+
+async function submitLogin() {
+  const email = $('login_email').value.trim();
+  const password = $('login_password').value;
+  const errBox = $('loginErr');
+  const btn = $('loginSubmitBtn');
+  errBox.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const d = await res.json();
+    if (!res.ok || d.error) throw new Error(d.error || 'Login failed');
+    localStorage.setItem('lga_token', d.token);
+    localStorage.setItem('lga_user', JSON.stringify(d.user));
+    currentUser = d.user;
+    updateUserUI();
+    $('authModal').style.display = 'none';
+    $('login_password').value = '';
+    showToast(`✔ Welcome back, ${currentUser.name}!`);
+    await loadApps();
+    await loadProfile();
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+async function submitRegister() {
+  const name = $('reg_name').value.trim();
+  const email = $('reg_email').value.trim();
+  const phone = $('reg_phone').value.trim();
+  const password = $('reg_password').value;
+  const errBox = $('regErr');
+  const btn = $('regSubmitBtn');
+  errBox.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, password })
+    });
+    const d = await res.json();
+    if (!res.ok || d.error) throw new Error(d.error || 'Registration failed');
+    localStorage.setItem('lga_token', d.token);
+    localStorage.setItem('lga_user', JSON.stringify(d.user));
+    currentUser = d.user;
+    updateUserUI();
+    $('authModal').style.display = 'none';
+    $('reg_password').value = '';
+    showToast(`🎉 Account created! Welcome, ${currentUser.name}!`);
+    await loadApps();
+    await loadProfile();
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create Account & Sign In';
+  }
+}
+
+async function checkAuth() {
+  const token = localStorage.getItem('lga_token');
+  if (!token) {
+    updateUserUI();
+    return;
+  }
+  try {
+    const res = await fetch('/api/auth/me', { headers: authHeaders() });
+    if (res.ok) {
+      const d = await res.json();
+      currentUser = d.user;
+      localStorage.setItem('lga_user', JSON.stringify(d.user));
+    } else {
+      localStorage.removeItem('lga_token');
+      localStorage.removeItem('lga_user');
+      currentUser = null;
+    }
+  } catch {
+    try { currentUser = JSON.parse(localStorage.getItem('lga_user')); } catch {}
+  }
+  updateUserUI();
+}
+
+function logoutUser() {
+  localStorage.removeItem('lga_token');
+  localStorage.removeItem('lga_user');
+  currentUser = null;
+  updateUserUI();
+  showToast('Logged out.');
+  loadApps();
+  loadProfile();
+}
+
+function updateUserUI() {
+  const wrap = $('authHeaderWrap');
+  const cardName = $('sidebarUserName');
+  const cardSub = $('sidebarUserSubtitle');
+  const cardAvatar = $('sidebarAvatar');
+
+  if (currentUser) {
+    const initials = currentUser.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
+    if (cardAvatar) cardAvatar.textContent = initials;
+    if (cardName) cardName.textContent = currentUser.name;
+    if (cardSub) cardSub.textContent = currentUser.email;
+
+    if (wrap) {
+      wrap.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt)">
+          <span style="font-weight:600">👤 ${esc(currentUser.name)}</span>
+          <button type="button" class="sec" onclick="logoutUser()" style="padding:4px 9px;font-size:11.5px">🚪 Logout</button>
+        </div>`;
+    }
+  } else {
+    if (cardAvatar) cardAvatar.textContent = 'PP';
+    if (cardName) cardName.textContent = 'Praveen Pathak';
+    if (cardSub) cardSub.textContent = 'Click to Sign In / Register';
+    if (wrap) {
+      wrap.innerHTML = `
+        <button type="button" onclick="openAuthModal('login')" style="padding:6px 12px;font-size:12px">🔑 Sign In / Register</button>`;
+    }
+  }
+}
 
 document.querySelectorAll('.tab').forEach((t) => t.onclick = () => {
   document.querySelectorAll('.tab,.panel').forEach((e) => e.classList.remove('active'));
@@ -792,15 +1030,22 @@ function updateGoal() {
 }
 
 async function trackApp(item, quiet = false) {
-  const rec = { ...item, updatedAt: new Date().toISOString() };
+  const rec = {
+    ...item,
+    updatedAt: new Date().toISOString(),
+    userName: currentUser?.name || 'Praveen Pathak',
+    userEmail: currentUser?.email || 'parvpathak12@gmail.com'
+  };
   const i = data.apps.findIndex((a) => a.url === rec.url);
   if (i >= 0) data.apps[i] = { ...data.apps[i], ...rec }; else data.apps.unshift(rec);
-  lsSet('apps', data.apps);
+  lsSet(getUserAppsKey(), data.apps);
   renderLeads(); renderJobs(); updateGoal();
-  try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec) }); } catch {}
-  const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
-  if (gUrl) { try { fetch(gUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(rec) }); } catch {} }
-  if (!quiet) showToast('✔ Saved to My Applications!');
+  try { await fetch('/api/applications', { method: 'POST', headers: authHeaders(), body: JSON.stringify(rec) }); } catch {}
+  const gUrl = lsGet(getUserProfileKey(), null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+  if (gUrl) {
+    try { fetch(gUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec) }); } catch {}
+  }
+  if (!quiet) showToast('✔ Saved to My Applications & Connected Sheet!');
 }
 
 let currentTrack = null;
@@ -946,8 +1191,20 @@ async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
 }
 
 // ---------- Applications Tracker (persisted in localStorage + server + Google Sheets) ----------
-const GSHEET_APPS_SCRIPT = `function doGet(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+const GSHEET_APPS_SCRIPT = `// Tailored for Google Sheet: Software- Lead Generate
+// Spreadsheet ID: 1qyaz_ecGGaj80m6r207WKzYuytHO53r91MMnyHWmQBQ
+
+function getSheet() {
+  var id = "1qyaz_ecGGaj80m6r207WKzYuytHO53r91MMnyHWmQBQ";
+  try {
+    return SpreadsheetApp.openById(id).getActiveSheet();
+  } catch(e) {
+    return SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  }
+}
+
+function doGet(e) {
+  var sheet = getSheet();
   var data = sheet.getDataRange().getValues();
   if (data.length <= 1) return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
   var headers = data[0];
@@ -963,17 +1220,29 @@ const GSHEET_APPS_SCRIPT = `function doGet(e) {
 
 function doPost(e) {
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var sheet = getSheet();
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(["updatedAt", "kind", "title", "company", "location", "status", "url", "notes", "deal"]);
+      sheet.appendRow(["updatedAt", "userName", "userEmail", "kind", "title", "company", "location", "status", "url", "notes", "deal"]);
     }
     var d = JSON.parse(e.postData.contents);
     var data = sheet.getDataRange().getValues();
     var rowIndex = -1;
     for (var i = 1; i < data.length; i++) {
-      if (data[i][6] === d.url) { rowIndex = i + 1; break; }
+      if (data[i][8] === d.url || data[i][6] === d.url) { rowIndex = i + 1; break; }
     }
-    var rowData = [d.updatedAt || new Date().toISOString(), d.kind || 'Lead', d.title || '', d.company || '', d.location || '', d.status || 'Pitched', d.url || '', d.notes || '', Number(d.deal) || 0];
+    var rowData = [
+      d.updatedAt || new Date().toISOString(),
+      d.userName || 'Praveen Pathak',
+      d.userEmail || 'parvpathak12@gmail.com',
+      d.kind || 'Lead',
+      d.title || '',
+      d.company || '',
+      d.location || '',
+      d.status || 'Pitched',
+      d.url || '',
+      d.notes || '',
+      Number(d.deal) || 0
+    ];
     if (rowIndex > 0) {
       sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
     } else {
@@ -986,12 +1255,12 @@ function doPost(e) {
 }`;
 
 async function loadApps() {
-  const local = lsGet('apps', []);
+  const local = lsGet(getUserAppsKey(), []);
   let remote = [];
-  try { remote = await fetch('/api/applications').then((r) => r.json()); } catch {}
+  try { remote = await fetch('/api/applications', { headers: authHeaders() }).then((r) => r.json()); } catch {}
 
   // 2-Way Google Sheets Auto-Sync (Cloud Persistence across devices)
-  const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+  const gUrl = lsGet(getUserProfileKey(), null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
   if (gUrl) {
     try {
       const gRes = await fetch(gUrl);
@@ -999,14 +1268,14 @@ async function loadApps() {
       if (Array.isArray(gData) && gData.length) {
         remote = [...remote, ...gData.map((d) => ({
           kind: d.kind || 'Lead',
-          title: d.title || '',
-          company: d.company || '',
+          title: d.title || d['Company / Title'] || '',
+          company: d.company || d['URL / Contact'] || '',
           location: d.location || '',
-          status: d.status || 'Pitched',
-          url: d.url || '',
-          notes: d.notes || '',
+          status: d.status || d['Status'] || 'Pitched',
+          url: d.url || d['URL / Contact'] || '',
+          notes: d.notes || d['Notes'] || '',
           deal: Number(d.deal) || 0,
-          updatedAt: d.updatedAt || new Date().toISOString()
+          updatedAt: d.updatedAt || d['Date'] || new Date().toISOString()
         }))];
       }
     } catch {}
@@ -1019,7 +1288,7 @@ async function loadApps() {
     if (!prev || new Date(a.updatedAt || 0) > new Date(prev.updatedAt || 0)) map.set(a.url, a);
   }
   data.apps = [...map.values()].sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
-  lsSet('apps', data.apps);
+  lsSet(getUserAppsKey(), data.apps);
   renderApps(); renderLeads(); renderJobs(); updateGoal();
 }
 async function updateAppStatus(url, status) {
@@ -1027,22 +1296,24 @@ async function updateAppStatus(url, status) {
   if (i >= 0) {
     data.apps[i].status = status;
     data.apps[i].updatedAt = new Date().toISOString();
-    lsSet('apps', data.apps);
-    const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
-    if (gUrl) { try { fetch(gUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data.apps[i]) }); } catch {} }
+    lsSet(getUserAppsKey(), data.apps);
+    const gUrl = lsGet(getUserProfileKey(), null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+    if (gUrl) {
+      try { fetch(gUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data.apps[i]) }); } catch {}
+    }
   }
-  try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, status }) }); } catch {}
+  try { await fetch('/api/applications', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ url, status }) }); } catch {}
   loadApps();
 }
 async function delApp(url) {
   data.apps = data.apps.filter((a) => a.url !== url);
-  lsSet('apps', data.apps);
-  try { await fetch('/api/applications', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) }); } catch {}
+  lsSet(getUserAppsKey(), data.apps);
+  try { await fetch('/api/applications', { method: 'DELETE', headers: authHeaders(), body: JSON.stringify({ url }) }); } catch {}
   loadApps();
 }
 // ---------- Sync Code Backup (no .json file needed — save in WhatsApp / Notes / Gmail Draft) ----------
 function copySyncCode(btn) {
-  const payload = { apps: data.apps, profile: lsGet('profile', null), presets };
+  const payload = { apps: data.apps, profile: lsGet(getUserProfileKey(), null), presets, user: currentUser };
   const code = 'LGA1:' + btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   copyText(code, btn);
 }
@@ -1051,8 +1322,8 @@ async function restoreSyncCode() {
   if (!code || !code.trim().startsWith('LGA1:')) return code ? alert('Invalid sync code') : null;
   try {
     const obj = JSON.parse(decodeURIComponent(escape(atob(code.trim().slice(5)))));
-    if (Array.isArray(obj.apps)) { data.apps = obj.apps; lsSet('apps', data.apps); }
-    if (obj.profile) { lsSet('profile', obj.profile); try { await fetch('/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj.profile) }); } catch {} }
+    if (Array.isArray(obj.apps)) { data.apps = obj.apps; lsSet(getUserAppsKey(), data.apps); }
+    if (obj.profile) { lsSet(getUserProfileKey(), obj.profile); try { await fetch('/api/profile', { method: 'POST', headers: authHeaders(), body: JSON.stringify(obj.profile) }); } catch {} }
     if (Array.isArray(obj.presets)) { presets = obj.presets; lsSet('presets', presets); renderPresets(); }
     renderApps(); renderLeads(); renderJobs(); updateGoal();
     showToast(`✔ Restored ${data.apps.length} records!`);
@@ -1101,7 +1372,9 @@ async function submitSingleQA() {
     status,
     deal,
     notes,
-    updatedAt
+    updatedAt,
+    userName: currentUser?.name || 'Praveen Pathak',
+    userEmail: currentUser?.email || 'parvpathak12@gmail.com'
   };
   await trackApp(rec);
   $('quickAddModal').style.display = 'none';
@@ -1148,7 +1421,9 @@ async function submitBulkQA() {
       status: defaultStatus,
       deal: 0,
       notes: 'Recovered from past pitch',
-      updatedAt
+      updatedAt,
+      userName: currentUser?.name || 'Praveen Pathak',
+      userEmail: currentUser?.email || 'parvpathak12@gmail.com'
     });
   }
 
@@ -1156,21 +1431,21 @@ async function submitBulkQA() {
     const i = data.apps.findIndex((a) => a.url === rec.url);
     if (i >= 0) data.apps[i] = { ...data.apps[i], ...rec }; else data.apps.unshift(rec);
   }
-  lsSet('apps', data.apps);
+  lsSet(getUserAppsKey(), data.apps);
   renderApps(); renderLeads(); renderJobs(); updateGoal();
 
   try {
     await fetch('/api/applications/bulk', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({ list: newItems })
     });
   } catch {}
 
-  const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+  const gUrl = lsGet(getUserProfileKey(), null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
   if (gUrl) {
     for (const rec of newItems) {
-      try { fetch(gUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(rec) }); } catch {}
+      try { fetch(gUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec) }); } catch {}
     }
   }
 
@@ -1213,11 +1488,14 @@ async function updateAppNote(url, notes) {
   const i = data.apps.findIndex((a) => a.url === url);
   if (i >= 0) {
     data.apps[i].notes = notes;
-    lsSet('apps', data.apps);
-    const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
-    if (gUrl) { try { fetch(gUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data.apps[i]) }); } catch {} }
+    data.apps[i].updatedAt = new Date().toISOString();
+    lsSet(getUserAppsKey(), data.apps);
+    const gUrl = lsGet(getUserProfileKey(), null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+    if (gUrl) {
+      try { fetch(gUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data.apps[i]) }); } catch {}
+    }
   }
-  try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, notes }) }); } catch {}
+  try { await fetch('/api/applications', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ url, notes }) }); } catch {}
   showToast('✔ Note saved');
 }
 async function updateAppDeal(url, deal) {
@@ -1225,11 +1503,13 @@ async function updateAppDeal(url, deal) {
   if (i >= 0) {
     data.apps[i].deal = Number(deal) || 0;
     data.apps[i].updatedAt = new Date().toISOString();
-    lsSet('apps', data.apps);
-    const gUrl = lsGet('profile', null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
-    if (gUrl) { try { fetch(gUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data.apps[i]) }); } catch {} }
+    lsSet(getUserAppsKey(), data.apps);
+    const gUrl = lsGet(getUserProfileKey(), null)?.gsheetUrl || $('p_gsheetUrl')?.value?.trim();
+    if (gUrl) {
+      try { fetch(gUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data.apps[i]) }); } catch {}
+    }
   }
-  try { await fetch('/api/applications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, deal: Number(deal) || 0 }) }); } catch {}
+  try { await fetch('/api/applications', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ url, deal: Number(deal) || 0 }) }); } catch {}
   renderApps();
 }
 function openDueList() {
@@ -1290,36 +1570,45 @@ function showGSheetGuide() {
   $('gsheetModal').style.display = 'flex';
 }
 async function loadProfile() {
-  const p = await fetch('/api/profile').then((r) => r.json());
-  const localP = lsGet('profile', {});
+  let p = {};
+  try { p = await fetch('/api/profile', { headers: authHeaders() }).then((r) => r.json()); } catch {}
+  const localP = lsGet(getUserProfileKey(), {});
   const merged = { ...p, ...localP };
-  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl','customTpl']) if ($('p_' + k)) $('p_' + k).value = merged[k] || '';
-  $('p_skills').value = (merged.skills || []).join(', ');
-  $('p_projects').value = (merged.projects || []).map((x) => `${x.name} | ${x.url} | ${(x.tags || []).join(', ')}`).join('\n');
+  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl','customTpl']) {
+    if ($('p_' + k)) $('p_' + k).value = merged[k] || '';
+  }
+  if ($('p_skills')) $('p_skills').value = (merged.skills || []).join(', ');
+  if ($('p_projects')) $('p_projects').value = (merged.projects || []).map((x) => `${x.name} | ${x.url} | ${(x.tags || []).join(', ')}`).join('\n');
 }
 async function saveProfile() {
   const p = {};
-  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl','customTpl']) if ($('p_' + k)) p[k] = $('p_' + k).value.trim();
+  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl','customTpl']) {
+    if ($('p_' + k)) p[k] = $('p_' + k).value.trim();
+  }
   p.skills = $('p_skills').value.split(',').map((s) => s.trim()).filter(Boolean);
   p.projects = $('p_projects').value.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
     const [name, url, tags] = l.split('|').map((s) => (s || '').trim());
     return { name, url, tags: (tags || '').split(',').map((t) => t.trim().toLowerCase()).filter(Boolean) };
   });
-  await fetch('/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
-  lsSet('profile', p);
+  await fetch('/api/profile', { method: 'POST', headers: authHeaders(), body: JSON.stringify(p) });
+  lsSet(getUserProfileKey(), p);
+  if (currentUser && p.name) {
+    currentUser.name = p.name;
+    updateUserUI();
+  }
   $('psaved').textContent = '✔ Saved!'; setTimeout(() => $('psaved').textContent = '', 2000);
 }
 
 // Restore saved leads, jobs, check-list & applications immediately on page load / refresh
 (async function initSaved() {
+  await checkAuth();
   data.leads = lsGet('leads', []);
   data.jobs = lsGet('jobs', []);
   data.check = lsGet('check', []);
-  data.apps = lsGet('apps', []);
+  data.apps = lsGet(getUserAppsKey(), []);
   await loadApps();
+  await loadProfile();
   if (data.check.length) $('ctable').innerHTML = LHEAD + data.check.map((l, i) => leadRow(l, 'check', i)).join('');
-  const sp = lsGet('profile', null);
-  if (sp) try { await fetch('/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(sp) }); } catch {}
 })();
 
 function exportCSV(kind) {
