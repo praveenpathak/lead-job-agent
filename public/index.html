@@ -452,7 +452,7 @@ function leadRow(l, kind, idx) {
     <td>${(l.emails || []).map((e) => `<a target="_blank" href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(e)}">${esc(e)}</a>`).join('<br>') || '—'}</td>
     <td>${(l.phones || []).map(esc).join('<br>') || '—'}</td>
     <td>${soc || '—'}</td>
-    <td>${(l.opportunities || []).map((o) => `<span class="pill op">${esc(o)}</span>`).join('')}</td>
+    <td>${(l.opportunities || []).length ? l.opportunities.map((o) => `<span class="pill op">${esc(o)}</span>`).join('') : '<span class="pill Shopify">Clean site → Maintenance pitch</span>'}</td>
     <td><button onclick="openPitch('${kind}',${idx})">✉ Pitch</button> <button class="sec" style="margin-top:4px" onclick="findOwner('${kind}',${idx})">in Owner</button></td></tr>`;
 }
 const LHEAD = '<tr><th>Business</th><th>Website</th><th>Platform</th><th>Email</th><th>Phone</th><th>Social</th><th>Pitch opportunities</th><th></th></tr>';
