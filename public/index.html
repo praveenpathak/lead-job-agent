@@ -195,15 +195,18 @@
       <label>Niches / Categories (Multi-Select)<div class="ms" id="catMS"></div></label>
       <label>Platform / Tech / Need
         <select id="platform" style="min-width:230px">
-          <optgroup label="CMS & E-Commerce">
-            <option value="both">WordPress + Shopify</option>
+          <optgroup label="Maximum Volume (Recommended)">
+            <option value="all" selected>🌐 All Websites (50-100+ Leads, any tech)</option>
+          </optgroup>
+          <optgroup label="CMS &amp; E-Commerce (Targeted)">
+            <option value="both">WordPress + Shopify (Active sites)</option>
             <option value="wordpress">Only WordPress</option>
             <option value="woocommerce">Only WooCommerce</option>
             <option value="shopify">Only Shopify</option>
             <option value="ecommerce_other">Magento / BigCommerce</option>
-            <option value="migration">Wix / Squarespace / GoDaddy (Migration)</option>
+            <option value="migration">Wix / Squarespace / GoDaddy (Migration pitch)</option>
           </optgroup>
-          <optgroup label="Web & Code Stacks (IT)">
+          <optgroup label="Web &amp; Code Stacks (IT)">
             <option value="php">PHP (all PHP / Laravel / CI)</option>
             <option value="laravel">Laravel</option>
             <option value="codeigniter">CodeIgniter</option>
@@ -212,10 +215,9 @@
             <option value="vue">Vue / Nuxt</option>
             <option value="bootstrap">Bootstrap / Custom HTML</option>
           </optgroup>
-          <optgroup label="IT, SEO & Design Needs">
+          <optgroup label="IT, SEO &amp; Design Needs">
             <option value="seo_need">Needs SEO Fix (missing meta/H1/OG)</option>
             <option value="design_need">Needs Redesign / Mobile / Speed Fix</option>
-            <option value="all">All websites (any tech)</option>
             <option value="nowebsite">Businesses with NO website</option>
           </optgroup>
         </select></label>
@@ -803,8 +805,9 @@ fetch('/api/meta').then((r) => r.json()).then((m) => {
 });
 $('skillPreset').onchange = () => { $('kws').value = $('skillPreset').value; };
 const DEFAULT_PRESETS = [
-  { name: '🇺🇸 USA Roofing (WP)', areas: ['Texas, USA', 'Florida, USA', 'California, USA'], cats: ['roofing_construction'], platform: 'wordpress' },
+  { name: '🇦🇪 Dubai Restaurants (All)', areas: ['Dubai, UAE'], cats: ['restaurant'], platform: 'all' },
   { name: '🇦🇪 Dubai Jewelry (Shopify)', areas: ['Dubai, UAE'], cats: ['jewelry'], platform: 'shopify' },
+  { name: '🇺🇸 USA Roofing (WP)', areas: ['Texas, USA', 'Florida, USA', 'California, USA'], cats: ['roofing_construction'], platform: 'wordpress' },
   { name: '🇮🇳 India Restaurants (All)', areas: ['Indore, India', 'Mumbai, India', 'Delhi, India'], cats: ['restaurant'], platform: 'all' },
 ];
 let presets = lsGet('presets', DEFAULT_PRESETS);
