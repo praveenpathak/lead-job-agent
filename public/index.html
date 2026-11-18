@@ -395,9 +395,9 @@
         <option value="hinglish">🇮🇳 Indian Business (Hinglish Warm)</option>
         <option value="custom">✏️ My Custom Template</option>
       </select></label></div>
-    <div id="m_to_wrap"><label id="m_to_lbl">To<input id="m_to" style="width:100%" /></label></div>
+    <div id="m_to_wrap"><label><span id="m_to_lbl">To</span><input id="m_to" style="width:100%" /></label></div>
     <div id="m_subject_wrap"><label style="margin-top:8px">Subject<input id="m_subject" style="width:100%" /></label></div>
-    <label style="margin-top:8px" id="m_body_lbl">Message (edit kar sakte ho)<textarea id="m_body" style="min-height:280px"></textarea></label>
+    <label style="margin-top:8px"><span id="m_body_lbl">Message (edit kar sakte ho)</span><textarea id="m_body" style="min-height:280px"></textarea></label>
     <div class="row" style="margin-top:10px" id="m_actions"></div>
     <div id="m_steps" class="small" style="margin-top:10px"></div>
   </div>
@@ -1374,8 +1374,8 @@ async function openApply(idx) {
   $('m_toneWrap').style.display = 'none';
   if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
   if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'block';
-  if ($('m_to_lbl')) $('m_to_lbl').innerHTML = 'To<input id="m_to" style="width:100%" />';
-  if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'Message (edit kar sakte ho)<textarea id="m_body" style="min-height:280px"></textarea>';
+  if ($('m_to_lbl')) $('m_to_lbl').textContent = 'To';
+  if ($('m_body_lbl')) $('m_body_lbl').textContent = 'Message (edit kar sakte ho)';
   const j = data.jobs[idx];
   const r = await fetch('/api/cover-letter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job: j }) }).then((x) => x.json());
   $('m_title').textContent = `Apply: ${j.title} @ ${j.company}`;
@@ -1578,9 +1578,13 @@ function setPitchChannel(ch) {
     $('m_toneWrap').style.display = 'none';
     if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'none';
     if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
-    if ($('m_to_lbl')) $('m_to_lbl').innerHTML = `WhatsApp Recipient Phone<input id="m_to" style="width:100%" value="${esc(waDigits || (l.phones||[])[0] || '')}" placeholder="e.g. 919826012345 or 971501234567" />`;
-    if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'WhatsApp Pitch (Formatted with emojis &amp; bullet points)';
-    $('m_body').value = currentPitchData.whatsapp.body;
+    if ($('m_to_lbl')) $('m_to_lbl').textContent = 'WhatsApp Recipient Phone';
+    if ($('m_to')) {
+      $('m_to').value = waDigits || (l.phones||[])[0] || '';
+      $('m_to').placeholder = 'e.g. 919826012345 or 971501234567';
+    }
+    if ($('m_body_lbl')) $('m_body_lbl').textContent = 'WhatsApp Pitch (Formatted with emojis & bullet points)';
+    if ($('m_body')) $('m_body').value = currentPitchData.whatsapp.body;
     
     $('m_actions').innerHTML = `
       <button type="button" onclick="sendWhatsAppModal()" style="background:#059669;color:#fff;font-weight:700">💬 Open in WhatsApp Web / App</button>
@@ -1597,9 +1601,13 @@ function setPitchChannel(ch) {
     if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'none';
     if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
     const igUrl = currentPitchData.instagram.url;
-    if ($('m_to_lbl')) $('m_to_lbl').innerHTML = `Instagram Profile<input id="m_to" style="width:100%" value="${esc(igUrl || 'Search: ' + l.name)}" />`;
-    if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'Instagram DM (Concise 2-Sentence High-Reply Pitch)';
-    $('m_body').value = currentPitchData.instagram.body;
+    if ($('m_to_lbl')) $('m_to_lbl').textContent = 'Instagram Profile';
+    if ($('m_to')) {
+      $('m_to').value = igUrl || ('Search: ' + l.name);
+      $('m_to').placeholder = 'Instagram handle or URL';
+    }
+    if ($('m_body_lbl')) $('m_body_lbl').textContent = 'Instagram DM (Concise 2-Sentence High-Reply Pitch)';
+    if ($('m_body')) $('m_body').value = currentPitchData.instagram.body;
 
     $('m_actions').innerHTML = `
       <button type="button" onclick="sendInstaModal()" style="background:#c026d3;color:#fff;font-weight:700">📸 Copy &amp; Open Instagram</button>
@@ -1614,11 +1622,14 @@ function setPitchChannel(ch) {
     $('m_toneWrap').style.display = 'none';
     if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
     if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'block';
-    if ($('m_to_lbl')) $('m_to_lbl').innerHTML = 'To<input id="m_to" style="width:100%" />';
-    $('m_to').value = currentPitchData.followUp.to;
-    $('m_subject').value = currentPitchData.followUp.subject;
-    if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'Day-3 Follow-Up Message (Boosts reply rate by 70%)';
-    $('m_body').value = currentPitchData.followUp.body;
+    if ($('m_to_lbl')) $('m_to_lbl').textContent = 'To';
+    if ($('m_to')) {
+      $('m_to').value = currentPitchData.followUp.to;
+      $('m_to').placeholder = (l.emails||[]).length ? '' : 'No email — use WhatsApp follow-up below!';
+    }
+    if ($('m_subject')) $('m_subject').value = currentPitchData.followUp.subject;
+    if ($('m_body_lbl')) $('m_body_lbl').textContent = 'Day-3 Follow-Up Message (Boosts reply rate by 70%)';
+    if ($('m_body')) $('m_body').value = currentPitchData.followUp.body;
 
     $('m_actions').innerHTML = `
       <button type="button" onclick="copyText($('m_body').value, this)">📋 Copy Follow-Up</button>
@@ -1635,12 +1646,14 @@ function setPitchChannel(ch) {
     $('m_toneWrap').style.display = 'block';
     if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
     if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'block';
-    if ($('m_to_lbl')) $('m_to_lbl').innerHTML = 'To<input id="m_to" style="width:100%" />';
-    $('m_to').value = currentPitchData.email.to;
-    $('m_to').placeholder = (l.emails || []).length ? '' : 'No email — use WhatsApp, Instagram, or Contact Form!';
-    $('m_subject').value = currentPitchData.email.subject;
-    if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'Email Pitch Message (edit kar sakte ho)';
-    $('m_body').value = currentPitchData.email.body;
+    if ($('m_to_lbl')) $('m_to_lbl').textContent = 'To';
+    if ($('m_to')) {
+      $('m_to').value = currentPitchData.email.to;
+      $('m_to').placeholder = (l.emails || []).length ? '' : 'No email — use WhatsApp, Instagram, or Contact Form!';
+    }
+    if ($('m_subject')) $('m_subject').value = currentPitchData.email.subject;
+    if ($('m_body_lbl')) $('m_body_lbl').textContent = 'Email Pitch Message (edit kar sakte ho)';
+    if ($('m_body')) $('m_body').value = currentPitchData.email.body;
 
     const shortDM = currentPitchData.instagram.body;
 
@@ -1984,8 +1997,8 @@ function openFollowUp(idx) {
   $('m_toneWrap').style.display = 'none';
   if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
   if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'block';
-  if ($('m_to_lbl')) $('m_to_lbl').innerHTML = 'To<input id="m_to" style="width:100%" />';
-  if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'Day-3 Follow-Up Message (Boosts client replies by 70%)';
+  if ($('m_to_lbl')) $('m_to_lbl').textContent = 'To';
+  if ($('m_body_lbl')) $('m_body_lbl').textContent = 'Day-3 Follow-Up Message (Boosts client replies by 70%)';
   $('m_title').textContent = `Follow-up: ${a.title}`;
   $('m_info').innerHTML = `${esc(a.url)} · Last contacted: ${new Date(a.updatedAt).toLocaleDateString()}`;
   $('m_to').value = /@/.test(a.company || '') ? a.company : '';
