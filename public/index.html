@@ -219,7 +219,16 @@
             <option value="nowebsite">Businesses with NO website</option>
           </optgroup>
         </select></label>
-      <label>Max sites to scan<input id="maxScan" type="number" value="200" min="10" max="500" style="min-width:90px" /></label>
+      <label>Max sites to scan<input id="maxScan" type="number" value="300" min="10" max="500" style="min-width:90px" /></label>
+      <label>Directory Source
+        <select id="sourceFilter" style="min-width:145px">
+          <option value="all">🌐 All Sources</option>
+          <option value="Google Places">📍 Google Places</option>
+          <option value="YellowPages">📖 YellowPages</option>
+          <option value="Yelp">⭐ Yelp</option>
+          <option value="OpenStreetMap">🗺️ OpenStreetMap</option>
+          <option value="Web Discovery">🔍 Web Discovery</option>
+        </select></label>
       <button id="goLeads">Find Leads</button>
       <button id="stopLeads" class="sec" style="display:none;color:#b91c1c;border-color:#fecaca;background:#fef2f2">⏹ Stop</button>
       <button class="sec" onclick="startPitchQueue()" title="Pitch unpitched leads one-by-one">⚡ Pitch Queue</button>
@@ -894,8 +903,20 @@ function leadRow(l, kind, idx) {
   const soc = Object.entries(l.socials || {}).map(([k, v]) => `<a target="_blank" href="${esc(v)}">${k}</a>`).join(' · ');
   const key = l.website || l.osm || l.name;
   const st = trackedMap().get(key);
+  const src = l.source || 'Web Discovery';
+  const srcPillMap = {
+    'YellowPages': 'background:#fef3c7;color:#92400e;border-color:#fde68a;',
+    'Google Places': 'background:#e0f2fe;color:#0369a1;border-color:#bae6fd;',
+    'Yelp': 'background:#fee2e2;color:#b91c1c;border-color:#fecaca;',
+    'OpenStreetMap': 'background:#dcfce7;color:#15803d;border-color:#bbf7d0;',
+    'Web Discovery': 'background:#f3e8ff;color:#7e22ce;border-color:#e9d5ff;'
+  };
+  const srcStyle = srcPillMap[src] || 'background:#f1f5f9;color:#475569;border-color:#cbd5e1;';
+  const srcBadge = `<span class="pill" style="${srcStyle}font-size:11px;font-weight:600;white-space:nowrap">● ${esc(src)}</span>`;
+
   return `<tr>
     <td><b>${esc(l.name)}</b> ${leadScore(l)} ${st ? `<span class="pill Shopify">✔ ${esc(st)}</span>` : ''}<div class="small">${esc(l.category)}</div><div class="small">${esc(l.address)}</div></td>
+    <td>${srcBadge}</td>
     <td>${l.website ? `<a target="_blank" href="${esc(l.website)}">${esc(l.website.replace(/^https?:\/\/(www\.)?/, '').slice(0, 40))}</a>` : '—'}</td>
     <td>${plat}</td>
     <td>${(l.emails || []).map((e) => `<a target="_blank" href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(e)}">${esc(e)}</a>`).join('<br>') || '—'}</td>
@@ -904,24 +925,38 @@ function leadRow(l, kind, idx) {
     <td>${(l.opportunities || []).length ? l.opportunities.map((o) => `<span class="pill op">${esc(o)}</span>`).join('') : '<span class="pill Shopify">Clean site → Maintenance pitch</span>'}</td>
     <td><button onclick="openPitch('${kind}',${idx})">✉ Pitch</button> <button class="sec" style="margin-top:4px" onclick="findOwner('${kind}',${idx})">in Owner</button></td></tr>`;
 }
-const LHEAD = '<tr><th>Business</th><th>Website</th><th>Platform</th><th>Email</th><th>Phone</th><th>Social</th><th>Pitch opportunities</th><th></th></tr>';
+const LHEAD = '<tr><th>Business</th><th>Directory Source</th><th>Website</th><th>Platform</th><th>Email</th><th>Phone</th><th>Social</th><th>Pitch opportunities</th><th></th></tr>';
 
 function renderLeads() {
   const q = ($('leadFilter')?.value || '').trim().toLowerCase();
+  const sf = $('sourceFilter')?.value || 'all';
   const tm = trackedMap();
   const list = data.leads.map((l, i) => [l, i]).filter(([l]) => {
+    if (sf !== 'all' && (l.source || 'Web Discovery') !== sf) return false;
     if ($('onlyEmail').checked && !(l.emails || []).length) return false;
     if ($('hidePitched')?.checked && tm.has(l.website || l.osm || l.name)) return false;
-    if (q && !`${l.name} ${l.address} ${l.platform} ${(l.opportunities || []).join(' ')}`.toLowerCase().includes(q)) return false;
+    if (q && !`${l.name} ${l.address} ${l.platform} ${l.source || ''} ${(l.opportunities || []).join(' ')}`.toLowerCase().includes(q)) return false;
     return true;
   });
   $('ltable').innerHTML = LHEAD + list.map(([l, i]) => leadRow(l, 'leads', i)).join('');
   const c = (p) => data.leads.filter((l) => l.platform === p).length;
-  $('lstats').innerHTML = `<div class="stat"><b>${data.leads.length}</b> leads</div><div class="stat"><b>${c('WordPress')}</b> WordPress</div><div class="stat"><b>${c('Shopify')}</b> Shopify</div><div class="stat"><b>${data.leads.filter((l) => (l.emails||[]).length).length}</b> with email</div>`;
+  const sc = (s) => data.leads.filter((l) => (l.source || 'Web Discovery') === s).length;
+  $('lstats').innerHTML = `<div class="stat"><b>${data.leads.length}</b> leads</div>
+    <div class="stat"><b>${c('WordPress')}</b> WordPress</div>
+    <div class="stat"><b>${c('Shopify')}</b> Shopify</div>
+    <div class="stat"><b>${data.leads.filter((l) => (l.emails||[]).length).length}</b> with email</div>
+    <div class="stat" style="background:#f8fafc;font-size:11.5px;padding:6px 12px">
+      <span style="color:#0369a1;font-weight:600">📍 Places: ${sc('Google Places')}</span> ·
+      <span style="color:#92400e;font-weight:600">📖 YP: ${sc('YellowPages')}</span> ·
+      <span style="color:#b91c1c;font-weight:600">⭐ Yelp: ${sc('Yelp')}</span> ·
+      <span style="color:#15803d;font-weight:600">🗺️ OSM: ${sc('OpenStreetMap')}</span> ·
+      <span style="color:#7e22ce;font-weight:600">🔍 Web: ${sc('Web Discovery')}</span>
+    </div>`;
 }
 $('onlyEmail').onchange = renderLeads;
 $('hidePitched').onchange = renderLeads;
 $('leadFilter').oninput = renderLeads;
+$('sourceFilter').onchange = renderLeads;
 
 let leadAbort = null;
 $('stopLeads').onclick = () => { if (leadAbort) leadAbort.abort(); };

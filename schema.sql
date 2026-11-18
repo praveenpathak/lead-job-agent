@@ -53,12 +53,14 @@ CREATE TABLE IF NOT EXISTS `leads` (
   `email` VARCHAR(255) DEFAULT '',
   `tech_stack` VARCHAR(255) DEFAULT '',
   `cms` VARCHAR(64) DEFAULT '',
+  `source` VARCHAR(64) DEFAULT 'Web Discovery',
   `raw_data` LONGTEXT NULL,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_lead_url` (`url`(250)),
   INDEX `idx_lead_cat` (`category`),
-  INDEX `idx_lead_loc` (`location`)
+  INDEX `idx_lead_loc` (`location`),
+  INDEX `idx_lead_source` (`source`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Activity Logs Table
