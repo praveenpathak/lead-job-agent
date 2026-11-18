@@ -20,9 +20,11 @@ import {
   deleteUserApplication,
   upsertUserApplicationsBulk
 } from './lib/auth.js';
+import { dbSaveLead } from './lib/db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3777;
+const getIp = (req) => String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0].trim();
 
 async function body(req) {
   let s = '';
@@ -58,7 +60,18 @@ const server = http.createServer(async (req, res) => {
       const ctrl = new AbortController();
       req.on('close', () => ctrl.abort());
       try {
-        const r = await findLeads({ ...b, maxScan: Math.min(Number(b.maxScan) || 200, 500), signal: ctrl.signal, onProgress: (m) => !res.writableEnded && send(m) });
+        const r = await findLeads({
+          ...b,
+          maxScan: Math.min(Number(b.maxScan) || 200, 500),
+          signal: ctrl.signal,
+          onProgress: (m) => {
+            if (m && m.stage === 'lead' && m.lead) dbSaveLead(m.lead);
+            if (!res.writableEnded) send(m);
+          }
+        });
+        if (r && Array.isArray(r.leads)) {
+          for (const ld of r.leads) dbSaveLead(ld);
+        }
         if (!res.writableEnded) send({ stage: 'result', ...r });
       } catch (e) { if (!res.writableEnded) send({ stage: 'error', msg: e.message }); }
       return !res.writableEnded && res.end();
@@ -71,7 +84,9 @@ const server = http.createServer(async (req, res) => {
       await pool(urls, 8, async (u) => {
         const a = await analyzeSite(u);
         done++;
-        send({ stage: 'lead', lead: { name: a.title || u, category: '', address: '', website: a.finalUrl || u, ...a } });
+        const ld = { name: a.title || u, category: '', address: '', website: a.finalUrl || u, ...a };
+        dbSaveLead(ld);
+        send({ stage: 'lead', lead: ld });
         send({ stage: 'progress', done, total: urls.length });
       });
       send({ stage: 'done', msg: `Checked ${urls.length} websites.` });
@@ -95,7 +110,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && req.url === '/api/auth/register') {
       const b = await body(req);
       try {
-        const r = await registerUser(b);
+        const r = await registerUser(b, getIp(req));
         return json(r);
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -105,7 +120,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && req.url === '/api/auth/login') {
       const b = await body(req);
       try {
-        const r = await loginUser(b);
+        const r = await loginUser(b, getIp(req));
         return json(r);
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
