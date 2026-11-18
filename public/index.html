@@ -195,8 +195,13 @@
       <label>Niches / Categories (Multi-Select)<div class="ms" id="catMS"></div></label>
       <label>Platform / Tech / Need
         <select id="platform" style="min-width:230px">
-          <optgroup label="Maximum Volume (Recommended)">
-            <option value="all" selected>🌐 All Websites (50-100+ Leads, any tech)</option>
+          <optgroup label="Maximum Volume (All Leads)">
+            <option value="all" selected>🌐 All Leads (Websites + No Website, 50-100+ Leads)</option>
+          </optgroup>
+          <optgroup label="Web Development Opportunities">
+            <option value="nowebsite">🚀 Businesses with NO website (Pitch Website Build)</option>
+            <option value="seo_need">Needs SEO Fix (missing meta/H1/OG)</option>
+            <option value="design_need">Needs Redesign / Mobile / Speed Fix</option>
           </optgroup>
           <optgroup label="CMS &amp; E-Commerce (Targeted)">
             <option value="both">WordPress + Shopify (Active sites)</option>
@@ -214,11 +219,6 @@
             <option value="angular">Angular</option>
             <option value="vue">Vue / Nuxt</option>
             <option value="bootstrap">Bootstrap / Custom HTML</option>
-          </optgroup>
-          <optgroup label="IT, SEO &amp; Design Needs">
-            <option value="seo_need">Needs SEO Fix (missing meta/H1/OG)</option>
-            <option value="design_need">Needs Redesign / Mobile / Speed Fix</option>
-            <option value="nowebsite">Businesses with NO website</option>
           </optgroup>
         </select></label>
       <label>Max sites to scan<input id="maxScan" type="number" value="300" min="10" max="500" style="min-width:90px" /></label>
@@ -805,6 +805,7 @@ fetch('/api/meta').then((r) => r.json()).then((m) => {
 });
 $('skillPreset').onchange = () => { $('kws').value = $('skillPreset').value; };
 const DEFAULT_PRESETS = [
+  { name: '🇮🇳 MP Gyms & Fitness (All)', areas: ['Madhya Pradesh, India'], cats: ['gym_fitness'], platform: 'all' },
   { name: '🇦🇪 Dubai Restaurants (All)', areas: ['Dubai, UAE'], cats: ['restaurant'], platform: 'all' },
   { name: '🇦🇪 Dubai Jewelry (Shopify)', areas: ['Dubai, UAE'], cats: ['jewelry'], platform: 'shopify' },
   { name: '🇺🇸 USA Roofing (WP)', areas: ['Texas, USA', 'Florida, USA', 'California, USA'], cats: ['roofing_construction'], platform: 'wordpress' },
@@ -892,7 +893,8 @@ function leadScore(l) {
   let s = 0;
   if ((l.emails || []).length) s += 30;
   if ((l.phones || []).length || l.socials?.whatsapp) s += 20;
-  if (['WordPress', 'Shopify', 'Wix', 'Squarespace', 'GoDaddy Builder'].includes(l.platform)) s += 20;
+  if (l.platform === 'No Website') s += 35;
+  else if (['WordPress', 'Shopify', 'Wix', 'Squarespace', 'GoDaddy Builder'].includes(l.platform)) s += 20;
   s += Math.min(30, (l.opportunities || []).length * 15);
   if (s >= 70) return '<span class="pill Restricted">🔥 Hot</span>';
   if (s >= 45) return '<span class="pill op">⚡ Warm</span>';
@@ -900,9 +902,12 @@ function leadScore(l) {
 }
 
 function leadRow(l, kind, idx) {
-  const plat = `<span class="pill ${['WordPress','Shopify'].includes(l.platform) ? l.platform : 'other'}">${esc(l.platform)}</span>`
-    + (l.woocommerce ? '<span class="pill WordPress">WooCommerce</span>' : '')
-    + (l.theme ? `<div class="small">theme: ${esc(l.theme)}</div>` : '') + (l.wpVersion ? `<div class="small">WP ${esc(l.wpVersion)}</div>` : '');
+  const isNoWeb = l.platform === 'No Website' || !l.website;
+  const plat = isNoWeb
+    ? `<span class="pill" style="background:#fee2e2;color:#991b1b;border-color:#fca5a5;font-weight:700">🌐 No Website</span>`
+    : `<span class="pill ${['WordPress','Shopify'].includes(l.platform) ? l.platform : 'other'}">${esc(l.platform)}</span>`
+      + (l.woocommerce ? '<span class="pill WordPress">WooCommerce</span>' : '')
+      + (l.theme ? `<div class="small">theme: ${esc(l.theme)}</div>` : '') + (l.wpVersion ? `<div class="small">WP ${esc(l.wpVersion)}</div>` : '');
   const soc = Object.entries(l.socials || {}).map(([k, v]) => `<a target="_blank" href="${esc(v)}">${k}</a>`).join(' · ');
   const key = l.website || l.osm || l.name;
   const st = trackedMap().get(key);
@@ -912,6 +917,7 @@ function leadRow(l, kind, idx) {
     'Google Places': 'background:#e0f2fe;color:#0369a1;border-color:#bae6fd;',
     'Yelp': 'background:#fee2e2;color:#b91c1c;border-color:#fecaca;',
     'OpenStreetMap': 'background:#dcfce7;color:#15803d;border-color:#bbf7d0;',
+    'Nominatim / OSM': 'background:#dcfce7;color:#15803d;border-color:#bbf7d0;',
     'Web Discovery': 'background:#f3e8ff;color:#7e22ce;border-color:#e9d5ff;'
   };
   const srcStyle = srcPillMap[src] || 'background:#f1f5f9;color:#475569;border-color:#cbd5e1;';
@@ -920,13 +926,13 @@ function leadRow(l, kind, idx) {
   return `<tr>
     <td><b>${esc(l.name)}</b> ${leadScore(l)} ${st ? `<span class="pill Shopify">✔ ${esc(st)}</span>` : ''}<div class="small">${esc(l.category)}</div><div class="small">${esc(l.address)}</div></td>
     <td>${srcBadge}</td>
-    <td>${l.website ? `<a target="_blank" href="${esc(l.website)}">${esc(l.website.replace(/^https?:\/\/(www\.)?/, '').slice(0, 40))}</a>` : '—'}</td>
+    <td>${l.website ? `<a target="_blank" href="${esc(l.website)}">${esc(l.website.replace(/^https?:\/\/(www\.)?/, '').slice(0, 40))}</a>` : '<span style="color:#dc2626;font-size:12px;font-weight:600">❌ Needs Website</span>'}</td>
     <td>${plat}</td>
     <td>${(l.emails || []).map((e) => `<a target="_blank" href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(e)}">${esc(e)}</a>`).join('<br>') || '—'}</td>
     <td>${(l.phones || []).map(esc).join('<br>') || '—'}</td>
     <td>${soc || '—'}</td>
     <td>${(l.opportunities || []).length ? l.opportunities.map((o) => `<span class="pill op">${esc(o)}</span>`).join('') : '<span class="pill Shopify">Clean site → Maintenance pitch</span>'}</td>
-    <td><button onclick="openPitch('${kind}',${idx})">✉ Pitch</button> <button class="sec" style="margin-top:4px" onclick="findOwner('${kind}',${idx})">in Owner</button></td></tr>`;
+    <td><button onclick="openPitch('${kind}',${idx})">${isNoWeb ? '✉ Pitch Web' : '✉ Pitch'}</button> <button class="sec" style="margin-top:4px" onclick="findOwner('${kind}',${idx})">in Owner</button></td></tr>`;
 }
 const LHEAD = '<tr><th>Business</th><th>Directory Source</th><th>Website</th><th>Platform</th><th>Email</th><th>Phone</th><th>Social</th><th>Pitch opportunities</th><th></th></tr>';
 
@@ -947,12 +953,14 @@ function renderLeads() {
   $('lstats').innerHTML = `<div class="stat"><b>${data.leads.length}</b> leads</div>
     <div class="stat"><b>${c('WordPress')}</b> WordPress</div>
     <div class="stat"><b>${c('Shopify')}</b> Shopify</div>
+    <div class="stat" style="background:#fef2f2;border-color:#fca5a5"><b style="color:#b91c1c">${c('No Website')}</b> without website</div>
     <div class="stat"><b>${data.leads.filter((l) => (l.emails||[]).length).length}</b> with email</div>
+    <div class="stat"><b>${data.leads.filter((l) => (l.phones||[]).length).length}</b> with phone</div>
     <div class="stat" style="background:#f8fafc;font-size:11.5px;padding:6px 12px">
       <span style="color:#0369a1;font-weight:600">📍 Places: ${sc('Google Places')}</span> ·
       <span style="color:#92400e;font-weight:600">📖 YP: ${sc('YellowPages')}</span> ·
       <span style="color:#b91c1c;font-weight:600">⭐ Yelp: ${sc('Yelp')}</span> ·
-      <span style="color:#15803d;font-weight:600">🗺️ OSM: ${sc('OpenStreetMap')}</span> ·
+      <span style="color:#15803d;font-weight:600">🗺️ OSM: ${sc('OpenStreetMap') + sc('Nominatim / OSM')}</span> ·
       <span style="color:#7e22ce;font-weight:600">🔍 Web: ${sc('Web Discovery')}</span>
     </div>`;
 }
