@@ -667,7 +667,15 @@ hello@roofersllc.com"></textarea>
 
 <script>
 const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const decodeHtml = (s) => String(s ?? '')
+  .replace(/&#0*38;|&amp;/g, '&')
+  .replace(/&#8211;|&#8212;|&ndash;|&mdash;/g, '–')
+  .replace(/&#8216;|&#8217;|&lsquo;|&rsquo;/g, "'")
+  .replace(/&#8220;|&#8221;|&ldquo;|&rdquo;/g, '"')
+  .replace(/&quot;/g, '"')
+  .replace(/&#39;|&apos;/g, "'")
+  .replace(/&nbsp;/g, ' ');
+const esc = (s) => String(decodeHtml(s)).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const data = { leads: [], check: [], jobs: [], apps: [] };
 let currentUser = null;
 
@@ -1041,6 +1049,7 @@ async function streamPost(url, payload, onMsg, signal) {
 const log = (el, msg) => { $(el).innerHTML += esc(msg) + '<br>'; $(el).scrollTop = 1e9; };
 
 function leadScoreNum(l) {
+  if (!l) return 0;
   let s = 0;
   if ((l.emails || []).length) s += 30;
   if ((l.phones || []).length || l.socials?.whatsapp) s += 20;
@@ -1051,6 +1060,7 @@ function leadScoreNum(l) {
 }
 
 function leadScore(l) {
+  if (!l) return '';
   const s = leadScoreNum(l);
   if (s >= 70) return '<span class="pill Restricted">🔥 Hot</span>';
   if (s >= 45) return '<span class="pill op">⚡ Warm</span>';
@@ -1058,6 +1068,7 @@ function leadScore(l) {
 }
 
 function getWhatsAppDigits(l) {
+  if (!l) return '';
   const raw = (l.phones || [])[0] || (l.socials?.whatsapp || '');
   if (!raw) return '';
   const digits = raw.replace(/\D/g, '');
@@ -1080,7 +1091,8 @@ function getWhatsAppDigits(l) {
 }
 
 async function openDirectWhatsApp(kind, idx) {
-  const l = data[kind][idx];
+  const l = data[kind]?.[idx];
+  if (!l) return;
   const digits = getWhatsAppDigits(l);
   if (!digits) return alert('No valid phone number found for this lead.');
   const isNoWeb = l.platform === 'No Website' || !l.website;
@@ -1111,7 +1123,8 @@ async function openDirectWhatsApp(kind, idx) {
 }
 
 async function openDirectInstaDM(kind, idx) {
-  const l = data[kind][idx];
+  const l = data[kind]?.[idx];
+  if (!l) return;
   const igUrl = l.socials?.instagram;
   if (!igUrl) return alert('No Instagram link found for this lead.');
   const isNoWeb = l.platform === 'No Website' || !l.website;
@@ -1137,6 +1150,7 @@ async function openDirectInstaDM(kind, idx) {
 }
 
 function leadRow(l, kind, idx) {
+  if (!l) return '';
   const isNoWeb = l.platform === 'No Website' || !l.website;
   const plat = isNoWeb
     ? `<span class="pill" style="background:#fee2e2;color:#991b1b;border-color:#fca5a5;font-weight:700">🌐 No Website</span>`
@@ -1436,7 +1450,8 @@ function printQuote() {
 let currentPitchData = null;
 
 async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
-  const l = data[kind][idx];
+  const l = data[kind]?.[idx];
+  if (!l) return;
   const r = await fetch('/api/pitch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: l, tone }) }).then((x) => x.json());
   currentAudit = { lead: l, auditItems: r.auditItems || [], projects: r.projects || [] };
   
