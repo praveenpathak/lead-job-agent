@@ -242,6 +242,7 @@
       <button class="sec" onclick="exportCSV('leads')">⬇ CSV</button>
       <label class="chk"><input type="checkbox" id="onlyEmail" /> Only with email</label>
       <label class="chk"><input type="checkbox" id="hidePitched" /> Hide pitched</label>
+      <label class="chk" title="Only show established businesses with verified contact and good lead score"><input type="checkbox" id="highReputation" /> ⭐ High-Value / Established Only</label>
       <input id="leadFilter" placeholder="🔍 Filter leads (name, city, issue)..." style="min-width:210px" />
     </div>
     <div id="presetBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center"></div>
@@ -365,6 +366,28 @@
   <div style="background:#ffffff;color:var(--txt);border:1px solid var(--bd);border-radius:14px;padding:22px;width:min(900px,95vw);max-height:92vh;overflow:auto;box-shadow:0 20px 40px rgba(0,0,0,0.18)">
     <div style="display:flex;justify-content:space-between;align-items:center"><h3 id="m_title" style="margin:0;font-size:17px;font-weight:700;color:var(--txt)"></h3><button class="sec" onclick="closeModal()">✕</button></div>
     <div id="m_info" class="small" style="margin:6px 0 10px"></div>
+
+    <!-- Live Website Snapshot Preview Card -->
+    <div id="m_preview_card" style="display:none;margin:8px 0;border-radius:10px;border:1px solid var(--bd);background:#f8fafc;padding:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div id="m_preview_thumb" style="width:190px;height:115px;border-radius:8px;overflow:hidden;border:1px solid #cbd5e1;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0"></div>
+      <div style="flex:1;min-width:220px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <b id="m_preview_name" style="font-size:15px"></b>
+          <span id="m_preview_platform"></span>
+        </div>
+        <div id="m_preview_addr" class="small" style="margin-top:4px;color:var(--muted)"></div>
+        <div id="m_preview_opps" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"></div>
+      </div>
+    </div>
+
+    <!-- Pitch Channel Tabs -->
+    <div id="m_tabs" style="display:none;gap:6px;margin:10px 0;border-bottom:1px solid var(--bd);padding-bottom:8px;flex-wrap:wrap">
+      <button type="button" id="tabEmail" onclick="setPitchChannel('email')" style="font-size:12px;padding:6px 12px">✉ Email Pitch</button>
+      <button type="button" class="sec" id="tabWhatsApp" onclick="setPitchChannel('whatsapp')" style="font-size:12px;padding:6px 12px;color:#047857;font-weight:600">💬 WhatsApp Pitch</button>
+      <button type="button" class="sec" id="tabInsta" onclick="setPitchChannel('instagram')" style="font-size:12px;padding:6px 12px;color:#c026d3;font-weight:600">📸 Instagram DM</button>
+      <button type="button" class="sec" id="tabFollowUp" onclick="setPitchChannel('followup')" style="font-size:12px;padding:6px 12px;color:#d97706;font-weight:600">🔄 Day-3 Follow-Up</button>
+    </div>
+
     <div id="m_toneWrap" style="display:none;margin-bottom:8px"><label>Pitch Tone
       <select id="m_tone" style="min-width:240px">
         <option value="friendly">😊 Friendly & Positive (Default)</option>
@@ -372,9 +395,9 @@
         <option value="hinglish">🇮🇳 Indian Business (Hinglish Warm)</option>
         <option value="custom">✏️ My Custom Template</option>
       </select></label></div>
-    <label>To<input id="m_to" style="width:100%" /></label>
-    <label style="margin-top:8px">Subject<input id="m_subject" style="width:100%" /></label>
-    <label style="margin-top:8px">Message (edit kar sakte ho)<textarea id="m_body" style="min-height:330px"></textarea></label>
+    <div id="m_to_wrap"><label id="m_to_lbl">To<input id="m_to" style="width:100%" /></label></div>
+    <div id="m_subject_wrap"><label style="margin-top:8px">Subject<input id="m_subject" style="width:100%" /></label></div>
+    <label style="margin-top:8px" id="m_body_lbl">Message (edit kar sakte ho)<textarea id="m_body" style="min-height:280px"></textarea></label>
     <div class="row" style="margin-top:10px" id="m_actions"></div>
     <div id="m_steps" class="small" style="margin-top:10px"></div>
   </div>
@@ -1017,16 +1040,100 @@ async function streamPost(url, payload, onMsg, signal) {
 }
 const log = (el, msg) => { $(el).innerHTML += esc(msg) + '<br>'; $(el).scrollTop = 1e9; };
 
-function leadScore(l) {
+function leadScoreNum(l) {
   let s = 0;
   if ((l.emails || []).length) s += 30;
   if ((l.phones || []).length || l.socials?.whatsapp) s += 20;
   if (l.platform === 'No Website') s += 35;
   else if (['WordPress', 'Shopify', 'Wix', 'Squarespace', 'GoDaddy Builder'].includes(l.platform)) s += 20;
   s += Math.min(30, (l.opportunities || []).length * 15);
+  return s;
+}
+
+function leadScore(l) {
+  const s = leadScoreNum(l);
   if (s >= 70) return '<span class="pill Restricted">🔥 Hot</span>';
   if (s >= 45) return '<span class="pill op">⚡ Warm</span>';
   return '';
+}
+
+function getWhatsAppDigits(l) {
+  const raw = (l.phones || [])[0] || (l.socials?.whatsapp || '');
+  if (!raw) return '';
+  const digits = raw.replace(/\D/g, '');
+  if (!digits || digits.length < 7) return '';
+  const addr = (l.address || '').toLowerCase();
+  if (addr.includes('uae') || addr.includes('dubai') || addr.includes('abu dhabi') || addr.includes('sharjah')) {
+    if (digits.startsWith('971')) return digits;
+    if (digits.startsWith('05') && digits.length === 10) return '971' + digits.slice(1);
+    if (digits.startsWith('5') && digits.length === 9) return '971' + digits;
+  }
+  if (addr.includes('india') || (digits.length === 10 && /^[6-9]/.test(digits))) {
+    if (digits.startsWith('91') && digits.length === 12) return digits;
+    if (digits.length === 10) return '91' + digits;
+  }
+  if (addr.includes('usa') || addr.includes('canada') || addr.includes('united states')) {
+    if (digits.startsWith('1') && digits.length === 11) return digits;
+    if (digits.length === 10) return '1' + digits;
+  }
+  return digits;
+}
+
+async function openDirectWhatsApp(kind, idx) {
+  const l = data[kind][idx];
+  const digits = getWhatsAppDigits(l);
+  if (!digits) return alert('No valid phone number found for this lead.');
+  const isNoWeb = l.platform === 'No Website' || !l.website;
+  const niche = l.category ? l.category.replace(/_/g, ' ') : 'business';
+  
+  let msg = '';
+  if (isNoWeb) {
+    msg = `Namaste ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Senior Web Designer, Indore).\n\nMaine aapka ${niche} business Google Maps par dekha — kaafi badhiya setup hai! 👍 Lekin notice kiya ki abhi tak aapki koi official website nahi hai.\n\nAaj kal 80%+ local customers call karne se pehle mobile website check karte hain. Agar aapki ek clean website ho to direct WhatsApp enquiries & phone calls 3x badh sakti hain.\n\nMaine ${l.name} ke liye ek free mobile demo website layout ready kiya hai. Kya main wo demo aapke sath yahan share kar du? Bas "Yes" reply kar dein!\n\nWarm regards,\nPraveen Pathak | +91 8109567672`;
+  } else {
+    const domain = l.website ? l.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '') : 'your website';
+    msg = `Namaste ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Senior Web Designer).\n\nMaine aapki website (${domain}) dekhi. Site achhi hai, lekin phone par loading speed aur conversion flow me 1-2 critical fixes required hain jisse regular enquiries miss ho rahi hain.\n\nMaine aapke liye ek 2-minute quick health check checklist banayi hai. Kya main wo report yahan WhatsApp par share kar du? Just reply "Yes"!\n\nWarm regards,\nPraveen Pathak | +91 8109567672`;
+  }
+  
+  const waUrl = `https://wa.me/${digits}?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
+  
+  const item = {
+    kind: 'Lead',
+    title: `${l.name} (${l.platform})`,
+    company: (l.phones||[])[0] || digits,
+    location: l.address,
+    url: l.website || l.osm || l.name,
+    status: 'Pitched',
+    notes: `Pitched via 1-Click WhatsApp (${digits})`
+  };
+  await trackApp(item);
+  showToast('💬 WhatsApp opened & lead marked as Pitched!');
+}
+
+async function openDirectInstaDM(kind, idx) {
+  const l = data[kind][idx];
+  const igUrl = l.socials?.instagram;
+  if (!igUrl) return alert('No Instagram link found for this lead.');
+  const isNoWeb = l.platform === 'No Website' || !l.website;
+  
+  const dm = isNoWeb
+    ? `Hey ${l.name} team! Loved your profile & business in ${l.address || 'town'}. Quick question: are you guys planning a website soon? I mocked up a free mobile homepage demo that brings direct client orders/enquiries. Want to see it?`
+    : `Hey ${l.name} team! Big fan of your brand. Spotted a couple of quick tweaks on your website & mobile setup that could easily bring 2x more client inquiries. Can I share a quick 2-min breakdown here?`;
+  
+  await copyText(dm, { textContent: '' });
+  window.open(igUrl, '_blank');
+  
+  const item = {
+    kind: 'Lead',
+    title: `${l.name} (${l.platform})`,
+    company: igUrl,
+    location: l.address,
+    url: l.website || l.osm || l.name,
+    status: 'Pitched',
+    notes: 'Pitched via 1-Click Instagram DM'
+  };
+  await trackApp(item);
+  showToast('📋 Instagram DM copied to clipboard! Just paste & send.');
 }
 
 function leadRow(l, kind, idx) {
@@ -1054,6 +1161,7 @@ function leadRow(l, kind, idx) {
   };
   const srcStyle = srcPillMap[src] || 'background:#f1f5f9;color:#475569;border-color:#cbd5e1;';
   const srcBadge = `<span class="pill" style="${srcStyle}font-size:11px;font-weight:600;white-space:nowrap">● ${esc(src)}</span>`;
+  const waDigits = getWhatsAppDigits(l);
 
   return `<tr>
     <td><b>${esc(l.name)}</b> ${leadScore(l)} ${st ? `<span class="pill Shopify">✔ ${esc(st)}</span>` : ''}<div class="small">${esc(l.category)}</div><div class="small">${esc(l.address)}</div></td>
@@ -1064,7 +1172,14 @@ function leadRow(l, kind, idx) {
     <td>${(l.phones || []).map(esc).join('<br>') || '—'}</td>
     <td>${soc || '—'}</td>
     <td>${(l.opportunities || []).length ? l.opportunities.map((o) => `<span class="pill op">${esc(o)}</span>`).join('') : '<span class="pill Shopify">Clean site → Maintenance pitch</span>'}</td>
-    <td><button onclick="openPitch('${kind}',${idx})">${isNoWeb ? '✉ Pitch Web' : '✉ Pitch'}</button> <button class="sec" style="margin-top:4px;font-size:11px;font-weight:600" onclick="openOwnerModal('${kind}',${idx})">👤 Find Owner</button></td></tr>`;
+    <td>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;min-width:130px">
+        <button onclick="openPitch('${kind}',${idx})">${isNoWeb ? '✉ Pitch Web' : '✉ Pitch'}</button>
+        ${waDigits ? `<button type="button" class="sec" style="color:#047857;background:#ecfdf5;border-color:#a7f3d0;font-weight:600;padding:4px 8px;font-size:11.5px" onclick="openDirectWhatsApp('${kind}',${idx})" title="1-Click Direct WhatsApp Pitch">💬 WA</button>` : ''}
+        ${l.socials?.instagram ? `<button type="button" class="sec" style="color:#b91c1c;background:#fef2f2;border-color:#fecaca;font-weight:600;padding:4px 8px;font-size:11.5px" onclick="openDirectInstaDM('${kind}',${idx})" title="1-Click Instagram DM Pitch">📸 Insta</button>` : ''}
+        <button type="button" class="sec" style="font-size:11px;font-weight:600;padding:4px 8px" onclick="openOwnerModal('${kind}',${idx})">👤 Owner</button>
+      </div>
+    </td></tr>`;
 }
 const LHEAD = '<tr><th>Business</th><th>Directory Source</th><th>Website</th><th>Platform</th><th>Email</th><th>Phone</th><th>Social</th><th>Pitch opportunities</th><th></th></tr>';
 
@@ -1077,6 +1192,11 @@ function renderLeads() {
     if (sf !== 'all' && s !== sf && !s.includes(sf)) return false;
     if ($('onlyEmail').checked && !(l.emails || []).length) return false;
     if ($('hidePitched')?.checked && tm.has(l.website || l.osm || l.name)) return false;
+    if ($('highReputation')?.checked) {
+      const hasContact = (l.phones || []).length > 0 || (l.emails || []).length > 0;
+      const hasAddr = (l.address || '').length >= 6;
+      if (!hasContact || !hasAddr || leadScoreNum(l) < 40) return false;
+    }
     if (q && !`${l.name} ${l.address} ${l.platform} ${l.source || ''} ${(l.opportunities || []).join(' ')}`.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -1102,6 +1222,7 @@ function renderLeads() {
 }
 $('onlyEmail').onchange = renderLeads;
 $('hidePitched').onchange = renderLeads;
+$('highReputation').onchange = renderLeads;
 $('leadFilter').oninput = renderLeads;
 $('sourceFilter').onchange = renderLeads;
 
@@ -1234,7 +1355,13 @@ let currentTrack = null;
 function autoTrack() { if (currentTrack) trackApp(currentTrack, true); }
 
 async function openApply(idx) {
+  if ($('m_preview_card')) $('m_preview_card').style.display = 'none';
+  if ($('m_tabs')) $('m_tabs').style.display = 'none';
   $('m_toneWrap').style.display = 'none';
+  if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
+  if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'block';
+  if ($('m_to_lbl')) $('m_to_lbl').innerHTML = 'To<input id="m_to" style="width:100%" />';
+  if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'Message (edit kar sakte ho)<textarea id="m_body" style="min-height:280px"></textarea>';
   const j = data.jobs[idx];
   const r = await fetch('/api/cover-letter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job: j }) }).then((x) => x.json());
   $('m_title').textContent = `Apply: ${j.title} @ ${j.company}`;
@@ -1242,21 +1369,7 @@ async function openApply(idx) {
   $('m_to').value = j.applyEmail || '';
   $('m_to').placeholder = j.applyEmail ? '' : 'No direct email — click "Open Job Apply Page" below to apply online!';
   $('m_subject').value = r.subject;
-  if (tone === 'custom') {
-    const tpl = lsGet('profile', {})?.customTpl || $('p_customTpl')?.value?.trim();
-    if (tpl) {
-      $('m_body').value = tpl
-        .replace(/\{name\}/gi, l.name)
-        .replace(/\{website\}/gi, l.website || l.name)
-        .replace(/\{platform\}/gi, l.platform || 'WordPress / Shopify')
-        .replace(/\{issue\}/gi, (l.opportunities || [])[0] || 'a quick growth opportunity');
-    } else {
-      $('m_body').value = r.body;
-      showToast('Tip: Save your custom template in My Profile first!');
-    }
-  } else {
-    $('m_body').value = r.body;
-  }
+  $('m_body').value = r.body;
   const item = { kind: 'Job', title: j.title, company: j.company, location: j.location, url: j.url, status: 'Applied', notes: `Match ${j.score}%` };
   currentTrack = item;
   $('m_actions').innerHTML = `
@@ -1320,56 +1433,254 @@ function printQuote() {
   w.document.close();
 }
 
+let currentPitchData = null;
+
 async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
   const l = data[kind][idx];
   const r = await fetch('/api/pitch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: l, tone }) }).then((x) => x.json());
   currentAudit = { lead: l, auditItems: r.auditItems || [], projects: r.projects || [] };
-  $('m_toneWrap').style.display = 'block';
-  $('m_tone').value = tone;
-  $('m_tone').onchange = () => openPitch(kind, idx, $('m_tone').value);
-  $('m_title').textContent = `Pitch: ${l.name} (${l.platform})`;
-  $('m_info').innerHTML = `${esc(l.website || 'No website')} · Phones: ${esc((l.phones||[]).join(', ') || '—')}`;
-  $('m_to').value = (l.emails || []).join(', ');
-  $('m_to').placeholder = (l.emails || []).length ? '' : 'No email — use WhatsApp, Instagram, Website Contact Form, or LinkedIn below!';
-  $('m_subject').value = r.subject;
+  
+  const isNoWeb = l.platform === 'No Website' || !l.website;
+  const waDigits = getWhatsAppDigits(l);
+  
+  // 1. Show and populate live snapshot preview card
+  $('m_preview_card').style.display = 'flex';
+  $('m_preview_name').textContent = l.name;
+  $('m_preview_platform').innerHTML = isNoWeb
+    ? `<span class="pill" style="background:#fee2e2;color:#991b1b;border-color:#fca5a5;font-weight:700">🌐 No Website</span>`
+    : `<span class="pill ${['WordPress','Shopify'].includes(l.platform) ? l.platform : 'other'}">${esc(l.platform)}</span>`;
+  $('m_preview_addr').textContent = `${l.address || 'Local business'} · Source: ${l.source || 'Web Discovery'}`;
+  
+  const oppsHtml = (l.opportunities || []).slice(0, 3).map((o) => `<span class="pill op" style="font-size:11px">${esc(o)}</span>`).join('');
+  $('m_preview_opps').innerHTML = oppsHtml || '<span class="pill Shopify" style="font-size:11px">Clean site → Speed &amp; Maintenance pitch</span>';
+  
+  if (isNoWeb) {
+    $('m_preview_thumb').innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#fef2f2,#fee2e2);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px">
+      <span style="font-size:26px;line-height:1">🚀</span>
+      <b style="color:#b91c1c;font-size:11.5px;margin-top:4px">No Website Detected</b>
+      <span style="color:#991b1b;font-size:10px;margin-top:2px">Pitch a modern mobile website!</span>
+    </div>`;
+  } else {
+    const snapUrl = `https://image.thum.io/get/width/400/crop/600/noanimate/${encodeURI(l.website)}`;
+    $('m_preview_thumb').innerHTML = `<a href="${esc(l.website)}" target="_blank" title="Click to open website">
+      <img src="${snapUrl}" style="width:190px;height:115px;object-fit:cover;display:block" onerror="this.onerror=null;this.parentElement.innerHTML='<div style=\\'padding:12px;text-align:center;font-size:11px;color:#64748b\\'>🌐 Live Site<br><b>${esc(l.website.replace(/^https?:\\/\\//,'').slice(0,25))}</b></div>'" alt="${esc(l.name)}" />
+    </a>`;
+  }
+
+  // 2. Setup Pitch Tabs
+  $('m_tabs').style.display = 'flex';
+  
+  let customEmailBody = r.body;
   if (tone === 'custom') {
     const tpl = lsGet('profile', {})?.customTpl || $('p_customTpl')?.value?.trim();
     if (tpl) {
-      $('m_body').value = tpl
+      customEmailBody = tpl
         .replace(/\{name\}/gi, l.name)
         .replace(/\{website\}/gi, l.website || l.name)
         .replace(/\{platform\}/gi, l.platform || 'WordPress / Shopify')
         .replace(/\{issue\}/gi, (l.opportunities || [])[0] || 'a quick growth opportunity');
-    } else {
-      $('m_body').value = r.body;
-      showToast('Tip: Save your custom template in My Profile first!');
     }
-  } else {
-    $('m_body').value = r.body;
   }
-  const item = { kind: 'Lead', title: `${l.name} (${l.platform})`, company: (l.emails||[]).join(', ') || (l.phones||[])[0] || '', location: l.address, url: l.website || l.osm || l.name, status: 'Pitched', notes: (l.opportunities||[]).join('; ') };
-  currentTrack = item;
-  currentShortDM = r.linkedinNote || '';
-  const phoneDigits = ((l.phones || [])[0] || '').replace(/[^\d]/g, '');
-  const waUrl = l.socials?.whatsapp || (phoneDigits.length >= 8 ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(currentShortDM || r.body.slice(0, 350))}` : '');
-  $('m_actions').innerHTML = `
-    <button onclick="copyText($('m_body').value, this)">📋 Copy Pitch</button>
-    <button onclick="copyText(currentShortDM, this)">📋 Copy Short DM (300c)</button>
-    ${(l.emails || []).length ? `<button onclick="autoTrack();openGmail()">📧 Open in Gmail</button><button class="sec" onclick="autoTrack();openMailto()">Mail App</button>` : ''}
-    ${waUrl ? `<a target="_blank" href="${esc(waUrl)}" onclick="autoTrack()"><button type="button">💬 WhatsApp</button></a>` : ''}
-    ${l.socials?.instagram ? `<a target="_blank" href="${esc(l.socials.instagram)}" onclick="autoTrack()"><button class="sec" type="button">📸 Instagram</button></a>` : ''}
-    ${l.socials?.facebook ? `<a target="_blank" href="${esc(l.socials.facebook)}" onclick="autoTrack()"><button class="sec" type="button">📘 Facebook</button></a>` : ''}
-    ${l.website ? `<a target="_blank" href="${esc(l.website)}" onclick="autoTrack()"><button class="sec" type="button">🌐 Contact Form</button></a><a target="_blank" href="https://pagespeed.web.dev/analysis?url=${encodeURIComponent(l.website)}"><button class="sec" type="button">📊 Speed Proof</button></a>` : ''}
-    <button class="sec" onclick="printAuditReport()">📄 Audit PDF</button>
-    <button class="sec" onclick="printQuote()">💵 Quote PDF</button>
-    <button class="sec" onclick="autoTrack();findOwner('${kind}',${idx})">in Find Owner</button>
-    <button class="sec" id="saveLeadBtn">✔ Mark Pitched</button>
-    ${pitchQueue.length ? `<button onclick="nextInQueue()">⏭ Next Lead (${pitchQueue.length})</button>` : ''}`;
-  $('saveLeadBtn').onclick = () => trackApp(item);
-  $('m_steps').innerHTML = (l.emails || []).length
-    ? '<b>Easy Pitch:</b> Email ke liye "Open in Gmail" dabayein, ya WhatsApp / Instagram / LinkedIn se bhejein!'
-    : '<b>No Email? No Problem:</b> 1) <b>💬 WhatsApp</b> dabayein (message pre-filled khulega), ya 2) <b>Copy Short DM → Instagram/LinkedIn</b>, ya 3) <b>🌐 Website / Contact Form</b> par paste karein!';
+
+  const shortDM = r.linkedinNote || `Hey ${l.name} team! Loved your business in ${l.address || 'town'}. Spotted 2 quick tweaks that could bring 2x more client inquiries. Can I share a quick 2-min breakdown?`;
+
+  currentPitchData = {
+    kind,
+    idx,
+    lead: l,
+    tone,
+    email: {
+      to: (l.emails || []).join(', '),
+      subject: r.subject,
+      body: customEmailBody
+    },
+    whatsapp: {
+      phone: waDigits,
+      body: r.whatsapp || ''
+    },
+    instagram: {
+      url: l.socials?.instagram || '',
+      body: r.instagram || shortDM
+    },
+    followUp: {
+      to: (l.emails || []).join(', '),
+      subject: `Re: Quick follow-up — ${l.name}`,
+      body: r.followUp || ''
+    }
+  };
+
+  currentTrack = {
+    kind: 'Lead',
+    title: `${l.name} (${l.platform})`,
+    company: (l.emails||[])[0] || (l.phones||[])[0] || '',
+    location: l.address,
+    url: l.website || l.osm || l.name,
+    status: 'Pitched',
+    notes: (l.opportunities||[]).join('; ')
+  };
+
+  $('m_title').textContent = `Pitch: ${l.name} (${l.platform})`;
+  $('m_info').innerHTML = `${esc(l.website || 'No website')} · Phones: ${esc((l.phones||[]).join(', ') || '—')}`;
+  $('m_tone.value') = tone;
+  if ($('m_tone')) {
+    $('m_tone').value = tone;
+    $('m_tone').onchange = () => openPitch(kind, idx, $('m_tone').value);
+  }
+
+  // If no email but phone exists, default directly to WhatsApp tab!
+  if ((l.emails || []).length === 0 && waDigits) {
+    setPitchChannel('whatsapp');
+  } else {
+    setPitchChannel('email');
+  }
+
   $('modal').style.display = 'flex';
+}
+
+function setPitchChannel(ch) {
+  if (!currentPitchData) return;
+  const { lead: l, kind, idx } = currentPitchData;
+  const waDigits = currentPitchData.whatsapp.phone;
+
+  ['tabEmail', 'tabWhatsApp', 'tabInsta', 'tabFollowUp'].forEach((id) => {
+    const btn = $(id);
+    if (btn) btn.className = 'sec';
+  });
+
+  if (ch === 'whatsapp') {
+    if ($('tabWhatsApp')) $('tabWhatsApp').className = '';
+    $('m_toneWrap').style.display = 'none';
+    if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'none';
+    if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
+    if ($('m_to_lbl')) $('m_to_lbl').innerHTML = `WhatsApp Recipient Phone<input id="m_to" style="width:100%" value="${esc(waDigits || (l.phones||[])[0] || '')}" placeholder="e.g. 919826012345 or 971501234567" />`;
+    if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'WhatsApp Pitch (Formatted with emojis &amp; bullet points)';
+    $('m_body').value = currentPitchData.whatsapp.body;
+    
+    $('m_actions').innerHTML = `
+      <button type="button" onclick="sendWhatsAppModal()" style="background:#059669;color:#fff;font-weight:700">💬 Open in WhatsApp Web / App</button>
+      <button class="sec" type="button" onclick="copyText($('m_body').value, this)">📋 Copy Message</button>
+      <button class="sec" type="button" onclick="printAuditReport()">📄 Audit PDF</button>
+      <button class="sec" type="button" onclick="printQuote()">💵 Quote PDF</button>
+      <button class="sec" type="button" id="saveLeadBtn">✔ Mark Pitched</button>
+      ${pitchQueue.length ? `<button type="button" onclick="nextInQueue()">⏭ Next Lead (${pitchQueue.length})</button>` : ''}`;
+    $('saveLeadBtn').onclick = () => trackApp(currentTrack);
+    $('m_steps').innerHTML = '<b>1-Click WhatsApp:</b> "Open in WhatsApp" dabayein — desktop WhatsApp Web ya mobile app me pre-filled message khulega!';
+  } else if (ch === 'instagram') {
+    if ($('tabInsta')) $('tabInsta').className = '';
+    $('m_toneWrap').style.display = 'none';
+    if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'none';
+    if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
+    const igUrl = currentPitchData.instagram.url;
+    if ($('m_to_lbl')) $('m_to_lbl').innerHTML = `Instagram Profile<input id="m_to" style="width:100%" value="${esc(igUrl || 'Search: ' + l.name)}" />`;
+    if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'Instagram DM (Concise 2-Sentence High-Reply Pitch)';
+    $('m_body').value = currentPitchData.instagram.body;
+
+    $('m_actions').innerHTML = `
+      <button type="button" onclick="sendInstaModal()" style="background:#c026d3;color:#fff;font-weight:700">📸 Copy &amp; Open Instagram</button>
+      <button class="sec" type="button" onclick="copyText($('m_body').value, this)">📋 Copy DM</button>
+      <button class="sec" type="button" onclick="printAuditReport()">📄 Audit PDF</button>
+      <button class="sec" type="button" id="saveLeadBtn">✔ Mark Pitched</button>
+      ${pitchQueue.length ? `<button type="button" onclick="nextInQueue()">⏭ Next Lead (${pitchQueue.length})</button>` : ''}`;
+    $('saveLeadBtn').onclick = () => trackApp(currentTrack);
+    $('m_steps').innerHTML = '<b>1-Click Insta DM:</b> Button dabate hi DM clipboard me copy ho jayega aur Instagram profile khulegi — bas DM paste kar dein!';
+  } else if (ch === 'followup') {
+    if ($('tabFollowUp')) $('tabFollowUp').className = '';
+    $('m_toneWrap').style.display = 'none';
+    if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
+    if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'block';
+    if ($('m_to_lbl')) $('m_to_lbl').innerHTML = 'To<input id="m_to" style="width:100%" />';
+    $('m_to').value = currentPitchData.followUp.to;
+    $('m_subject').value = currentPitchData.followUp.subject;
+    if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'Day-3 Follow-Up Message (Boosts reply rate by 70%)';
+    $('m_body').value = currentPitchData.followUp.body;
+
+    $('m_actions').innerHTML = `
+      <button type="button" onclick="copyText($('m_body').value, this)">📋 Copy Follow-Up</button>
+      ${(l.emails||[]).length ? `<button type="button" onclick="autoTrack();openGmail()">📧 Open in Gmail</button>` : ''}
+      ${waDigits ? `<button type="button" onclick="sendFollowUpWhatsAppModal()" style="background:#059669;color:#fff;font-weight:700">💬 Follow-up on WhatsApp</button>` : ''}
+      <button class="sec" type="button" onclick="autoTrack();openMailto()">Mail App</button>
+      <button class="sec" type="button" id="saveLeadBtn">✔ Mark Followed Up</button>
+      ${pitchQueue.length ? `<button type="button" onclick="nextInQueue()">⏭ Next Lead (${pitchQueue.length})</button>` : ''}`;
+    $('saveLeadBtn').onclick = () => trackApp(currentTrack);
+    $('m_steps').innerHTML = '<b>Day-3 Follow-up:</b> Busy business owners often miss first outreach. Sending this polite nudge turns cold leads into clients!';
+  } else {
+    // Default 'email'
+    if ($('tabEmail')) $('tabEmail').className = '';
+    $('m_toneWrap').style.display = 'block';
+    if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
+    if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'block';
+    if ($('m_to_lbl')) $('m_to_lbl').innerHTML = 'To<input id="m_to" style="width:100%" />';
+    $('m_to').value = currentPitchData.email.to;
+    $('m_to').placeholder = (l.emails || []).length ? '' : 'No email — use WhatsApp, Instagram, or Contact Form!';
+    $('m_subject').value = currentPitchData.email.subject;
+    if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'Email Pitch Message (edit kar sakte ho)';
+    $('m_body').value = currentPitchData.email.body;
+
+    const shortDM = currentPitchData.instagram.body;
+
+    $('m_actions').innerHTML = `
+      <button type="button" onclick="copyText($('m_body').value, this)">📋 Copy Pitch</button>
+      <button type="button" class="sec" onclick="copyText(${JSON.stringify(shortDM)}, this)">📋 Copy Short DM</button>
+      ${(l.emails || []).length ? `<button type="button" onclick="autoTrack();openGmail()">📧 Open in Gmail</button><button class="sec" type="button" onclick="autoTrack();openMailto()">Mail App</button>` : ''}
+      ${waDigits ? `<button type="button" style="color:#047857;background:#ecfdf5;border-color:#a7f3d0;font-weight:600" onclick="setPitchChannel('whatsapp')">💬 WhatsApp Pitch</button>` : ''}
+      ${l.socials?.instagram ? `<button type="button" class="sec" style="color:#c026d3;background:#fdf4ff;border-color:#f5d0fe;font-weight:600" onclick="setPitchChannel('instagram')">📸 Insta DM</button>` : ''}
+      ${l.socials?.facebook ? `<a target="_blank" href="${esc(l.socials.facebook)}" onclick="autoTrack()"><button class="sec" type="button">📘 Facebook</button></a>` : ''}
+      ${l.website ? `<a target="_blank" href="${esc(l.website)}" onclick="autoTrack()"><button class="sec" type="button">🌐 Contact Form</button></a><a target="_blank" href="https://pagespeed.web.dev/analysis?url=${encodeURIComponent(l.website)}"><button class="sec" type="button">📊 Speed Proof</button></a>` : ''}
+      <button class="sec" type="button" onclick="printAuditReport()">📄 Audit PDF</button>
+      <button class="sec" type="button" onclick="printQuote()">💵 Quote PDF</button>
+      <button class="sec" type="button" onclick="autoTrack();openOwnerModal('${kind}',${idx})">👤 Find Owner</button>
+      <button class="sec" type="button" id="saveLeadBtn">✔ Mark Pitched</button>
+      ${pitchQueue.length ? `<button type="button" onclick="nextInQueue()">⏭ Next Lead (${pitchQueue.length})</button>` : ''}`;
+    $('saveLeadBtn').onclick = () => trackApp(currentTrack);
+    $('m_steps').innerHTML = (l.emails || []).length
+      ? '<b>Easy Pitch:</b> Email ke liye "Open in Gmail" dabayein, ya tabs se WhatsApp / Instagram se bhejein!'
+      : '<b>No Email? No Problem:</b> Upar <b>💬 WhatsApp Pitch</b> ya <b>📸 Instagram DM</b> tab select karke direct message bhejein!';
+  }
+}
+
+function sendWhatsAppModal() {
+  if (!currentPitchData) return;
+  const digits = ($('m_to').value || currentPitchData.whatsapp.phone || '').replace(/\D/g, '');
+  if (!digits) return alert('Please enter or verify the recipient WhatsApp phone number!');
+  const msg = $('m_body').value;
+  const waUrl = `https://wa.me/${digits}?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
+  if (currentTrack) {
+    currentTrack.notes = (currentTrack.notes ? currentTrack.notes + '; ' : '') + `Sent WhatsApp pitch (${digits})`;
+    trackApp(currentTrack);
+  }
+  showToast('💬 WhatsApp opened & lead marked as Pitched!');
+}
+
+function sendInstaModal() {
+  if (!currentPitchData) return;
+  const igUrl = currentPitchData.instagram.url;
+  const msg = $('m_body').value;
+  copyText(msg, { textContent: '' });
+  if (igUrl) {
+    window.open(igUrl, '_blank');
+  } else {
+    window.open(`https://www.instagram.com/explore/tags/${encodeURIComponent(currentPitchData.lead.name.replace(/\s+/g,'').toLowerCase())}/`, '_blank');
+  }
+  if (currentTrack) {
+    currentTrack.notes = (currentTrack.notes ? currentTrack.notes + '; ' : '') + 'Pitched via Instagram DM';
+    trackApp(currentTrack);
+  }
+  showToast('📋 Instagram DM copied to clipboard! Just paste into DM.');
+}
+
+function sendFollowUpWhatsAppModal() {
+  if (!currentPitchData) return;
+  const digits = currentPitchData.whatsapp.phone;
+  if (!digits) return alert('No valid WhatsApp phone number found for this lead.');
+  const msg = $('m_body').value;
+  const waUrl = `https://wa.me/${digits}?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
+  if (currentTrack) {
+    currentTrack.notes = (currentTrack.notes ? currentTrack.notes + '; ' : '') + 'Sent WhatsApp Day-3 Follow-up';
+    trackApp(currentTrack);
+  }
+  showToast('💬 WhatsApp follow-up opened & logged!');
 }
 
 // ---------- Applications Tracker (persisted in localStorage + server + Google Sheets) ----------
@@ -1642,17 +1953,32 @@ function isDue(a) {
 }
 function openFollowUp(idx) {
   const a = data.apps[idx];
+  if ($('m_preview_card')) $('m_preview_card').style.display = 'none';
+  if ($('m_tabs')) $('m_tabs').style.display = 'none';
+  $('m_toneWrap').style.display = 'none';
+  if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
+  if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'block';
+  if ($('m_to_lbl')) $('m_to_lbl').innerHTML = 'To<input id="m_to" style="width:100%" />';
+  if ($('m_body_lbl')) $('m_body_lbl').innerHTML = 'Day-3 Follow-Up Message (Boosts client replies by 70%)';
   $('m_title').textContent = `Follow-up: ${a.title}`;
   $('m_info').innerHTML = `${esc(a.url)} · Last contacted: ${new Date(a.updatedAt).toLocaleDateString()}`;
   $('m_to').value = /@/.test(a.company || '') ? a.company : '';
   $('m_subject').value = `Re: Quick follow-up — ${a.title.replace(/\s*\([^)]+\)$/, '')}`;
-  $('m_body').value = `Hi ${a.title.replace(/\s*\([^)]+\)$/, '')} Team,\n\nJust floating this back to the top of your inbox in case my last note got buried.\n\nHappy to send over that free 2-minute fix/growth checklist whenever you have a moment — just reply "Yes"!\n\nWarm regards,\nPraveen Pathak\nparvpathak12@gmail.com | +91 8109567672`;
+  const fText = `Hi ${a.title.replace(/\s*\([^)]+\)$/, '')} Team,\n\nJust floating this back to the top of your inbox in case my last note got buried.\n\nHappy to send over that free 2-minute fix/growth checklist whenever you have a moment — just reply "Yes"!\n\nWarm regards,\nPraveen Pathak\nparvpathak12@gmail.com | +91 8109567672`;
+  $('m_body').value = fText;
   currentTrack = { ...a, status: 'Pitched' };
+
+  const phoneMatch = (a.company + ' ' + (a.notes || '')).match(/\+?\d[\d\s-]{7,15}\d/);
+  const waDigits = phoneMatch ? phoneMatch[0].replace(/\D/g, '') : '';
+  const waUrl = waDigits.length >= 7 ? `https://wa.me/${waDigits}?text=${encodeURIComponent(fText)}` : '';
+
   $('m_actions').innerHTML = `
-    <button onclick="copyText($('m_body').value, this)">📋 Copy Follow-up</button>
-    <button onclick="autoTrack();openGmail()">📧 Open in Gmail</button>
-    <button class="sec" onclick="autoTrack();openMailto()">Mail App</button>`;
-  $('m_steps').innerHTML = 'Sending a polite follow-up updates the date automatically.';
+    <button type="button" onclick="copyText($('m_body').value, this)">📋 Copy Follow-up</button>
+    <button type="button" onclick="autoTrack();openGmail()">📧 Open in Gmail</button>
+    ${waUrl ? `<a target="_blank" href="${esc(waUrl)}" onclick="autoTrack()"><button type="button" style="background:#059669;color:#fff;font-weight:700">💬 Follow-up on WhatsApp</button></a>` : ''}
+    <button class="sec" type="button" onclick="autoTrack();openMailto()">Mail App</button>
+    <button class="sec" type="button" onclick="trackApp(currentTrack)">✔ Mark Followed Up</button>`;
+  $('m_steps').innerHTML = 'Sending a polite follow-up updates the date automatically and moves the deal forward.';
   $('modal').style.display = 'flex';
 }
 function openCallScript() {
@@ -1705,7 +2031,7 @@ function renderApps() {
   if (db) {
     if (dueCount > 0) {
       db.style.display = 'flex';
-      db.innerHTML = `<span>⏰ <b>${dueCount} client(s)</b> need a follow-up today (3+ days since last pitch).</span><button class="sec" style="padding:5px 12px;font-size:12px" onclick="openDueList()">View Due List</button>`;
+      db.innerHTML = `<span style="display:flex;align-items:center;gap:8px">⏰ <b>${dueCount} client(s)</b> need a follow-up today (3+ days since last pitch). Following up increases client reply rate by 70%!</span><button class="sec" style="padding:6px 14px;font-size:12px;font-weight:700;color:#92400e;background:#fef3c7;border-color:#f59e0b" onclick="openDueList()">View &amp; Pitch Follow-ups (1-Click)</button>`;
     } else db.style.display = 'none';
   }
   const list = data.apps.map((a, i) => [a, i]).filter(([a]) => f === 'DUE' ? isDue(a) : (!f || a.kind === f));
