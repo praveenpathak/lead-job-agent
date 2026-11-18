@@ -225,10 +225,13 @@
       <label>Directory Source
         <select id="sourceFilter" style="min-width:145px">
           <option value="all">🌐 All Sources</option>
-          <option value="Google Places">📍 Google Places</option>
-          <option value="YellowPages">📖 YellowPages</option>
+          <option value="Google Places / Maps">📍 Google Places / Maps</option>
+          <option value="JustDial">📖 JustDial (India)</option>
+          <option value="IndiaMART">🏭 IndiaMART (B2B)</option>
+          <option value="YellowPages">📒 YellowPages</option>
           <option value="Yelp">⭐ Yelp</option>
           <option value="OpenStreetMap">🗺️ OpenStreetMap</option>
+          <option value="Shopify Store">🛍️ Shopify Store</option>
           <option value="Web Discovery">🔍 Web Discovery</option>
         </select></label>
       <button id="goLeads">Find Leads</button>
@@ -495,6 +498,82 @@ hello@roofersllc.com"></textarea>
 
     <div class="row" style="justify-content:flex-end">
       <button onclick="$('gsheetModal').style.display='none'">Samajh Gaya (Done)</button>
+    </div>
+  </div>
+</div>
+
+<!-- FIND OWNER MODAL -->
+<div id="ownerModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.48);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+  <div style="background:#ffffff;color:var(--txt);border:1px solid var(--bd);border-radius:16px;padding:26px;width:min(520px,94vw);box-shadow:0 24px 60px rgba(15,23,42,0.22);max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:24px">👤</div>
+        <div>
+          <h3 id="ownerModalBizName" style="margin:0;font-size:17px;font-weight:700">Find Owner &amp; Decision Maker</h3>
+          <span id="ownerModalBizSub" style="font-size:12px;color:var(--muted)">1-Click Discovery across LinkedIn, Apollo &amp; Registries</span>
+        </div>
+      </div>
+      <button class="sec" type="button" onclick="$('ownerModal').style.display='none'">✕</button>
+    </div>
+
+    <div style="background:#f8fafc;padding:12px 14px;border-radius:10px;border:1px solid var(--bd);margin-bottom:16px;font-size:13px">
+      <div style="font-weight:600;color:var(--txt)" id="omBizTitle">Business Details</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:2px" id="omBizDetails">—</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <a id="omLinkedInLink" href="#" target="_blank" style="text-decoration:none">
+        <button type="button" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#0a66c2;border-color:#0a66c2;color:#fff">
+          <span>🔍 <b>LinkedIn People Search</b> (Owner / Founder / CEO)</span>
+          <span style="font-size:11px;opacity:0.9">Open ↗</span>
+        </button>
+      </a>
+
+      <a id="omApolloLink" href="#" target="_blank" style="text-decoration:none">
+        <button type="button" class="sec" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-color:#fed7aa;background:#fff7ed;color:#c2410c">
+          <span>🚀 <b>Apollo.io Search</b> (B2B Emails &amp; Mobile Numbers)</span>
+          <span style="font-size:11px;opacity:0.9">Open ↗</span>
+        </button>
+      </a>
+
+      <a id="omGoogleXrayLink" href="#" target="_blank" style="text-decoration:none">
+        <button type="button" class="sec" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-color:#bae6fd;background:#f0f9ff;color:#0369a1">
+          <span>🌐 <b>Google X-Ray (LinkedIn)</b>: Direct Profile Links</span>
+          <span style="font-size:11px;opacity:0.9">Open ↗</span>
+        </button>
+      </a>
+
+      <div id="omIndiaRegistries" style="display:flex;gap:8px">
+        <a id="omZaubaLink" href="#" target="_blank" style="text-decoration:none;flex:1">
+          <button type="button" class="sec" style="width:100%;padding:9px;font-size:12px;border-color:#bbf7d0;background:#f0fdf4;color:#15803d">
+            🏢 Zauba Corp (Directors) ↗
+          </button>
+        </a>
+        <a id="omToflerLink" href="#" target="_blank" style="text-decoration:none;flex:1">
+          <button type="button" class="sec" style="width:100%;padding:9px;font-size:12px;border-color:#ddd6fe;background:#f5f3ff;color:#6d28d9">
+            📊 Tofler Financials ↗
+          </button>
+        </a>
+      </div>
+
+      <a id="omWhoisLink" href="#" target="_blank" style="text-decoration:none">
+        <button type="button" class="sec" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:9px 14px;font-size:12px">
+          <span>📜 <b>Whois Domain Lookup</b> (Registrant info)</span>
+          <span style="font-size:11px;opacity:0.9">Open ↗</span>
+        </button>
+      </a>
+
+      <a id="omWhatsAppLink" href="#" target="_blank" style="text-decoration:none;display:none">
+        <button type="button" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#25d366;border-color:#25d366;color:#fff">
+          <span>💬 <b>Chat on WhatsApp Directly</b></span>
+          <span style="font-size:11px;opacity:0.9">Open ↗</span>
+        </button>
+      </a>
+    </div>
+
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:11px;color:var(--muted)">Tip: Use Apollo or LinkedIn to reach the Owner directly</span>
+      <button class="sec" onclick="$('ownerModal').style.display='none'">Close</button>
     </div>
   </div>
 </div>
@@ -855,10 +934,59 @@ function searchLinkedInLeads() {
   const cat = (catMS.get()[0] || 'restaurant').replace(/_/g, ' ');
   window.open(`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(`${cat} founder owner ${area}`)}`, '_blank');
 }
-function findOwner(kind, idx) {
-  const l = data[kind][idx];
-  window.open(`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(`${l.name} founder owner ceo`)}`, '_blank');
+function openOwnerModal(kind, idx) {
+  const l = data[kind]?.[idx];
+  if (!l) return;
+  const modal = $('ownerModal');
+  if (!modal) return;
+
+  $('ownerModalBizName').textContent = l.name || 'Decision Maker Discovery';
+  $('ownerModalBizSub').textContent = `${l.category ? l.category.replace(/_/g, ' ') : 'Business'} · ${l.address || ''}`;
+  $('omBizTitle').textContent = l.name;
+  $('omBizDetails').textContent = `Location: ${l.address || '—'} | Website: ${l.website || 'No Website'} | Phone: ${(l.phones || []).join(', ') || '—'}`;
+
+  // 1. LinkedIn People
+  const liQ = `${l.name} founder OR owner OR CEO OR director`;
+  $('omLinkedInLink').href = `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(liQ)}`;
+
+  // 2. Apollo.io
+  $('omApolloLink').href = `https://app.apollo.io/#/companies?qKeywords=${encodeURIComponent(l.name)}`;
+
+  // 3. Google X-Ray
+  const cleanDomain = l.website ? l.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '') : '';
+  const xrayQ = cleanDomain 
+    ? `site:linkedin.com/in/ ("${l.name}" OR "${cleanDomain}") (founder OR owner OR ceo OR director)`
+    : `site:linkedin.com/in/ "${l.name}" (founder OR owner OR ceo OR director)`;
+  $('omGoogleXrayLink').href = `https://www.google.com/search?q=${encodeURIComponent(xrayQ)}`;
+
+  // 4. Zauba & Tofler (India)
+  const isIndia = /india|\bindore\b|\bmumbai\b|\bdelhi\b|\bbengaluru\b|\bpune\b|\bjaipur\b/i.test(l.address || '');
+  $('omIndiaRegistries').style.display = isIndia ? 'flex' : 'none';
+  $('omZaubaLink').href = `https://www.zaubacorp.com/companysearchresults/${encodeURIComponent(l.name)}`;
+  $('omToflerLink').href = `https://www.tofler.in/search?q=${encodeURIComponent(l.name)}`;
+
+  // 5. Whois
+  if (cleanDomain) {
+    $('omWhoisLink').style.display = 'block';
+    $('omWhoisLink').href = `https://who.is/whois/${encodeURIComponent(cleanDomain)}`;
+  } else {
+    $('omWhoisLink').style.display = 'none';
+  }
+
+  // 6. WhatsApp
+  const phone = (l.phones || []).find((p) => p && p.replace(/\D/g, '').length >= 10);
+  if (phone) {
+    const cleanP = phone.replace(/\D/g, '');
+    const intlP = cleanP.length === 10 ? '91' + cleanP : cleanP;
+    $('omWhatsAppLink').style.display = 'block';
+    $('omWhatsAppLink').href = `https://wa.me/${intlP}?text=${encodeURIComponent(`Hello ${l.name} team! Loved your business setup in ${l.address || 'town'}.`)}`;
+  } else {
+    $('omWhatsAppLink').style.display = 'none';
+  }
+
+  modal.style.display = 'flex';
 }
+function findOwner(kind, idx) { openOwnerModal(kind, idx); }
 function searchGoogleMapsLeads() {
   const area = areaMS.get()[0] || 'Dubai, UAE';
   const cat = (catMS.get()[0] || 'restaurant').replace(/_/g, ' ');
@@ -913,11 +1041,15 @@ function leadRow(l, kind, idx) {
   const st = trackedMap().get(key);
   const src = l.source || 'Web Discovery';
   const srcPillMap = {
-    'YellowPages': 'background:#fef3c7;color:#92400e;border-color:#fde68a;',
     'Google Places': 'background:#e0f2fe;color:#0369a1;border-color:#bae6fd;',
+    'Google Places / Maps': 'background:#e0f2fe;color:#0369a1;border-color:#bae6fd;',
+    'JustDial': 'background:#ffedd5;color:#c2410c;border-color:#fed7aa;',
+    'IndiaMART': 'background:#ccfbf1;color:#0f766e;border-color:#99f6e4;',
+    'YellowPages': 'background:#fef3c7;color:#92400e;border-color:#fde68a;',
     'Yelp': 'background:#fee2e2;color:#b91c1c;border-color:#fecaca;',
     'OpenStreetMap': 'background:#dcfce7;color:#15803d;border-color:#bbf7d0;',
     'Nominatim / OSM': 'background:#dcfce7;color:#15803d;border-color:#bbf7d0;',
+    'Shopify Store': 'background:#ecfdf5;color:#047857;border-color:#a7f3d0;',
     'Web Discovery': 'background:#f3e8ff;color:#7e22ce;border-color:#e9d5ff;'
   };
   const srcStyle = srcPillMap[src] || 'background:#f1f5f9;color:#475569;border-color:#cbd5e1;';
@@ -932,7 +1064,7 @@ function leadRow(l, kind, idx) {
     <td>${(l.phones || []).map(esc).join('<br>') || '—'}</td>
     <td>${soc || '—'}</td>
     <td>${(l.opportunities || []).length ? l.opportunities.map((o) => `<span class="pill op">${esc(o)}</span>`).join('') : '<span class="pill Shopify">Clean site → Maintenance pitch</span>'}</td>
-    <td><button onclick="openPitch('${kind}',${idx})">${isNoWeb ? '✉ Pitch Web' : '✉ Pitch'}</button> <button class="sec" style="margin-top:4px" onclick="findOwner('${kind}',${idx})">in Owner</button></td></tr>`;
+    <td><button onclick="openPitch('${kind}',${idx})">${isNoWeb ? '✉ Pitch Web' : '✉ Pitch'}</button> <button class="sec" style="margin-top:4px;font-size:11px;font-weight:600" onclick="openOwnerModal('${kind}',${idx})">👤 Find Owner</button></td></tr>`;
 }
 const LHEAD = '<tr><th>Business</th><th>Directory Source</th><th>Website</th><th>Platform</th><th>Email</th><th>Phone</th><th>Social</th><th>Pitch opportunities</th><th></th></tr>';
 
@@ -941,7 +1073,8 @@ function renderLeads() {
   const sf = $('sourceFilter')?.value || 'all';
   const tm = trackedMap();
   const list = data.leads.map((l, i) => [l, i]).filter(([l]) => {
-    if (sf !== 'all' && (l.source || 'Web Discovery') !== sf) return false;
+    const s = l.source || 'Web Discovery';
+    if (sf !== 'all' && s !== sf && !s.includes(sf)) return false;
     if ($('onlyEmail').checked && !(l.emails || []).length) return false;
     if ($('hidePitched')?.checked && tm.has(l.website || l.osm || l.name)) return false;
     if (q && !`${l.name} ${l.address} ${l.platform} ${l.source || ''} ${(l.opportunities || []).join(' ')}`.toLowerCase().includes(q)) return false;
@@ -949,7 +1082,7 @@ function renderLeads() {
   });
   $('ltable').innerHTML = LHEAD + list.map(([l, i]) => leadRow(l, 'leads', i)).join('');
   const c = (p) => data.leads.filter((l) => l.platform === p).length;
-  const sc = (s) => data.leads.filter((l) => (l.source || 'Web Discovery') === s).length;
+  const sc = (s) => data.leads.filter((l) => (l.source || '').toLowerCase().includes(s.toLowerCase())).length;
   $('lstats').innerHTML = `<div class="stat"><b>${data.leads.length}</b> leads</div>
     <div class="stat"><b>${c('WordPress')}</b> WordPress</div>
     <div class="stat"><b>${c('Shopify')}</b> Shopify</div>
@@ -957,10 +1090,13 @@ function renderLeads() {
     <div class="stat"><b>${data.leads.filter((l) => (l.emails||[]).length).length}</b> with email</div>
     <div class="stat"><b>${data.leads.filter((l) => (l.phones||[]).length).length}</b> with phone</div>
     <div class="stat" style="background:#f8fafc;font-size:11.5px;padding:6px 12px">
-      <span style="color:#0369a1;font-weight:600">📍 Places: ${sc('Google Places')}</span> ·
-      <span style="color:#92400e;font-weight:600">📖 YP: ${sc('YellowPages')}</span> ·
+      <span style="color:#0369a1;font-weight:600">📍 Places: ${sc('Places')}</span> ·
+      <span style="color:#c2410c;font-weight:600">📖 JustDial: ${sc('JustDial')}</span> ·
+      <span style="color:#0f766e;font-weight:600">🏭 IndiaMART: ${sc('IndiaMART')}</span> ·
+      <span style="color:#92400e;font-weight:600">📒 YP: ${sc('YellowPages')}</span> ·
       <span style="color:#b91c1c;font-weight:600">⭐ Yelp: ${sc('Yelp')}</span> ·
-      <span style="color:#15803d;font-weight:600">🗺️ OSM: ${sc('OpenStreetMap') + sc('Nominatim / OSM')}</span> ·
+      <span style="color:#15803d;font-weight:600">🗺️ OSM: ${sc('OpenStreetMap') + sc('Nominatim')}</span> ·
+      <span style="color:#047857;font-weight:600">🛍️ Shopify: ${sc('Shopify')}</span> ·
       <span style="color:#7e22ce;font-weight:600">🔍 Web: ${sc('Web Discovery')}</span>
     </div>`;
 }
