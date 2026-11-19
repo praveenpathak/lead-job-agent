@@ -1,10 +1,12 @@
 services:
   - type: web
     name: lead-job-agent
-    runtime: node
+    env: node
     plan: free
-    buildCommand: "echo ready"
-    startCommand: "node server.js"
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
     envVars:
-      - key: NODE_VERSION
-        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000

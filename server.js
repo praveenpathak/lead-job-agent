@@ -26,6 +26,7 @@ import {
   getAdminActivity
 } from './lib/auth.js';
 import { dbSaveLead } from './lib/db.js';
+import { createAuditRecord, getAuditRecord, renderAuditHTML } from './lib/audit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3777;
@@ -259,6 +260,41 @@ const server = http.createServer(async (req, res) => {
         'Content-Disposition': `attachment; filename="${path.basename(file)}"`,
       });
       return res.end(await readFile(file));
+    }
+    if (req.method === 'POST' && req.url === '/api/audit/create') {
+      const uid = await getAuthUserId(req);
+      const prof = uid ? await getUserProfile(uid) : await getProfile();
+      const { lead } = await body(req);
+      if (!lead) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Lead data required' }));
+      }
+      const audit = createAuditRecord(lead, prof);
+      const host = req.headers.host || `localhost:${PORT}`;
+      const protocol = req.headers['x-forwarded-proto'] || 'http';
+      return json({ ...audit, fullUrl: `${protocol}://${host}${audit.url}` });
+    }
+    if (req.method === 'GET' && req.url.startsWith('/audit')) {
+      const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const segments = parsedUrl.pathname.split('/').filter(Boolean);
+      const auditId = segments[1];
+      let record = auditId ? getAuditRecord(auditId) : null;
+
+      if (!record && parsedUrl.searchParams.get('data')) {
+        try {
+          const decoded = JSON.parse(Buffer.from(parsedUrl.searchParams.get('data'), 'base64url').toString('utf8'));
+          record = { lead: decoded.lead, profile: decoded.profile || {} };
+        } catch {}
+      }
+
+      if (!record) {
+        res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+        return res.end(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Audit Not Found</title></head><body style="font-family:sans-serif;text-align:center;padding:50px"><h2>Audit Report Not Found or Expired</h2><p>Please regenerate the audit report from the <a href="/">Lead & Job Agent Dashboard</a>.</p></body></html>`);
+      }
+
+      const html = renderAuditHTML(record.lead, record.profile, req.headers.host);
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      return res.end(html);
     }
     res.writeHead(404); res.end('Not found');
   } catch (e) {

@@ -703,6 +703,70 @@
   </div>
 </div>
 
+<!-- COLD CALL SCRIPT & LIVE OBJECTION HANDLER MODAL -->
+<div id="coldCallModal" style="display:none;position:fixed;inset:0;background:#0008;z-index:99;align-items:center;justify-content:center;backdrop-filter:blur(2px)">
+  <div style="background:#ffffff;color:var(--txt);border:1px solid var(--bd);border-radius:14px;padding:22px;width:min(860px,95vw);max-height:92vh;overflow:auto;box-shadow:0 20px 40px rgba(0,0,0,0.18)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <h3 id="ccBizName" style="margin:0;font-size:17px;font-weight:800;color:var(--txt)"></h3>
+        <div id="ccBizSub" style="font-size:12px;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button class="sec" onclick="$('coldCallModal').style.display='none'">✕</button>
+    </div>
+
+    <!-- Phone Dial & Direct WhatsApp Audio Banner -->
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <div>
+        <span style="font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.05em">Direct Contact Phone:</span>
+        <div id="ccPhoneDisplay" style="font-size:18px;font-weight:800;color:#14532d;margin-top:2px"></div>
+      </div>
+      <div style="display:flex;gap:8px" id="ccCallActions"></div>
+    </div>
+
+    <!-- Step 1: 30-Sec Cold Call Icebreaker -->
+    <div style="background:#f8fafc;border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <b style="font-size:13px;color:#1e293b">🗣️ 30-Second Opening Icebreaker Hook (Indian Market Tested)</b>
+        <button class="sec" style="font-size:11px;padding:4px 8px" onclick="copyText($('ccHookText').innerText, this)">📋 Copy Hook</button>
+      </div>
+      <div id="ccHookText" style="font-size:13px;color:#334155;line-height:1.6;background:#fff;padding:10px 14px;border-radius:8px;border:1px solid #e2e8f0;white-space:pre-wrap"></div>
+    </div>
+
+    <!-- Step 2: Live Objection Handling Cheat-Sheet -->
+    <div style="margin-bottom:16px">
+      <b style="font-size:13px;color:#1e293b;display:block;margin-bottom:8px">⚡ Client Ne Objection Diya? Niche Click Karein (Instant Rebuttal):</b>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        <button type="button" class="sec" onclick="showObjection('already_have')" style="font-size:11.5px;font-weight:600;padding:6px 10px">🛑 Already Website / Agency Hai</button>
+        <button type="button" class="sec" onclick="showObjection('no_time')" style="font-size:11.5px;font-weight:600;padding:6px 10px">⏳ Abhi Time / Need Nahi Hai</button>
+        <button type="button" class="sec" onclick="showObjection('price_high')" style="font-size:11.5px;font-weight:600;padding:6px 10px">💰 Price / Charges Kitna Hai?</button>
+        <button type="button" class="sec" onclick="showObjection('justdial')" style="font-size:11.5px;font-weight:600;padding:6px 10px">📍 JustDial / Google Maps Kaafi Hai</button>
+        <button type="button" class="sec" onclick="showObjection('sample')" style="font-size:11.5px;font-weight:600;padding:6px 10px">🎨 Pehle Sample / Portfolio Bhejo</button>
+        <button type="button" class="sec" onclick="showObjection('next_month')" style="font-size:11.5px;font-weight:600;padding:6px 10px">🗓️ Agle Mahine Baat Karna</button>
+      </div>
+
+      <div id="ccObjBox" style="background:#fffbeb;border:1px solid #fef08a;border-radius:10px;padding:14px;display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <b id="ccObjTitle" style="font-size:13px;color:#854d0e"></b>
+          <button class="sec" style="font-size:11px;padding:3px 8px" onclick="copyText($('ccObjBody').innerText, this)">📋 Copy Rebuttal</button>
+        </div>
+        <div id="ccObjBody" style="font-size:13px;color:#713f12;line-height:1.6;white-space:pre-wrap"></div>
+      </div>
+    </div>
+
+    <!-- Step 3: 30-Sec WhatsApp Voice Note Script -->
+    <div style="background:#fdf4ff;border:1px solid #f5d0fe;border-radius:12px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <b style="font-size:13px;color:#86198f">🎙️ Phone Nahi Uthaya? 30-Second WhatsApp Voice Note Bhejo</b>
+          <span style="display:block;font-size:11px;color:#a21caf">Voice notes have a 4x higher reply rate than plain text!</span>
+        </div>
+        <button class="sec" style="font-size:11px;padding:4px 8px;color:#86198f;border-color:#f0abfc" onclick="copyText($('ccVoiceScript').innerText, this)">📋 Copy Script</button>
+      </div>
+      <div id="ccVoiceScript" style="font-size:12.5px;color:#701a75;line-height:1.6;background:#fff;padding:10px 14px;border-radius:8px;border:1px solid #fae8ff;white-space:pre-wrap"></div>
+    </div>
+  </div>
+</div>
+
 <!-- QUICK ADD & RECOVERY MODAL -->
 <div id="quickAddModal" style="display:none;position:fixed;inset:0;background:#0008;z-index:99;align-items:center;justify-content:center;backdrop-filter:blur(2px)">
   <div style="background:#ffffff;color:var(--txt);border:1px solid var(--bd);border-radius:14px;padding:22px;width:min(680px,95vw);max-height:92vh;overflow:auto;box-shadow:0 20px 40px rgba(0,0,0,0.18)">
@@ -1810,6 +1874,7 @@ function leadRow(l, kind, idx) {
     <td>
       <div style="display:flex;gap:4px;flex-wrap:wrap;min-width:130px">
         <button onclick="openPitch('${kind}',${idx})">${isNoWeb ? '✉ Pitch Web' : '✉ Pitch'}</button>
+        ${(l.phones || []).length ? `<button type="button" class="sec" style="color:#0369a1;background:#f0f9ff;border-color:#bae6fd;font-weight:700;padding:4px 8px;font-size:11.5px" onclick="openColdCallModal('${kind}',${idx})" title="Cold Call Script & Live Objection Handler">📞 Call</button>` : ''}
         ${waDigits ? `<button type="button" class="sec" style="color:#047857;background:#ecfdf5;border-color:#a7f3d0;font-weight:600;padding:4px 8px;font-size:11.5px" onclick="openDirectWhatsApp('${kind}',${idx})" title="1-Click Direct WhatsApp Pitch">💬 WA</button>` : ''}
         ${l.socials?.instagram ? `<button type="button" class="sec" style="color:#b91c1c;background:#fef2f2;border-color:#fecaca;font-weight:600;padding:4px 8px;font-size:11.5px" onclick="openDirectInstaDM('${kind}',${idx})" title="1-Click Instagram DM Pitch">📸 Insta</button>` : ''}
         <button type="button" class="sec" style="font-size:11px;font-weight:600;padding:4px 8px" onclick="openOwnerModal('${kind}',${idx})">👤 Owner</button>
@@ -1966,6 +2031,7 @@ function leadCard(l, idx) {
       <button onclick="openPitch('leads',${idx})" style="flex:1;min-width:100px;padding:7px 10px;font-size:12px">
         ${isNoWeb ? '✉ Pitch Web' : '✉ Pitch Lead'}
       </button>
+      ${phones.length ? `<button type="button" class="sec" style="color:#0369a1;background:#f0f9ff;border-color:#bae6fd;font-weight:700;padding:7px 10px;font-size:12px" onclick="openColdCallModal('leads',${idx})" title="Cold Call Script & Live Objection Handler">📞 Call &amp; Objections</button>` : ''}
       ${waDigits ? `<button type="button" class="sec" style="color:#047857;background:#ecfdf5;border-color:#a7f3d0;font-weight:700;padding:7px 10px;font-size:12px" onclick="openDirectWhatsApp('leads',${idx})" title="Direct WhatsApp Pitch">💬 WhatsApp</button>` : ''}
       ${l.socials?.instagram ? `<button type="button" class="sec" style="color:#b91c1c;background:#fef2f2;border-color:#fecaca;font-weight:600;padding:7px 10px;font-size:12px" onclick="openDirectInstaDM('leads',${idx})" title="Direct Instagram DM">📸 Insta</button>` : ''}
       <button type="button" class="sec" style="padding:7px 9px;font-size:12px;font-weight:600" onclick="openOwnerModal('leads',${idx})" title="Decision Maker Search">👤 Owner</button>
@@ -2252,6 +2318,16 @@ async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
   const l = data[kind]?.[idx];
   if (!l) return;
   const r = await fetch('/api/pitch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: l, tone }) }).then((x) => x.json());
+  
+  let auditUrl = '';
+  try {
+    const auditRes = await fetch('/api/audit/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lead: l })
+    }).then(x => x.json());
+    if (auditRes && auditRes.fullUrl) auditUrl = auditRes.fullUrl;
+  } catch {}
   currentAudit = { lead: l, auditItems: r.auditItems || [], projects: r.projects || [] };
   
   const isNoWeb = l.platform === 'No Website' || !l.website;
@@ -2309,7 +2385,7 @@ async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
   }
 
   let currentPitchService = $('m_service')?.value || 'web';
-  const servicePitches = buildServicePitch(currentPitchService, l, r, tone);
+  const servicePitches = buildServicePitch(currentPitchService, l, r, tone, auditUrl);
 
   currentPitchData = {
     kind,
@@ -2317,6 +2393,7 @@ async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
     lead: l,
     tone,
     service: currentPitchService,
+    auditUrl,
     _rawR: r,
     ...servicePitches
   };
@@ -2346,31 +2423,36 @@ async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
   $('modal').style.display = 'flex';
 }
 
-function buildServicePitch(service, l, r, tone = 'friendly') {
+function buildServicePitch(service, l, r, tone = 'friendly', auditUrl = '') {
   const isNoWeb = l.platform === 'No Website' || !l.website;
   const niche = l.category ? l.category.replace(/_/g, ' ') : 'business';
   const waDigits = getWhatsAppDigits(l);
   const domain = l.website ? l.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '') : l.name;
+
+  // Spin-tax greeting & compliment randomization to avoid WhatsApp spam filters
+  const greets = ['Namaste', 'Hello', 'Hi'];
+  const greet = greets[Math.floor(Math.random() * greets.length)];
+  const auditLine = auditUrl ? `\n\n📊 Live 6-Point Technical & Growth Audit Report:\n${auditUrl}` : '';
 
   if (service === 'seo') {
     return {
       email: {
         to: (l.emails || []).join(', '),
         subject: `Local SEO & Google Search Ranking idea for ${l.name}`,
-        body: `Hi ${l.name} Team,\n\nI hope you're having a productive week!\n\nMy name is Praveen Pathak, a Senior Web & SEO Specialist with 14.5+ years of experience helping local businesses rank higher on Google search and Google Maps.\n\nWhile analyzing ${niche} businesses in ${l.address || 'your city'}, I noticed that ${domain} is currently missing critical On-Page SEO meta tags and local search schema. This means prospective customers searching for ${niche} in your area are finding your competitors first.\n\nWith a few targeted SEO fixes:\n• Optimize Google My Business profile & local keywords\n• Fix missing meta title, description & H1 heading tags\n• Setup Google search schema to rank higher in 30-45 days\n\nI’ve put together a complimentary 2-minute SEO breakdown tailored for ${l.name}. Would you like me to share it?\n\nBest regards,\nPraveen Pathak | Senior Web & SEO Consultant\n+91 8109567672 | parvpathak12@gmail.com`
+        body: `Hi ${l.name} Team,\n\nI hope you're having a productive week!\n\nMy name is Praveen Pathak, a Senior Web & SEO Specialist with 14.5+ years of experience helping local businesses rank higher on Google search and Google Maps.\n\nWhile analyzing ${niche} businesses in ${l.address || 'your city'}, I noticed that ${domain} is currently missing critical On-Page SEO meta tags and local search schema. This means prospective customers searching for ${niche} in your area are finding your competitors first.\n\nWith a few targeted SEO fixes:\n• Optimize Google My Business profile & local keywords\n• Fix missing meta title, description & H1 heading tags\n• Setup Google search schema to rank higher in 30-45 days\n\nI’ve put together a complimentary 2-minute SEO breakdown tailored for ${l.name}. Would you like me to share it?${auditLine}\n\nBest regards,\nPraveen Pathak | Senior Web & SEO Consultant\n+91 8109567672 | parvpathak12@gmail.com`
       },
       whatsapp: {
         phone: waDigits,
-        body: `Namaste ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Web & Local SEO Specialist).\n\nMaine notice kiya ki Google par ${l.address || 'aapke area'} me ${niche} search karne par aapka business top ranking me peeche reh raha hai. Missing SEO meta tags aur Google Maps profile optimization ki wajah se regular local customers competitors ke paas ja rahe hain.\n\nMaine ${l.name} ke liye ek quick 2-minute Local SEO & Google Ranking Audit plan banaya hai. Kya main wo report yahan WhatsApp par share kar du? Bas "Yes" reply kar dein!\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
+        body: `${greet} ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Web & Local SEO Specialist).\n\nMaine notice kiya ki Google par ${l.address || 'aapke area'} me ${niche} search karne par aapka business top ranking me peeche reh raha hai. Missing SEO meta tags aur Google Maps profile optimization ki wajah se regular local customers competitors ke paas ja rahe hain.\n\nMaine ${l.name} ke liye ek quick 2-minute Local SEO & Google Ranking Audit plan banaya hai. Kya main wo report yahan WhatsApp par share kar du? Bas "Yes" reply kar dein!${auditLine}\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
       },
       instagram: {
         url: l.socials?.instagram || '',
-        body: `Hey ${l.name} team! Loved your ${niche}. Spotted 2 quick Google Maps & SEO fixes that could easily get you 3x more local customer calls. Can I share a quick 2-min breakdown here?`
+        body: `Hey ${l.name} team! Loved your ${niche}. Spotted 2 quick Google Maps & SEO fixes that could easily get you 3x more local customer calls. Can I share a quick 2-min breakdown here?${auditUrl ? ` (Audit: ${auditUrl})` : ''}`
       },
       followUp: {
         to: (l.emails || []).join(', '),
         subject: `Re: Quick follow-up on Google SEO ranking — ${l.name}`,
-        body: `Namaste ${l.name} Team! 🙏\n\nBas quick check kar raha tha ki kya aapko meri Google SEO audit wali message mili thi? Agar aap local Google search me top par aana chahte hain to main free breakdown share kar sakta hu!\n\nRegards,\nPraveen Pathak | +91 8109567672`
+        body: `${greet} ${l.name} Team! 🙏\n\nBas quick check kar raha tha ki kya aapko meri Google SEO audit wali message mili thi? Agar aap local Google search me top par aana chahte hain to main free breakdown share kar sakta hu!${auditLine}\n\nRegards,\nPraveen Pathak | +91 8109567672`
       }
     };
   }
@@ -2380,20 +2462,20 @@ function buildServicePitch(service, l, r, tone = 'friendly') {
       email: {
         to: (l.emails || []).join(', '),
         subject: `Instagram & Social Media Growth Strategy for ${l.name}`,
-        body: `Hi ${l.name} Team,\n\nI'm Praveen Pathak, a Senior Creative & Social Media Specialist with 14.5+ years of experience helping brands scale their online presence.\n\nI came across ${l.name} and loved your ${niche} setup! Today, active social media (Instagram, Facebook & WhatsApp funnels) is the #1 driver of organic customer footfall.\n\nWe provide complete monthly SMO & social media management:\n• Page optimization, bio links & WhatsApp catalog integration\n• Organic reach, hashtag strategy & weekly engagement\n• Festival greetings, viral reels covers & promo campaigns\n\nI’ve put together a free 1-page Social Media Growth Roadmap for ${l.name}. Would you like me to share it?\n\nBest regards,\nPraveen Pathak | +91 8109567672`
+        body: `Hi ${l.name} Team,\n\nI'm Praveen Pathak, a Senior Creative & Social Media Specialist with 14.5+ years of experience helping brands scale their online presence.\n\nI came across ${l.name} and loved your ${niche} setup! Today, active social media (Instagram, Facebook & WhatsApp funnels) is the #1 driver of organic customer footfall.\n\nWe provide complete monthly SMO & social media management:\n• Page optimization, bio links & WhatsApp catalog integration\n• Organic reach, hashtag strategy & weekly engagement\n• Festival greetings, viral reels covers & promo campaigns\n\nI’ve put together a free 1-page Social Media Growth Roadmap for ${l.name}. Would you like me to share it?${auditLine}\n\nBest regards,\nPraveen Pathak | +91 8109567672`
       },
       whatsapp: {
         phone: waDigits,
-        body: `Namaste ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Social Media & Creative Specialist).\n\nMaine aapka ${niche} brand dekha — setup kaafi badhiya hai! 👍 Local customers ko attract karne ke liye hum complete Social Media Optimization (SMO) handle karte hain:\n• Instagram / Facebook profile branding & bio link setup\n• Regular viral reels covers & promotional stories\n• Direct WhatsApp lead funnel setup\n\nKya main ${l.name} ke liye ek quick 1-page Social Media Roadmap share kar du? Bas "Yes" reply kar dein!\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
+        body: `${greet} ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Social Media & Creative Specialist).\n\nMaine aapka ${niche} brand dekha — setup kaafi badhiya hai! 👍 Local customers ko attract karne ke liye hum complete Social Media Optimization (SMO) handle karte hain:\n• Instagram / Facebook profile branding & bio link setup\n• Regular viral reels covers & promotional stories\n• Direct WhatsApp lead funnel setup\n\nKya main ${l.name} ke liye ek quick 1-page Social Media Roadmap share kar du? Bas "Yes" reply kar dein!${auditLine}\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
       },
       instagram: {
         url: l.socials?.instagram || '',
-        body: `Hey ${l.name} team! Loved your brand feed. Spotted 2 quick social media tweaks that could easily double your customer engagement & WhatsApp inquiries. Mind if I share a quick preview?`
+        body: `Hey ${l.name} team! Loved your brand feed. Spotted 2 quick social media tweaks that could easily double your customer engagement & WhatsApp inquiries. Mind if I share a quick preview?${auditUrl ? ` (Audit: ${auditUrl})` : ''}`
       },
       followUp: {
         to: (l.emails || []).join(', '),
         subject: `Re: Social media growth roadmap for ${l.name}`,
-        body: `Namaste ${l.name} Team! 🙏\n\nBas quick follow-up: kya aapne social media growth roadmap check kiya? Just let me know if you'd like to see the sample plan!\n\nRegards,\nPraveen Pathak | +91 8109567672`
+        body: `${greet} ${l.name} Team! 🙏\n\nBas quick follow-up: kya aapne social media growth roadmap check kiya? Just let me know if you'd like to see the sample plan!${auditLine}\n\nRegards,\nPraveen Pathak | +91 8109567672`
       }
     };
   }
@@ -2403,20 +2485,20 @@ function buildServicePitch(service, l, r, tone = 'friendly') {
       email: {
         to: (l.emails || []).join(', '),
         subject: `Monthly Creative Post Design & Festival Banners for ${l.name}`,
-        body: `Hi ${l.name} Team,\n\nI'm Praveen Pathak, a Senior Creative Designer with 14.5+ years of experience crafting high-converting post designs for top brands across India and abroad.\n\nKeeping your ${niche} active with fresh, high-impact creatives is essential to stay on top of customers' minds. We provide monthly graphic design packages:\n• 15 to 30 custom branded Post & Story Creatives (Instagram / Facebook)\n• Ready festival greetings, discount promo banners & reels thumbnails\n• Consistent color scheme, typography & brand aesthetic\n\nI’ve created 2 sample post designs custom-tailored for ${l.name}. May I share them with you?\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
+        body: `Hi ${l.name} Team,\n\nI'm Praveen Pathak, a Senior Creative Designer with 14.5+ years of experience crafting high-converting post designs for top brands across India and abroad.\n\nKeeping your ${niche} active with fresh, high-impact creatives is essential to stay on top of customers' minds. We provide monthly graphic design packages:\n• 15 to 30 custom branded Post & Story Creatives (Instagram / Facebook)\n• Ready festival greetings, discount promo banners & reels thumbnails\n• Consistent color scheme, typography & brand aesthetic\n\nI’ve created 2 sample post designs custom-tailored for ${l.name}. May I share them with you?${auditLine}\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
       },
       whatsapp: {
         phone: waDigits,
-        body: `Namaste ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Senior Creative Designer).\n\nMaine aapka ${niche} setup dekha — kaafi badhiya brand hai! 👍\n\nAaj kal local customers ko attract karne ke liye regular high-quality Instagram/Facebook creatives aur festival posts zaroori hote hain. Hum monthly creative packages provide karte hain:\n• 15 se 30 custom branded Post & Story Designs (Instagram / Facebook)\n• Festival greetings, discount offer banners & reels covers\n• High-resolution print-ready graphics\n\nMaine ${l.name} ke liye 2 sample post designs mockups ready kiye hain. Kya main wo sample WhatsApp par share kar du? Bas "Yes" reply kar dein!\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
+        body: `${greet} ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Senior Creative Designer).\n\nMaine aapka ${niche} setup dekha — kaafi badhiya brand hai! 👍\n\nAaj kal local customers ko attract karne ke liye regular high-quality Instagram/Facebook creatives aur festival posts zaroori hote hain. Hum monthly creative packages provide karte hain:\n• 15 se 30 custom branded Post & Story Designs (Instagram / Facebook)\n• Festival greetings, discount offer banners & reels covers\n• High-resolution print-ready graphics\n\nMaine ${l.name} ke liye 2 sample post designs mockups ready kiye hain. Kya main wo sample WhatsApp par share kar du? Bas "Yes" reply kar dein!${auditLine}\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
       },
       instagram: {
         url: l.socials?.instagram || '',
-        body: `Hey ${l.name} team! Loved your profile. I design daily/weekly Instagram post creatives, festival banners & reels covers for top brands. Mocked up 2 free sample designs for ${l.name} — mind if I drop them here?`
+        body: `Hey ${l.name} team! Loved your profile. I design daily/weekly Instagram post creatives, festival banners & reels covers for top brands. Mocked up 2 free sample designs for ${l.name} — mind if I drop them here?${auditUrl ? ` (Audit: ${auditUrl})` : ''}`
       },
       followUp: {
         to: (l.emails || []).join(', '),
         subject: `Re: 2 sample post designs for ${l.name}`,
-        body: `Namaste ${l.name} Team! 🙏\n\nKya aapne sample post designs dekhe? Agar aapko designs pasand aayein to hum monthly basis par daily/weekly creatives manage kar sakte hain!\n\nRegards,\nPraveen Pathak | +91 8109567672`
+        body: `${greet} ${l.name} Team! 🙏\n\nKya aapne sample post designs dekhe? Agar aapko designs pasand aayein to hum monthly basis par daily/weekly creatives manage kar sakte hain!${auditLine}\n\nRegards,\nPraveen Pathak | +91 8109567672`
       }
     };
   }
@@ -2426,20 +2508,20 @@ function buildServicePitch(service, l, r, tone = 'friendly') {
       email: {
         to: (l.emails || []).join(', '),
         subject: `Professional Flyer, Brochure, Menu & Print Design for ${l.name}`,
-        body: `Hi ${l.name} Team,\n\nI'm Praveen Pathak, a Senior Graphic Designer with 14.5+ years of experience in commercial artwork, brand identity, and marketing print collaterals.\n\nIf you're looking for clean, high-converting marketing materials for ${l.name}, we specialize in:\n• Marketing Flyers, Pamphlets & Newspaper Inserts\n• Tri-fold Corporate Brochures & Product Catalogs\n• Restaurant Menu Cards, Table Standees & Banners\n• Brand Logo Redesign, Business Cards & Stationery Kits\n\nI’d love to share our design portfolio and sample layouts. Would you be open to taking a quick look?\n\nBest regards,\nPraveen Pathak | Senior Graphic Designer\n+91 8109567672 | parvpathak12@gmail.com`
+        body: `Hi ${l.name} Team,\n\nI'm Praveen Pathak, a Senior Graphic Designer with 14.5+ years of experience in commercial artwork, brand identity, and marketing print collaterals.\n\nIf you're looking for clean, high-converting marketing materials for ${l.name}, we specialize in:\n• Marketing Flyers, Pamphlets & Newspaper Inserts\n• Tri-fold Corporate Brochures & Product Catalogs\n• Restaurant Menu Cards, Table Standees & Banners\n• Brand Logo Redesign, Business Cards & Stationery Kits\n\nI’d love to share our design portfolio and sample layouts. Would you be open to taking a quick look?${auditLine}\n\nBest regards,\nPraveen Pathak | Senior Graphic Designer\n+91 8109567672 | parvpathak12@gmail.com`
       },
       whatsapp: {
         phone: waDigits,
-        body: `Namaste ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Senior Graphic Designer, Indore).\n\nKya aapko apne ${niche} business ke promotion ke liye professional marketing print material design karwana hai? Hum provide karte hain:\n• Marketing Flyers, Pamphlets & Newspaper Inserts\n• Tri-fold Brochures & Product Catalogs\n• Restaurant Menu Cards & Table Standees\n• Logo Design, Visiting Cards & Corporate Stationery\n\nMaine Indore aur India bhar ke 100+ businesses ke liye high-converting designs banaye hain. Kya main apna portfolio aur pricing share kar du? Just reply "Yes"!\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
+        body: `${greet} ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Senior Graphic Designer, Indore).\n\nKya aapko apne ${niche} business ke promotion ke liye professional marketing print material design karwana hai? Hum provide karte hain:\n• Marketing Flyers, Pamphlets & Newspaper Inserts\n• Tri-fold Brochures & Product Catalogs\n• Restaurant Menu Cards & Table Standees\n• Logo Design, Visiting Cards & Corporate Stationery\n\nMaine Indore aur India bhar ke 100+ businesses ke liye high-converting designs banaye hain. Kya main apna portfolio aur pricing share kar du? Just reply "Yes"!${auditLine}\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
       },
       instagram: {
         url: l.socials?.instagram || '',
-        body: `Hey ${l.name} team! Big fan of your brand. If you ever need high-converting Flyers, Brochures, Menu Cards, or Logo revamp, happy to share my design portfolio & sample layouts!`
+        body: `Hey ${l.name} team! Big fan of your brand. If you ever need high-converting Flyers, Brochures, Menu Cards, or Logo revamp, happy to share my design portfolio & sample layouts!${auditUrl ? ` (Audit: ${auditUrl})` : ''}`
       },
       followUp: {
         to: (l.emails || []).join(', '),
         subject: `Re: Design portfolio & marketing flyers for ${l.name}`,
-        body: `Namaste ${l.name} Team! 🙏\n\nBas quick follow-up: kya aapne hamara flyer aur brochure portfolio dekha? Aapse connect karke khushi hogi!\n\nRegards,\nPraveen Pathak | +91 8109567672`
+        body: `${greet} ${l.name} Team! 🙏\n\nBas quick follow-up: kya aapne hamara flyer aur brochure portfolio dekha? Aapse connect karke khushi hogi!${auditLine}\n\nRegards,\nPraveen Pathak | +91 8109567672`
       }
     };
   }
@@ -2450,20 +2532,20 @@ function buildServicePitch(service, l, r, tone = 'friendly') {
     email: {
       to: (l.emails || []).join(', '),
       subject: r.subject || `Quick website idea for ${l.name}`,
-      body: r.body || ''
+      body: (r.body || '') + auditLine
     },
     whatsapp: {
       phone: waDigits,
-      body: r.whatsapp || ''
+      body: (r.whatsapp || '') + auditLine
     },
     instagram: {
       url: l.socials?.instagram || '',
-      body: r.instagram || shortDM
+      body: (r.instagram || shortDM) + (auditUrl ? ` (Audit: ${auditUrl})` : '')
     },
     followUp: {
       to: (l.emails || []).join(', '),
       subject: `Re: Quick follow-up — ${l.name}`,
-      body: r.followUp || ''
+      body: (r.followUp || '') + auditLine
     }
   };
 }
@@ -2472,7 +2554,7 @@ function onPitchServiceChange() {
   if (!currentPitchData || !currentPitchData.lead) return;
   const s = $('m_service')?.value || 'web';
   const l = currentPitchData.lead;
-  const servicePitches = buildServicePitch(s, l, currentPitchData._rawR || {}, currentPitchData.tone);
+  const servicePitches = buildServicePitch(s, l, currentPitchData._rawR || {}, currentPitchData.tone, currentPitchData.auditUrl || '');
   Object.assign(currentPitchData, servicePitches);
   currentPitchData.service = s;
   setPitchChannel(currentPitchChannel || 'email');
@@ -2514,6 +2596,8 @@ function setPitchChannel(ch) {
     $('m_actions').innerHTML = `
       <button type="button" onclick="sendWhatsAppModal()" style="background:#059669;color:#fff;font-weight:700">💬 Open in WhatsApp Web / App</button>
       <button class="sec" type="button" onclick="copyText($('m_body').value, this)">📋 Copy Message</button>
+      ${currentPitchData.auditUrl ? `<a target="_blank" href="${esc(currentPitchData.auditUrl)}"><button class="sec" type="button" style="color:#0284c7;background:#f0f9ff;border-color:#bae6fd;font-weight:700">🌐 Live Web Audit</button></a><button class="sec" type="button" onclick="copyText('${esc(currentPitchData.auditUrl)}', this)">🔗 Copy Audit Link</button>` : ''}
+      <button class="sec" type="button" style="color:#86198f;background:#fdf4ff;border-color:#f5d0fe;font-weight:700" onclick="showVoiceNoteModal()">🎙️ Voice Note Script</button>
       <button class="sec" type="button" onclick="printAuditReport()">📄 Audit PDF</button>
       <button class="sec" type="button" onclick="printQuote()">💵 Quote PDF</button>
       <button class="sec" type="button" id="saveLeadBtn">✔ Mark Pitched</button>
@@ -2587,7 +2671,8 @@ function setPitchChannel(ch) {
       ${waDigits ? `<button type="button" style="color:#047857;background:#ecfdf5;border-color:#a7f3d0;font-weight:600" onclick="setPitchChannel('whatsapp')">💬 WhatsApp Pitch</button>` : ''}
       ${l.socials?.instagram ? `<button type="button" class="sec" style="color:#c026d3;background:#fdf4ff;border-color:#f5d0fe;font-weight:600" onclick="setPitchChannel('instagram')">📸 Insta DM</button>` : ''}
       ${l.socials?.facebook ? `<a target="_blank" href="${esc(l.socials.facebook)}" onclick="autoTrack()"><button class="sec" type="button">📘 Facebook</button></a>` : ''}
-      ${l.website ? `<a target="_blank" href="${esc(l.website)}" onclick="autoTrack()"><button class="sec" type="button">🌐 Contact Form</button></a><a target="_blank" href="https://pagespeed.web.dev/analysis?url=${encodeURIComponent(l.website)}"><button class="sec" type="button">📊 Speed Proof</button></a>` : ''}
+      ${currentPitchData.auditUrl ? `<a target="_blank" href="${esc(currentPitchData.auditUrl)}"><button class="sec" type="button" style="color:#0284c7;background:#f0f9ff;border-color:#bae6fd;font-weight:700">🌐 Live Web Audit</button></a><button class="sec" type="button" onclick="copyText('${esc(currentPitchData.auditUrl)}', this)">🔗 Copy Audit Link</button>` : ''}
+      <button class="sec" type="button" style="color:#86198f;background:#fdf4ff;border-color:#f5d0fe;font-weight:700" onclick="showVoiceNoteModal()">🎙️ Voice Note Script</button>
       <button class="sec" type="button" onclick="printAuditReport()">📄 Audit PDF</button>
       <button class="sec" type="button" onclick="printQuote()">💵 Quote PDF</button>
       <button class="sec" type="button" onclick="autoTrack();openOwnerModal('${kind}',${idx})">👤 Find Owner</button>
@@ -3392,6 +3477,74 @@ function exportAdminCSV() {
   a.download = `company-team-outreach-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
 }
+
+// ---------- Cold Call Script & Live Objection Handling ----------
+const OBJECTIONS_DATA = {
+  already_have: {
+    title: '🛑 Objection: "Hamare paas already website / agency hai"',
+    rebuttal: "Bilkul sir, bohot achhi baat hai! Actually maine aapki site check ki thi aur 2 critical issues notice kiye:\n1. Mobile par site ka load time slow hai jisse 40% visitors bina inquiry kiye nikal jate hain.\n2. Google local schema missing hai jisse competitors maps par aage rank kar rahe hain.\n\nHum aapki existing agency ko replace karne nahi bol rahe — hum sirf 48 hours me ye 2 technical leaks fix karke aapki inquiries 2x kar denge. Kya main audit report WhatsApp par bhej du?"
+  },
+  no_time: {
+    title: '⏳ Objection: "Abhi time nahi hai / Abhi zaroorat nahi hai"',
+    rebuttal: "Main bilkul samajh sakta hu sir, aap busy honge. Bas 30 seconds lenge:\nAapke area me roz 200+ log online search karte hain. Missing WhatsApp booking aur SEO ki wajah se wo direct aapke competitors ke paas ja rahe hain.\n\nAapko kuch nahi karna — sara setup hum karenge. Kya main 2-min ki summary report WhatsApp par share kar du taaki aap free time me dekh sakein?"
+  },
+  price_high: {
+    title: '💰 Objection: "Aapka charges / pricing kitna hoga?"',
+    rebuttal: "Sir hum market ke comparison me 50% affordable hain kyunki hum direct freelance specialists hain, koi fancy agency overhead nahi:\n• Quick Technical & SEO Fix Pack: sirf ₹4,999 ($99)\n• Full Modern Conversion Redesign: ₹14,999 to ₹24,999 ($299 to $499)\n\nAur sabse badi baat — yeh cost pehle 1-2 naye clients aate hi recover ho jati hai! Kya main detailed quote bhej du?"
+  },
+  justdial: {
+    title: '📍 Objection: "JustDial / Google Maps se business aa hi raha hai"',
+    rebuttal: "Haan sir, JustDial par aapki listing hai, par JustDial par har lead aapke sath 5 aur competitors ko bechi jati hai jisse rate-cut karna padta hai.\n\nJab aapki khud ki modern website aur Google Maps top ranking hoti hai, to customer kisi aur ko call nahi karta — direct aapko call ya WhatsApp order karta hai 100% margin ke sath!"
+  },
+  sample: {
+    title: '🎨 Objection: "Pehle sample ya portfolio dikhao"',
+    rebuttal: "Bilkul sir! Humne 14.5+ saal me India aur abroad ke 100+ businesses ke live projects banaye hain:\n• Orbit Local: https://www.orbitlocal.com/\n• Hana Hunter Real Estate: https://hanahunter.com/\n\nMaine aapke business ke liye ek live 6-point technical audit report bhi ready ki hai. Kya main abhi WhatsApp par link drop kar du?"
+  },
+  next_month: {
+    title: '🗓️ Objection: "Agle mahine baat karna"',
+    rebuttal: "Bilkul sir, main next month aapko reminder bhej dunga. Bas ek cheez — is month festive/wedding season ki wajah se local searches peak par hain. Agar hum abhi setup live kar dein to next month tak aapko regular online inquiries aane lagengi. Main report WhatsApp par save kar deta hu, aap free time me zaroor dekhein!"
+  }
+};
+
+function showObjection(key) {
+  const o = OBJECTIONS_DATA[key];
+  if (!o) return;
+  $('ccObjBox').style.display = 'block';
+  $('ccObjTitle').textContent = o.title;
+  $('ccObjBody').textContent = o.rebuttal;
+}
+
+function openColdCallModal(kind, idx) {
+  const l = data[kind]?.[idx];
+  if (!l) return;
+  const isNoWeb = l.platform === 'No Website' || !l.website;
+  const phone = (l.phones || [])[0] || '';
+  const digits = phone.replace(/\D/g, '');
+
+  $('ccBizName').textContent = `📞 Cold Call & Objections: ${l.name}`;
+  $('ccBizSub').textContent = `${l.category ? l.category.replace(/_/g, ' ') : 'Business'} · ${l.address || 'Local Region'} · Source: ${l.source || 'Discovery'}`;
+  $('ccPhoneDisplay').textContent = phone || 'No phone number available';
+
+  $('ccCallActions').innerHTML = digits
+    ? `<a href="tel:${digits}"><button type="button" style="background:#059669;color:#fff;font-weight:700">📞 Click to Dial (${phone})</button></a>
+       <button type="button" class="sec" onclick="copyText('${digits}', this)">📋 Copy Number</button>`
+    : '<span style="color:#dc2626;font-size:12px;font-weight:600">No phone number</span>';
+
+  $('ccHookText').textContent = `Namaste Sir! Kya meri baat ${l.name} ke owner / manager se ho rahi hai?\n\nSir main Praveen Pathak bol raha hu, 14+ years experience Web & Growth Specialist (Indore).\n\nSir maine Google par aapka business dekha — setup kaafi badhiya hai! Par ek critical cheez notice hui ki ${isNoWeb ? 'aapka koi official mobile website nahi hai, jabki roz aapke area me local customers phone par search karte hain' : 'aapki website mobile par slow load hoti hai aur local SEO meta tags missing hain'}.\n\nMaine aapke liye ek free 6-point technical audit report banayi hai. Kya main wo report WhatsApp par share kar du?`;
+
+  $('ccVoiceScript').textContent = `Namaste Sir! Main Praveen Pathak bol raha hu (14+ yrs Web & Digital Growth Consultant). Maine ${l.name} ka Google profile aur online presence analyze kiya tha. Kuch important technical tweaks hain jisse aapke pass local WhatsApp inquiries double ho sakti hain. Maine detailed audit report ka link is WhatsApp par share kar diya hai, ek baar free time me zaroor dekhein!`;
+
+  $('ccObjBox').style.display = 'none';
+  $('coldCallModal').style.display = 'flex';
+}
+
+function showVoiceNoteModal() {
+  if (!currentPitchData) return;
+  openColdCallModal(currentPitchData.kind, currentPitchData.idx);
+  const voiceScriptEl = $('ccVoiceScript');
+  if (voiceScriptEl) voiceScriptEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 </script>
 </body>
 </html>
