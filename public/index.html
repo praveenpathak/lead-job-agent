@@ -300,6 +300,9 @@
     <!-- 1-Click Quick Picks Ribbon -->
     <div class="quick-ribbon" id="quickPicksRibbon">
       <div style="font-size:12px;font-weight:700;color:var(--muted);align-self:center;flex-shrink:0;margin-right:2px">⚡ Quick Picks:</div>
+      <div class="qp-chip" style="background:#fdf4ff;color:#9333ea;border-color:#f0abfc" onclick="quickSearchPreset('smo_post_design')">📱 SMO &amp; Post Design</div>
+      <div class="qp-chip" style="background:#f0fdf4;color:#16a34a;border-color:#86efac" onclick="quickSearchPreset('flyer_brochure')">📄 Flyer &amp; Print Leads</div>
+      <div class="qp-chip" style="background:#eff6ff;color:#2563eb;border-color:#93c5fd" onclick="quickSearchPreset('seo_local')">🔍 SEO &amp; GMB Ranking</div>
       <div class="qp-chip" onclick="quickSearchPreset('dubai_food')">🇦🇪 Dubai Restaurants &amp; Cafes</div>
       <div class="qp-chip" onclick="quickSearchPreset('indore_health_noweb')">🏥 Indore Clinics (No Website) 🚀</div>
       <div class="qp-chip" onclick="quickSearchPreset('usa_shopify')">🛍️ USA Shopify Stores</div>
@@ -671,13 +674,27 @@
       <button type="button" class="sec" id="tabFollowUp" onclick="setPitchChannel('followup')" style="font-size:12px;padding:6px 12px;color:#d97706;font-weight:600">🔄 Day-3 Follow-Up</button>
     </div>
 
-    <div id="m_toneWrap" style="display:none;margin-bottom:8px"><label>Pitch Tone
-      <select id="m_tone" style="min-width:240px">
-        <option value="friendly">😊 Friendly & Positive (Default)</option>
-        <option value="corporate">💼 USA / Dubai Corporate (ROI)</option>
-        <option value="hinglish">🇮🇳 Indian Business (Hinglish Warm)</option>
-        <option value="custom">✏️ My Custom Template</option>
-      </select></label></div>
+    <div id="m_toneWrap" style="display:none;margin-bottom:8px">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <label>Pitch Service:
+          <select id="m_service" style="min-width:240px" onchange="onPitchServiceChange()">
+            <option value="web" selected>🌐 Website &amp; Web Development</option>
+            <option value="seo">🔍 SEO &amp; Google Maps Ranking</option>
+            <option value="smo">📱 SMO &amp; Social Media Marketing</option>
+            <option value="post">📸 Social Media Post Design (Daily/Festival)</option>
+            <option value="graphic">🎨 Graphic Design, Logo &amp; Flyer / Print</option>
+          </select>
+        </label>
+        <label>Pitch Tone:
+          <select id="m_tone" style="min-width:200px" onchange="onPitchToneChange()">
+            <option value="friendly">😊 Friendly &amp; Positive (Default)</option>
+            <option value="corporate">💼 Corporate (ROI / Direct)</option>
+            <option value="hinglish">🇮🇳 Indian Business (Hinglish Warm)</option>
+            <option value="custom">✏️ My Custom Template</option>
+          </select>
+        </label>
+      </div>
+    </div>
     <div id="m_to_wrap"><label><span id="m_to_lbl">To</span><input id="m_to" style="width:100%" /></label></div>
     <div id="m_subject_wrap"><label style="margin-top:8px">Subject<input id="m_subject" style="width:100%" /></label></div>
     <label style="margin-top:8px"><span id="m_body_lbl">Message (edit kar sakte ho)</span><textarea id="m_body" style="min-height:280px"></textarea></label>
@@ -1354,6 +1371,13 @@ const PLATFORM_GROUPS = [
     ['speed_slow', '⚡ Slow Loading Site (>3.5s)', 'Fix Core Web Vitals and high bounce rates'],
     ['ssl_broken', '🔒 Missing SSL / Insecure HTTP', 'Urgent security fix pitch to protect business reputation']
   ]],
+  ['🎨 Marketing, Design & Social Media', [
+    ['seo_need', '🔍 SEO & Google Ranking (GMB / Meta / Schema)', 'Rank higher on Google, local SEO & GMB setup'],
+    ['smo_social', '📱 SMO & Social Media Marketing', 'Instagram & FB page growth, bio link & WhatsApp engagement'],
+    ['graphic_design', '🎨 Graphic Design & Brand Logo', 'Logo refresh, visiting cards, stationery & branding revamp'],
+    ['post_design', '📸 Social Media Post & Banner Design', 'Daily/weekly creatives, festival posts, reels covers & offer banners'],
+    ['flyer_brochure', '📄 Flyer, Brochure & Menu Card Design', 'Print marketing, pamphlets, standees, menus & catalogs']
+  ]],
   ['🛒 E-Commerce & Online Stores', [
     ['shopify', '🛍️ Shopify Stores', 'Theme customization, speed, checkout & app integration'],
     ['woocommerce', '🛒 WooCommerce (WordPress Store)', 'Store maintenance, payment gateways & design refresh'],
@@ -1433,6 +1457,24 @@ function clearAllSelections() {
 
 // 1-Click Quick Picks Presets
 const QUICK_PRESETS = {
+  smo_post_design: {
+    name: '📱 Social Media & Post Design Leads',
+    areas: ['Indore, India', 'Mumbai, India', 'Dubai, UAE'],
+    cats: ['restaurant', 'salon_beauty', 'gym_fitness', 'bakery_sweets', 'boutique_tailor'],
+    plats: ['post_design', 'smo_social'],
+  },
+  flyer_brochure: {
+    name: '📄 Flyer & Brochure Design Leads',
+    areas: ['Indore, India', 'Mumbai, India', 'New Delhi, India'],
+    cats: ['hospital_clinic', 'school_coaching', 'restaurant', 'real_estate', 'gym_fitness'],
+    plats: ['flyer_brochure', 'graphic_design'],
+  },
+  seo_local: {
+    name: '🔍 SEO & Google Maps Ranking Leads',
+    areas: ['Indore, India', 'Mumbai, India', 'Dubai, UAE'],
+    cats: ['hospital_clinic', 'dentist_clinic', 'real_estate', 'hotel', 'car_rental_taxi'],
+    plats: ['seo_need'],
+  },
   dubai_food: {
     name: '🇦🇪 Dubai Restaurants & Cafes',
     areas: ['Dubai, UAE'],
@@ -2266,17 +2308,149 @@ async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
     }
   }
 
-  const shortDM = r.linkedinNote || `Hey ${l.name} team! Loved your business in ${l.address || 'town'}. Spotted 2 quick tweaks that could bring 2x more client inquiries. Can I share a quick 2-min breakdown?`;
+  let currentPitchService = $('m_service')?.value || 'web';
+  const servicePitches = buildServicePitch(currentPitchService, l, r, tone);
 
   currentPitchData = {
     kind,
     idx,
     lead: l,
     tone,
+    service: currentPitchService,
+    _rawR: r,
+    ...servicePitches
+  };
+
+  currentTrack = {
+    kind: 'Lead',
+    title: `${l.name} (${l.platform})`,
+    company: (l.emails||[])[0] || (l.phones||[])[0] || '',
+    location: l.address,
+    url: l.website || l.osm || l.name,
+    status: 'Pitched',
+    notes: `Pitch: ${currentPitchService.toUpperCase()} — ${(l.opportunities||[]).join('; ')}`
+  };
+
+  $('m_title').textContent = `Pitch: ${l.name} (${l.platform})`;
+  $('m_info').innerHTML = `${esc(l.website || 'No website')} · Phones: ${esc((l.phones||[]).join(', ') || '—')}`;
+  if ($('m_tone')) $('m_tone').value = tone;
+  if ($('m_service')) $('m_service').value = currentPitchService;
+
+  // If no email but phone exists, default directly to WhatsApp tab!
+  if ((l.emails || []).length === 0 && waDigits) {
+    setPitchChannel('whatsapp');
+  } else {
+    setPitchChannel('email');
+  }
+
+  $('modal').style.display = 'flex';
+}
+
+function buildServicePitch(service, l, r, tone = 'friendly') {
+  const isNoWeb = l.platform === 'No Website' || !l.website;
+  const niche = l.category ? l.category.replace(/_/g, ' ') : 'business';
+  const waDigits = getWhatsAppDigits(l);
+  const domain = l.website ? l.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '') : l.name;
+
+  if (service === 'seo') {
+    return {
+      email: {
+        to: (l.emails || []).join(', '),
+        subject: `Local SEO & Google Search Ranking idea for ${l.name}`,
+        body: `Hi ${l.name} Team,\n\nI hope you're having a productive week!\n\nMy name is Praveen Pathak, a Senior Web & SEO Specialist with 14.5+ years of experience helping local businesses rank higher on Google search and Google Maps.\n\nWhile analyzing ${niche} businesses in ${l.address || 'your city'}, I noticed that ${domain} is currently missing critical On-Page SEO meta tags and local search schema. This means prospective customers searching for ${niche} in your area are finding your competitors first.\n\nWith a few targeted SEO fixes:\n• Optimize Google My Business profile & local keywords\n• Fix missing meta title, description & H1 heading tags\n• Setup Google search schema to rank higher in 30-45 days\n\nI’ve put together a complimentary 2-minute SEO breakdown tailored for ${l.name}. Would you like me to share it?\n\nBest regards,\nPraveen Pathak | Senior Web & SEO Consultant\n+91 8109567672 | parvpathak12@gmail.com`
+      },
+      whatsapp: {
+        phone: waDigits,
+        body: `Namaste ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Web & Local SEO Specialist).\n\nMaine notice kiya ki Google par ${l.address || 'aapke area'} me ${niche} search karne par aapka business top ranking me peeche reh raha hai. Missing SEO meta tags aur Google Maps profile optimization ki wajah se regular local customers competitors ke paas ja rahe hain.\n\nMaine ${l.name} ke liye ek quick 2-minute Local SEO & Google Ranking Audit plan banaya hai. Kya main wo report yahan WhatsApp par share kar du? Bas "Yes" reply kar dein!\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
+      },
+      instagram: {
+        url: l.socials?.instagram || '',
+        body: `Hey ${l.name} team! Loved your ${niche}. Spotted 2 quick Google Maps & SEO fixes that could easily get you 3x more local customer calls. Can I share a quick 2-min breakdown here?`
+      },
+      followUp: {
+        to: (l.emails || []).join(', '),
+        subject: `Re: Quick follow-up on Google SEO ranking — ${l.name}`,
+        body: `Namaste ${l.name} Team! 🙏\n\nBas quick check kar raha tha ki kya aapko meri Google SEO audit wali message mili thi? Agar aap local Google search me top par aana chahte hain to main free breakdown share kar sakta hu!\n\nRegards,\nPraveen Pathak | +91 8109567672`
+      }
+    };
+  }
+
+  if (service === 'smo') {
+    return {
+      email: {
+        to: (l.emails || []).join(', '),
+        subject: `Instagram & Social Media Growth Strategy for ${l.name}`,
+        body: `Hi ${l.name} Team,\n\nI'm Praveen Pathak, a Senior Creative & Social Media Specialist with 14.5+ years of experience helping brands scale their online presence.\n\nI came across ${l.name} and loved your ${niche} setup! Today, active social media (Instagram, Facebook & WhatsApp funnels) is the #1 driver of organic customer footfall.\n\nWe provide complete monthly SMO & social media management:\n• Page optimization, bio links & WhatsApp catalog integration\n• Organic reach, hashtag strategy & weekly engagement\n• Festival greetings, viral reels covers & promo campaigns\n\nI’ve put together a free 1-page Social Media Growth Roadmap for ${l.name}. Would you like me to share it?\n\nBest regards,\nPraveen Pathak | +91 8109567672`
+      },
+      whatsapp: {
+        phone: waDigits,
+        body: `Namaste ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Social Media & Creative Specialist).\n\nMaine aapka ${niche} brand dekha — setup kaafi badhiya hai! 👍 Local customers ko attract karne ke liye hum complete Social Media Optimization (SMO) handle karte hain:\n• Instagram / Facebook profile branding & bio link setup\n• Regular viral reels covers & promotional stories\n• Direct WhatsApp lead funnel setup\n\nKya main ${l.name} ke liye ek quick 1-page Social Media Roadmap share kar du? Bas "Yes" reply kar dein!\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
+      },
+      instagram: {
+        url: l.socials?.instagram || '',
+        body: `Hey ${l.name} team! Loved your brand feed. Spotted 2 quick social media tweaks that could easily double your customer engagement & WhatsApp inquiries. Mind if I share a quick preview?`
+      },
+      followUp: {
+        to: (l.emails || []).join(', '),
+        subject: `Re: Social media growth roadmap for ${l.name}`,
+        body: `Namaste ${l.name} Team! 🙏\n\nBas quick follow-up: kya aapne social media growth roadmap check kiya? Just let me know if you'd like to see the sample plan!\n\nRegards,\nPraveen Pathak | +91 8109567672`
+      }
+    };
+  }
+
+  if (service === 'post') {
+    return {
+      email: {
+        to: (l.emails || []).join(', '),
+        subject: `Monthly Creative Post Design & Festival Banners for ${l.name}`,
+        body: `Hi ${l.name} Team,\n\nI'm Praveen Pathak, a Senior Creative Designer with 14.5+ years of experience crafting high-converting post designs for top brands across India and abroad.\n\nKeeping your ${niche} active with fresh, high-impact creatives is essential to stay on top of customers' minds. We provide monthly graphic design packages:\n• 15 to 30 custom branded Post & Story Creatives (Instagram / Facebook)\n• Ready festival greetings, discount promo banners & reels thumbnails\n• Consistent color scheme, typography & brand aesthetic\n\nI’ve created 2 sample post designs custom-tailored for ${l.name}. May I share them with you?\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
+      },
+      whatsapp: {
+        phone: waDigits,
+        body: `Namaste ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Senior Creative Designer).\n\nMaine aapka ${niche} setup dekha — kaafi badhiya brand hai! 👍\n\nAaj kal local customers ko attract karne ke liye regular high-quality Instagram/Facebook creatives aur festival posts zaroori hote hain. Hum monthly creative packages provide karte hain:\n• 15 se 30 custom branded Post & Story Designs (Instagram / Facebook)\n• Festival greetings, discount offer banners & reels covers\n• High-resolution print-ready graphics\n\nMaine ${l.name} ke liye 2 sample post designs mockups ready kiye hain. Kya main wo sample WhatsApp par share kar du? Bas "Yes" reply kar dein!\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
+      },
+      instagram: {
+        url: l.socials?.instagram || '',
+        body: `Hey ${l.name} team! Loved your profile. I design daily/weekly Instagram post creatives, festival banners & reels covers for top brands. Mocked up 2 free sample designs for ${l.name} — mind if I drop them here?`
+      },
+      followUp: {
+        to: (l.emails || []).join(', '),
+        subject: `Re: 2 sample post designs for ${l.name}`,
+        body: `Namaste ${l.name} Team! 🙏\n\nKya aapne sample post designs dekhe? Agar aapko designs pasand aayein to hum monthly basis par daily/weekly creatives manage kar sakte hain!\n\nRegards,\nPraveen Pathak | +91 8109567672`
+      }
+    };
+  }
+
+  if (service === 'graphic') {
+    return {
+      email: {
+        to: (l.emails || []).join(', '),
+        subject: `Professional Flyer, Brochure, Menu & Print Design for ${l.name}`,
+        body: `Hi ${l.name} Team,\n\nI'm Praveen Pathak, a Senior Graphic Designer with 14.5+ years of experience in commercial artwork, brand identity, and marketing print collaterals.\n\nIf you're looking for clean, high-converting marketing materials for ${l.name}, we specialize in:\n• Marketing Flyers, Pamphlets & Newspaper Inserts\n• Tri-fold Corporate Brochures & Product Catalogs\n• Restaurant Menu Cards, Table Standees & Banners\n• Brand Logo Redesign, Business Cards & Stationery Kits\n\nI’d love to share our design portfolio and sample layouts. Would you be open to taking a quick look?\n\nBest regards,\nPraveen Pathak | Senior Graphic Designer\n+91 8109567672 | parvpathak12@gmail.com`
+      },
+      whatsapp: {
+        phone: waDigits,
+        body: `Namaste ${l.name} Team! 🙏\n\nMain Praveen Pathak hu (14+ yrs Senior Graphic Designer, Indore).\n\nKya aapko apne ${niche} business ke promotion ke liye professional marketing print material design karwana hai? Hum provide karte hain:\n• Marketing Flyers, Pamphlets & Newspaper Inserts\n• Tri-fold Brochures & Product Catalogs\n• Restaurant Menu Cards & Table Standees\n• Logo Design, Visiting Cards & Corporate Stationery\n\nMaine Indore aur India bhar ke 100+ businesses ke liye high-converting designs banaye hain. Kya main apna portfolio aur pricing share kar du? Just reply "Yes"!\n\nWarm regards,\nPraveen Pathak | +91 8109567672`
+      },
+      instagram: {
+        url: l.socials?.instagram || '',
+        body: `Hey ${l.name} team! Big fan of your brand. If you ever need high-converting Flyers, Brochures, Menu Cards, or Logo revamp, happy to share my design portfolio & sample layouts!`
+      },
+      followUp: {
+        to: (l.emails || []).join(', '),
+        subject: `Re: Design portfolio & marketing flyers for ${l.name}`,
+        body: `Namaste ${l.name} Team! 🙏\n\nBas quick follow-up: kya aapne hamara flyer aur brochure portfolio dekha? Aapse connect karke khushi hogi!\n\nRegards,\nPraveen Pathak | +91 8109567672`
+      }
+    };
+  }
+
+  // Default: Web development pitch
+  const shortDM = r.linkedinNote || `Hey ${l.name} team! Loved your business in ${l.address || 'town'}. Spotted 2 quick tweaks that could bring 2x more client inquiries. Can I share a quick 2-min breakdown?`;
+  return {
     email: {
       to: (l.emails || []).join(', '),
-      subject: r.subject,
-      body: customEmailBody
+      subject: r.subject || `Quick website idea for ${l.name}`,
+      body: r.body || ''
     },
     whatsapp: {
       phone: waDigits,
@@ -2292,36 +2466,29 @@ async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
       body: r.followUp || ''
     }
   };
-
-  currentTrack = {
-    kind: 'Lead',
-    title: `${l.name} (${l.platform})`,
-    company: (l.emails||[])[0] || (l.phones||[])[0] || '',
-    location: l.address,
-    url: l.website || l.osm || l.name,
-    status: 'Pitched',
-    notes: (l.opportunities||[]).join('; ')
-  };
-
-  $('m_title').textContent = `Pitch: ${l.name} (${l.platform})`;
-  $('m_info').innerHTML = `${esc(l.website || 'No website')} · Phones: ${esc((l.phones||[]).join(', ') || '—')}`;
-  if ($('m_tone')) {
-    $('m_tone').value = tone;
-    $('m_tone').onchange = () => openPitch(kind, idx, $('m_tone').value);
-  }
-
-  // If no email but phone exists, default directly to WhatsApp tab!
-  if ((l.emails || []).length === 0 && waDigits) {
-    setPitchChannel('whatsapp');
-  } else {
-    setPitchChannel('email');
-  }
-
-  $('modal').style.display = 'flex';
 }
+
+function onPitchServiceChange() {
+  if (!currentPitchData || !currentPitchData.lead) return;
+  const s = $('m_service')?.value || 'web';
+  const l = currentPitchData.lead;
+  const servicePitches = buildServicePitch(s, l, currentPitchData._rawR || {}, currentPitchData.tone);
+  Object.assign(currentPitchData, servicePitches);
+  currentPitchData.service = s;
+  setPitchChannel(currentPitchChannel || 'email');
+  showToast(`Switched pitch to: ${$('m_service').selectedOptions[0].text}`);
+}
+
+function onPitchToneChange() {
+  if (!currentPitchData || !currentPitchData.lead) return;
+  openPitch(currentPitchData.kind, currentPitchData.idx, $('m_tone').value);
+}
+
+let currentPitchChannel = 'email';
 
 function setPitchChannel(ch) {
   if (!currentPitchData) return;
+  currentPitchChannel = ch;
   const { lead: l, kind, idx } = currentPitchData;
   const waDigits = currentPitchData.whatsapp.phone;
 
@@ -2330,9 +2497,10 @@ function setPitchChannel(ch) {
     if (btn) btn.className = 'sec';
   });
 
+  $('m_toneWrap').style.display = 'block';
+
   if (ch === 'whatsapp') {
     if ($('tabWhatsApp')) $('tabWhatsApp').className = '';
-    $('m_toneWrap').style.display = 'none';
     if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'none';
     if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
     if ($('m_to_lbl')) $('m_to_lbl').textContent = 'WhatsApp Recipient Phone';
@@ -2354,7 +2522,6 @@ function setPitchChannel(ch) {
     $('m_steps').innerHTML = '<b>1-Click WhatsApp:</b> "Open in WhatsApp" dabayein — desktop WhatsApp Web ya mobile app me pre-filled message khulega!';
   } else if (ch === 'instagram') {
     if ($('tabInsta')) $('tabInsta').className = '';
-    $('m_toneWrap').style.display = 'none';
     if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'none';
     if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
     const igUrl = currentPitchData.instagram.url;
@@ -2376,7 +2543,6 @@ function setPitchChannel(ch) {
     $('m_steps').innerHTML = '<b>1-Click Insta DM:</b> Button dabate hi DM clipboard me copy ho jayega aur Instagram profile khulegi — bas DM paste kar dein!';
   } else if (ch === 'followup') {
     if ($('tabFollowUp')) $('tabFollowUp').className = '';
-    $('m_toneWrap').style.display = 'none';
     if ($('m_to_wrap')) $('m_to_wrap').style.display = 'block';
     if ($('m_subject_wrap')) $('m_subject_wrap').style.display = 'block';
     if ($('m_to_lbl')) $('m_to_lbl').textContent = 'To';
