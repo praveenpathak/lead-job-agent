@@ -18,7 +18,12 @@ import {
   getUserApplications,
   upsertUserApplication,
   deleteUserApplication,
-  upsertUserApplicationsBulk
+  upsertUserApplicationsBulk,
+  isUserSuperAdmin,
+  getAdminUsers,
+  getAdminPitches,
+  getAdminStats,
+  getAdminActivity
 } from './lib/auth.js';
 import { dbSaveLead } from './lib/db.js';
 
@@ -136,6 +141,59 @@ const server = http.createServer(async (req, res) => {
       const user = await getUserById(uid);
       const profile = await getUserProfile(uid);
       return json({ user, profile });
+    }
+
+    // ----- Super Admin Endpoints -----
+    if (req.method === 'GET' && req.url === '/api/admin/stats') {
+      const uid = await getAuthUserId(req);
+      if (!uid) { res.writeHead(401, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ error: 'Unauthorized' })); }
+      try {
+        const stats = await getAdminStats(uid);
+        return json(stats);
+      } catch (err) {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message }));
+      }
+    }
+    if (req.method === 'GET' && req.url === '/api/admin/users') {
+      const uid = await getAuthUserId(req);
+      if (!uid) { res.writeHead(401, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ error: 'Unauthorized' })); }
+      try {
+        const users = await getAdminUsers(uid);
+        return json(users);
+      } catch (err) {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message }));
+      }
+    }
+    if (req.method === 'GET' && req.url.startsWith('/api/admin/pitches')) {
+      const uid = await getAuthUserId(req);
+      if (!uid) { res.writeHead(401, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ error: 'Unauthorized' })); }
+      try {
+        const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+        const userId = parsedUrl.searchParams.get('userId') || '';
+        const channel = parsedUrl.searchParams.get('channel') || '';
+        const search = parsedUrl.searchParams.get('search') || '';
+        const limit = Number(parsedUrl.searchParams.get('limit')) || 500;
+        const pitches = await getAdminPitches(uid, { userId, channel, search, limit });
+        return json(pitches);
+      } catch (err) {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message }));
+      }
+    }
+    if (req.method === 'GET' && req.url.startsWith('/api/admin/activity')) {
+      const uid = await getAuthUserId(req);
+      if (!uid) { res.writeHead(401, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ error: 'Unauthorized' })); }
+      try {
+        const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+        const limit = Number(parsedUrl.searchParams.get('limit')) || 50;
+        const activity = await getAdminActivity(uid, { limit });
+        return json(activity);
+      } catch (err) {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message }));
+      }
     }
 
     if (req.url === '/api/profile') {

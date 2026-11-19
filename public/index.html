@@ -163,6 +163,7 @@
         <div class="tab" data-p="jobs">💼 Remote Jobs</div>
         <div class="tab" data-p="apps">📋 My Applications</div>
         <div class="tab" data-p="profile">👤 My Profile</div>
+        <div class="tab" data-p="admin" id="adminNavTab" style="display:none;color:#7c3aed;background:#faf5ff;border:1px solid #e9d5ff">👑 Super Admin</div>
       </div>
     </div>
     <div>
@@ -329,6 +330,119 @@
       <textarea id="p_customTpl" placeholder="Hi {name} Team,&#10;&#10;Checked {website} and noticed {issue}..." style="min-height:90px"></textarea></label>
     <label style="margin-top:10px">Projects (one per line: Name | URL | tags)<textarea id="p_projects"></textarea></label>
     <div class="row" style="margin-top:10px"><button onclick="saveProfile()">💾 Save Profile</button><span id="psaved" class="small"></span></div>
+  </section>
+
+  <!-- SUPER ADMIN DASHBOARD -->
+  <section class="panel" id="admin">
+    <!-- Top KPI Cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px" id="admKpis">
+      <div class="stat" style="border-left:4px solid #4f46e5"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">👥 Team Members</span><div style="margin-top:4px"><b id="admStatUsers" style="font-size:22px;color:#0f172a">0</b></div></div>
+      <div class="stat" style="border-left:4px solid #059669"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">🎯 Total Pitches</span><div style="margin-top:4px"><b id="admStatPitches" style="font-size:22px;color:#059669">0</b></div></div>
+      <div class="stat" style="border-left:4px solid #10b981"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">💬 WhatsApp Pitches</span><div style="margin-top:4px"><b id="admStatWA" style="font-size:22px;color:#10b981">0</b></div></div>
+      <div class="stat" style="border-left:4px solid #c026d3"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">📸 Instagram DMs</span><div style="margin-top:4px"><b id="admStatInsta" style="font-size:22px;color:#c026d3">0</b></div></div>
+      <div class="stat" style="border-left:4px solid #3b82f6"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">✉ Email Pitches</span><div style="margin-top:4px"><b id="admStatEmail" style="font-size:22px;color:#3b82f6">0</b></div></div>
+      <div class="stat" style="border-left:4px solid #eab308"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">🏆 Deals Won / Pipeline</span><div style="margin-top:4px"><b id="admStatWon" style="font-size:22px;color:#d97706">0</b> <span id="admStatValue" style="font-size:12px;color:#64748b">($0)</span></div></div>
+    </div>
+
+    <!-- Admin Sub-Navigation Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;background:#ffffff;padding:12px 16px;border-radius:12px;border:1px solid var(--bd);box-shadow:var(--shadow)">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" id="admTabOutreach" onclick="switchAdminSubView('outreach')" style="padding:7px 14px;font-size:12.5px">🎯 Global Outreach Feed</button>
+        <button type="button" class="sec" id="admTabUsers" onclick="switchAdminSubView('users')" style="padding:7px 14px;font-size:12.5px">👥 Team Members &amp; Logins</button>
+        <button type="button" class="sec" id="admTabActivity" onclick="switchAdminSubView('activity')" style="padding:7px 14px;font-size:12.5px">📜 Security &amp; Login Audit</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button type="button" class="sec" onclick="loadAdminData()" style="padding:7px 12px;font-size:12px">↻ Refresh</button>
+        <button type="button" class="sec" onclick="exportAdminCSV()" style="padding:7px 12px;font-size:12px;color:#047857;border-color:#a7f3d0;background:#ecfdf5">⬇ Export Team Pitches (CSV)</button>
+      </div>
+    </div>
+
+    <!-- SUB-VIEW 1: GLOBAL OUTREACH FEED ("Kaunsi Lead Par Kisne Pitch Kiya") -->
+    <div id="adminOutreachView">
+      <div class="row" style="margin-bottom:12px;background:#ffffff;padding:12px 16px;border-radius:12px;border:1px solid var(--bd)">
+        <label>Pitched By (Agent):
+          <select id="admUserFilter" onchange="filterAdminPitches()" style="min-width:210px">
+            <option value="">👥 All Team Members</option>
+          </select>
+        </label>
+        <label>Pitch Channel:
+          <select id="admChannelFilter" onchange="filterAdminPitches()" style="min-width:160px">
+            <option value="">🌐 All Channels</option>
+            <option value="WhatsApp">💬 WhatsApp Only</option>
+            <option value="Instagram">📸 Instagram DM Only</option>
+            <option value="Email">✉ Email Pitch Only</option>
+            <option value="Job Apply">💼 Remote Job Apply</option>
+            <option value="Direct Pitch">Direct Outreach</option>
+          </select>
+        </label>
+        <label style="flex:1;min-width:240px">Search Outreach Record:
+          <input id="admSearchFilter" oninput="filterAdminPitches()" placeholder="🔍 Search business, website, notes, phone, agent name..." style="width:100%" />
+        </label>
+      </div>
+
+      <div class="wrap" style="max-height:68vh">
+        <table id="admPitchesTable">
+          <thead>
+            <tr>
+              <th style="min-width:180px">Pitched By (Agent)</th>
+              <th style="min-width:220px">Lead / Business</th>
+              <th style="min-width:190px">Target Contact</th>
+              <th style="min-width:115px">Channel</th>
+              <th style="min-width:145px">Pitched Date &amp; Time</th>
+              <th style="min-width:110px">Status</th>
+              <th style="min-width:240px">Notes &amp; Pitch Details</th>
+            </tr>
+          </thead>
+          <tbody id="admPitchesBody">
+            <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px">Loading outreach feed...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SUB-VIEW 2: TEAM MEMBERS & LOGINS -->
+    <div id="adminUsersView" style="display:none">
+      <div class="wrap" style="max-height:68vh">
+        <table id="admUsersTable">
+          <thead>
+            <tr>
+              <th style="min-width:190px">Team Member</th>
+              <th style="min-width:180px">Email Address</th>
+              <th style="min-width:130px">Phone</th>
+              <th style="min-width:110px">Role</th>
+              <th style="min-width:130px">Joined Date</th>
+              <th style="min-width:180px">Last Login &amp; IP</th>
+              <th style="min-width:110px">Total Pitches</th>
+              <th style="min-width:170px">Channel Breakdown</th>
+              <th style="min-width:130px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admUsersBody">
+            <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px">Loading team members...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SUB-VIEW 3: ACTIVITY & SECURITY AUDIT -->
+    <div id="adminActivityView" style="display:none">
+      <div class="wrap" style="max-height:68vh">
+        <table id="admActivityTable">
+          <thead>
+            <tr>
+              <th style="min-width:160px">Date &amp; Time</th>
+              <th style="min-width:170px">User / Initiator</th>
+              <th style="min-width:130px">Event Type</th>
+              <th style="min-width:130px">IP Address</th>
+              <th style="min-width:320px">Activity Details</th>
+            </tr>
+          </thead>
+          <tbody id="admActivityBody">
+            <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Loading audit logs...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </section>
 </main>
 </div>
@@ -796,6 +910,7 @@ function updateUserUI() {
   const cardName = $('sidebarUserName');
   const cardSub = $('sidebarUserSubtitle');
   const cardAvatar = $('sidebarAvatar');
+  const adminTab = $('adminNavTab');
 
   if (currentUser) {
     const initials = currentUser.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
@@ -803,9 +918,13 @@ function updateUserUI() {
     if (cardName) cardName.textContent = currentUser.name;
     if (cardSub) cardSub.textContent = currentUser.email;
 
+    const isSuper = Boolean(currentUser.isSuperAdmin || currentUser.role === 'superadmin' || (currentUser.email && currentUser.email.toLowerCase() === 'parvpathak12@gmail.com'));
+    if (adminTab) adminTab.style.display = isSuper ? 'flex' : 'none';
+
     if (wrap) {
       wrap.innerHTML = `
         <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt)">
+          ${isSuper ? '<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#fef3c7;color:#b45309;border:1px solid #fcd34d">👑 Super Admin</span>' : ''}
           <span style="font-weight:600">👤 ${esc(currentUser.name)}</span>
           <button type="button" class="sec" onclick="logoutUser()" style="padding:4px 9px;font-size:11.5px">🚪 Logout</button>
         </div>`;
@@ -814,6 +933,7 @@ function updateUserUI() {
     if (cardAvatar) cardAvatar.textContent = 'PP';
     if (cardName) cardName.textContent = 'Praveen Pathak';
     if (cardSub) cardSub.textContent = 'Click to Sign In / Register';
+    if (adminTab) adminTab.style.display = 'none';
     if (wrap) {
       wrap.innerHTML = `
         <button type="button" onclick="openAuthModal('login')" style="padding:6px 12px;font-size:12px">🔑 Sign In / Register</button>`;
@@ -827,6 +947,7 @@ document.querySelectorAll('.tab').forEach((t) => t.onclick = () => {
   if ($('pageTitle')) $('pageTitle').textContent = t.textContent;
   if (t.dataset.p === 'apps') loadApps();
   if (t.dataset.p === 'profile') loadProfile();
+  if (t.dataset.p === 'admin') loadAdminData();
 });
 
 const LOC_GROUPS = [
@@ -2319,6 +2440,307 @@ function exportCSV(kind) {
   const csv = [cols.join(','), ...rows.map((r) => map(r).map((v) => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(','))].join('\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' }));
   a.download = `${kind}-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+}
+
+// ---------- Super Admin Dashboard Functions ----------
+let adminData = { users: [], pitches: [], stats: null, activity: [], subView: 'outreach' };
+
+function formatDateTime(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return iso;
+  }
+}
+
+function timeAgo(iso) {
+  if (!iso) return '';
+  try {
+    const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+    return '';
+  } catch {
+    return '';
+  }
+}
+
+function switchAdminSubView(view) {
+  adminData.subView = view;
+  const outreachWrap = $('adminOutreachView');
+  const usersWrap = $('adminUsersView');
+  const activityWrap = $('adminActivityView');
+
+  const tabOutreach = $('admTabOutreach');
+  const tabUsers = $('admTabUsers');
+  const tabActivity = $('admTabActivity');
+
+  if (tabOutreach) tabOutreach.className = 'sec';
+  if (tabUsers) tabUsers.className = 'sec';
+  if (tabActivity) tabActivity.className = 'sec';
+
+  if (outreachWrap) outreachWrap.style.display = view === 'outreach' ? 'block' : 'none';
+  if (usersWrap) usersWrap.style.display = view === 'users' ? 'block' : 'none';
+  if (activityWrap) activityWrap.style.display = view === 'activity' ? 'block' : 'none';
+
+  if (view === 'outreach' && tabOutreach) tabOutreach.className = '';
+  if (view === 'users' && tabUsers) tabUsers.className = '';
+  if (view === 'activity' && tabActivity) tabActivity.className = '';
+}
+
+async function loadAdminData() {
+  if (!currentUser?.isSuperAdmin) {
+    // Attempt re-auth check in case role updated
+    await checkAuth();
+    if (!currentUser?.isSuperAdmin) {
+      alert('Access restricted: Super Admin privileges required.');
+      return;
+    }
+  }
+
+  const h = authHeaders();
+  try {
+    const [statsRes, usersRes, pitchesRes, actRes] = await Promise.all([
+      fetch('/api/admin/stats', { headers: h }).then((r) => r.json()).catch(() => null),
+      fetch('/api/admin/users', { headers: h }).then((r) => r.json()).catch(() => []),
+      fetch('/api/admin/pitches', { headers: h }).then((r) => r.json()).catch(() => []),
+      fetch('/api/admin/activity', { headers: h }).then((r) => r.json()).catch(() => [])
+    ]);
+
+    adminData.stats = statsRes;
+    adminData.users = Array.isArray(usersRes) ? usersRes : [];
+    adminData.pitches = Array.isArray(pitchesRes) ? pitchesRes : [];
+    adminData.activity = Array.isArray(actRes) ? actRes : [];
+
+    renderAdminStats(adminData.stats);
+    renderAdminUsers(adminData.users);
+    populateAdminUserFilter(adminData.users);
+    filterAdminPitches();
+    renderAdminActivity(adminData.activity);
+  } catch (err) {
+    console.error('Error loading admin data:', err);
+    showToast('❌ Failed to load admin data: ' + err.message);
+  }
+}
+
+function renderAdminStats(stats) {
+  if (!stats) return;
+  if ($('admStatUsers')) $('admStatUsers').textContent = stats.totalUsers || 0;
+  if ($('admStatPitches')) $('admStatPitches').textContent = stats.totalPitches || 0;
+  if ($('admStatWA')) $('admStatWA').textContent = stats.whatsappPitches || 0;
+  if ($('admStatInsta')) $('admStatInsta').textContent = stats.instaPitches || 0;
+  if ($('admStatEmail')) $('admStatEmail').textContent = stats.emailPitches || 0;
+  if ($('admStatWon')) $('admStatWon').textContent = stats.totalWon || 0;
+  if ($('admStatValue')) $('admStatValue').textContent = `($${(stats.totalPipelineValue || 0).toLocaleString()})`;
+}
+
+function populateAdminUserFilter(users) {
+  const sel = $('admUserFilter');
+  if (!sel) return;
+  const currentVal = sel.value;
+  let html = `<option value="">👥 All Team Members (${users.length})</option>`;
+  for (const u of users) {
+    html += `<option value="${esc(u.id)}">👤 ${esc(u.name)} (${u.totalPitches || 0} pitches)</option>`;
+  }
+  sel.innerHTML = html;
+  if (currentVal) sel.value = currentVal;
+}
+
+function renderAdminUsers(users) {
+  const tbody = $('admUsersBody');
+  if (!tbody) return;
+  if (!users.length) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted)">No registered team members found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = users.map((u) => {
+    const isSuper = u.role === 'superadmin' || u.isSuperAdmin;
+    const roleBadge = isSuper
+      ? `<span class="pill" style="background:#faf5ff;color:#7c3aed;border-color:#e9d5ff;font-weight:700">👑 Super Admin</span>`
+      : `<span class="pill" style="background:#eff6ff;color:#2563eb;border-color:#bfdbfe">Agent</span>`;
+
+    const lastLoginFormatted = u.lastLoginAt ? `${formatDateTime(u.lastLoginAt)} <span class="small" style="color:var(--muted)">(${u.lastLoginIp || 'Local'})</span>` : '<span style="color:var(--muted)">Never</span>';
+
+    return `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="avatar" style="width:30px;height:30px;font-size:11px;background:${isSuper ? '#7c3aed' : '#4f46e5'}">${esc((u.name || 'U').slice(0, 2).toUpperCase())}</div>
+            <div>
+              <b>${esc(u.name)}</b>
+              <div class="small" style="color:var(--muted)">ID: ${esc(u.id.slice(0, 14))}...</div>
+            </div>
+          </div>
+        </td>
+        <td><a href="mailto:${esc(u.email)}">${esc(u.email)}</a></td>
+        <td>${u.phone ? `<a href="tel:${esc(u.phone)}">${esc(u.phone)}</a>` : '—'}</td>
+        <td>${roleBadge}</td>
+        <td>${formatDateTime(u.createdAt).split(',')[0]}</td>
+        <td>${lastLoginFormatted}</td>
+        <td><b style="color:#059669;font-size:14px">${u.totalPitches || 0}</b></td>
+        <td>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <span class="pill" style="background:#ecfdf5;color:#047857;font-size:10.5px">💬 ${u.whatsappPitches || 0}</span>
+            <span class="pill" style="background:#fdf4ff;color:#c026d3;font-size:10.5px">📸 ${u.instaPitches || 0}</span>
+            <span class="pill" style="background:#eff6ff;color:#1d4ed8;font-size:10.5px">✉ ${u.emailPitches || 0}</span>
+          </div>
+        </td>
+        <td>
+          <button type="button" class="sec" onclick="filterUserInAdmin('${esc(u.id)}')" style="padding:4px 9px;font-size:11.5px">
+            🔍 View Pitches
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function filterUserInAdmin(userId) {
+  switchAdminSubView('outreach');
+  const sel = $('admUserFilter');
+  if (sel) sel.value = userId;
+  filterAdminPitches();
+}
+
+function filterAdminPitches() {
+  const tbody = $('admPitchesBody');
+  if (!tbody) return;
+
+  const selUser = $('admUserFilter')?.value || '';
+  const selChannel = $('admChannelFilter')?.value || '';
+  const search = ($('admSearchFilter')?.value || '').toLowerCase().trim();
+
+  let list = adminData.pitches || [];
+
+  if (selUser) {
+    list = list.filter((p) => p.userId === selUser);
+  }
+  if (selChannel) {
+    list = list.filter((p) => (p.channel || '').toLowerCase() === selChannel.toLowerCase());
+  }
+  if (search) {
+    list = list.filter((p) =>
+      (p.title || '').toLowerCase().includes(search) ||
+      (p.company || '').toLowerCase().includes(search) ||
+      (p.url || '').toLowerCase().includes(search) ||
+      (p.notes || '').toLowerCase().includes(search) ||
+      (p.userName || '').toLowerCase().includes(search) ||
+      (p.userEmail || '').toLowerCase().includes(search)
+    );
+  }
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">No outreach records match this filter.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map((p) => {
+    let chBadge = '<span class="pill other">Direct</span>';
+    if (p.channel === 'WhatsApp') chBadge = '<span class="pill" style="background:#ecfdf5;color:#047857;border-color:#a7f3d0;font-weight:600">💬 WhatsApp</span>';
+    else if (p.channel === 'Instagram') chBadge = '<span class="pill" style="background:#fdf4ff;color:#c026d3;border-color:#f5d0fe;font-weight:600">📸 Insta DM</span>';
+    else if (p.channel === 'Email') chBadge = '<span class="pill" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;font-weight:600">✉ Email</span>';
+    else if (p.channel === 'Job Apply') chBadge = '<span class="pill" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;font-weight:600">💼 Remote Job</span>';
+
+    const isWeb = /^https?:\/\//i.test(p.url);
+    const linkTarget = isWeb ? `<a href="${esc(p.url)}" target="_blank" style="font-weight:600">${esc(p.url.replace(/^https?:\/\/(www\.)?/,'').slice(0,30))} ↗</a>` : `<code>${esc(p.url)}</code>`;
+    
+    const timeAgoStr = timeAgo(p.updatedAt || p.createdAt);
+
+    return `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="avatar" style="width:28px;height:28px;font-size:10.5px;background:#4f46e5">${esc((p.userName || 'A').slice(0, 2).toUpperCase())}</div>
+            <div>
+              <b>${esc(p.userName || 'Unknown Agent')}</b>
+              <div class="small" style="color:var(--muted)">${esc(p.userEmail || '')}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <b>${esc(p.title || 'Untitled Lead')}</b>
+          ${p.location ? `<div class="small" style="color:var(--muted)">📍 ${esc(p.location)}</div>` : ''}
+        </td>
+        <td>
+          <div>${linkTarget}</div>
+          ${p.contactPhone ? `<div class="small"><a href="https://wa.me/${p.contactPhone.replace(/\D/g,'')}" target="_blank" style="color:#059669">💬 ${esc(p.contactPhone)}</a></div>` : ''}
+          ${p.contactEmail ? `<div class="small"><a href="mailto:${esc(p.contactEmail)}" style="color:#3b82f6">✉ ${esc(p.contactEmail)}</a></div>` : ''}
+        </td>
+        <td>${chBadge}</td>
+        <td>
+          <div>${formatDateTime(p.updatedAt || p.createdAt)}</div>
+          ${timeAgoStr ? `<div class="small" style="color:var(--muted)">${timeAgoStr}</div>` : ''}
+        </td>
+        <td>
+          <span class="pill ${p.status === 'Won' ? 'Strong' : (p.status === 'Replied' ? 'Eligible' : 'other')}">${esc(p.status || 'Pitched')}</span>
+          ${Number(p.deal) > 0 ? `<div class="small" style="font-weight:700;color:#059669;margin-top:2px">$${Number(p.deal).toLocaleString()}</div>` : ''}
+        </td>
+        <td>
+          <div style="font-size:12px;line-height:1.45;color:#334155;max-width:320px;word-break:break-word">
+            ${esc(p.notes || 'No extra notes')}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderAdminActivity(logs) {
+  const tbody = $('admActivityBody');
+  if (!tbody) return;
+  if (!logs.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">No activity logs recorded yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = logs.map((l) => {
+    let actPill = `<span class="pill other">${esc(l.action)}</span>`;
+    if (l.action === 'LOGIN_SUCCESS') actPill = `<span class="pill" style="background:#ecfdf5;color:#047857;border-color:#a7f3d0">🔑 Login</span>`;
+    else if (l.action === 'REGISTER') actPill = `<span class="pill" style="background:#faf5ff;color:#7c3aed;border-color:#e9d5ff">📝 Register</span>`;
+    else if (l.action === 'LOGIN_FAILED') actPill = `<span class="pill" style="background:#fef2f2;color:#b91c1c;border-color:#fecaca">⚠️ Failed Login</span>`;
+
+    return `
+      <tr>
+        <td>${formatDateTime(l.createdAt)}</td>
+        <td><b>${esc(l.userName || 'System')}</b><div class="small" style="color:var(--muted)">${esc(l.userEmail || '')}</div></td>
+        <td>${actPill}</td>
+        <td><code>${esc(l.ipAddress || '—')}</code></td>
+        <td style="font-size:12px">${esc(l.details || '')}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function exportAdminCSV() {
+  const list = adminData.pitches || [];
+  if (!list.length) return alert('No outreach records to export.');
+
+  const cols = ['Agent Name', 'Agent Email', 'Agent Phone', 'Lead Title', 'URL / Target', 'Location', 'Channel', 'Status', 'Deal Value ($)', 'Pitched At', 'Notes'];
+  const rows = list.map((p) => [
+    p.userName || '',
+    p.userEmail || '',
+    p.userPhone || '',
+    p.title || '',
+    p.url || '',
+    p.location || '',
+    p.channel || '',
+    p.status || '',
+    p.deal || 0,
+    p.updatedAt || p.createdAt || '',
+    p.notes || ''
+  ]);
+
+  const csv = [cols.join(','), ...rows.map((r) => r.map((v) => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' }));
+  a.download = `company-team-outreach-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
 }
 </script>
 </body>
