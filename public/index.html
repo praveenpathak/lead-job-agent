@@ -139,6 +139,112 @@
   .ms-item input { min-width:auto; margin-top:2px; accent-color:var(--acc); flex-shrink:0; }
   #modal { background:rgba(15,23,42,.42) !important; backdrop-filter:blur(5px); }
   #modal > div { background:#ffffff !important; color:var(--txt); border:1px solid var(--bd) !important; border-radius:16px !important; box-shadow:0 24px 60px rgba(15,23,42,.22); padding:22px !important; }
+  /* Quick Picks Ribbon */
+  .quick-ribbon {
+    display:flex; gap:8px; overflow-x:auto; padding:2px 0 10px; margin-bottom:12px;
+    scrollbar-width:none; -ms-overflow-style:none;
+  }
+  .quick-ribbon::-webkit-scrollbar { display:none; }
+  .qp-chip {
+    flex-shrink:0; background:#ffffff; color:#334155; border:1px solid #d5dce8;
+    border-radius:99px; padding:6px 13px; font-size:12px; font-weight:600; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; transition:all .15s ease; box-shadow:0 1px 2px rgba(15,23,42,.04);
+  }
+  .qp-chip:hover {
+    background:#eef2ff; color:var(--acc); border-color:#c7d2fe; transform:translateY(-1px);
+  }
+
+  /* Two-Tier Search Box */
+  .search-card {
+    background:#ffffff; border:1px solid var(--bd); border-radius:16px;
+    padding:16px 18px; box-shadow:var(--shadow); margin-bottom:12px;
+  }
+  .search-row-main {
+    display:grid; grid-template-columns: 1.1fr 1.1fr 1.1fr auto; gap:12px; align-items:flex-end;
+  }
+  @media (max-width:980px) {
+    .search-row-main { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width:640px) {
+    .search-row-main { grid-template-columns: 1fr; }
+  }
+  .search-box-field {
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .search-box-field span {
+    font-size:12px; font-weight:700; color:#334155; display:flex; align-items:center; gap:5px;
+  }
+  .search-btn-primary {
+    background:linear-gradient(135deg, var(--acc), #4338ca); color:#fff; font-weight:700;
+    font-size:13.5px; padding:10px 20px; border-radius:10px; height:42px; display:inline-flex;
+    align-items:center; justify-content:center; gap:8px; border:none; cursor:pointer;
+    box-shadow:0 4px 14px rgba(79,70,229,.3); transition:all .15s;
+  }
+  .search-btn-primary:hover {
+    background:linear-gradient(135deg, #4338ca, #3730a3); transform:translateY(-1px);
+    box-shadow:0 6px 18px rgba(79,70,229,.35);
+  }
+
+  /* Active Removable Chips */
+  .chips-container {
+    display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:10px; padding-top:10px; border-top:1px dashed #e2e8f0;
+  }
+  .active-chip {
+    background:#f1f5f9; color:#1e293b; border:1px solid #cbd5e1; border-radius:99px;
+    padding:3px 10px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px;
+  }
+  .active-chip .chip-del {
+    color:#94a3b8; font-weight:700; cursor:pointer; font-size:12px; border-radius:50%; line-height:1;
+  }
+  .active-chip .chip-del:hover { color:#ef4444; }
+
+  /* Tier 2: Refinement Toolbar */
+  .refinement-bar {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+    background:#ffffff; border:1px solid var(--bd); border-radius:12px; padding:10px 14px;
+    box-shadow:var(--shadow); margin-bottom:12px;
+  }
+  .refinement-left {
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center; flex:1; min-width:280px;
+  }
+  .refinement-right {
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  }
+  .tog-pill {
+    background:#f8fafc; color:#475569; border:1px solid #d5dce8; border-radius:99px;
+    padding:5px 12px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex;
+    align-items:center; gap:5px; transition:all .15s; user-select:none;
+  }
+  .tog-pill:hover { background:#f1f5f9; color:#0f172a; border-color:#94a3b8; }
+  .tog-pill.active {
+    background:#e0e7ff; color:var(--acc); border-color:#a5b4fc; box-shadow:inset 0 1px 2px rgba(79,70,229,.15);
+  }
+  .tog-pill.active-wa {
+    background:#ecfdf5; color:#047857; border-color:#a7f3d0;
+  }
+  .tog-pill.active-noweb {
+    background:#fef2f2; color:#b91c1c; border-color:#fca5a5;
+  }
+
+  /* Advanced Settings Drawer */
+  .adv-drawer {
+    display:none; background:#f8fafc; border:1px solid var(--bd); border-radius:12px;
+    padding:12px 16px; margin-bottom:12px; animation:fadeIn .15s ease;
+  }
+  .adv-drawer.open { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; }
+
+  /* Cards Grid */
+  .leads-cards-grid {
+    display:none; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; margin-top:12px;
+  }
+  .lead-card-box {
+    background:#ffffff; border:1px solid var(--bd); border-radius:14px; padding:16px;
+    box-shadow:var(--shadow); display:flex; flex-direction:column; justify-content:space-between;
+    transition:transform .15s, box-shadow .15s;
+  }
+  .lead-card-box:hover {
+    transform:translateY(-2px); box-shadow:0 8px 24px rgba(15,23,42,.08); border-color:#cbd5e1;
+  }
   @media (max-width:860px) {
     .shell { flex-direction:column; }
     .sidebar { width:100%; height:auto; position:static; flex-direction:row; flex-wrap:wrap; align-items:center; gap:10px; padding:12px 14px; }
@@ -191,39 +297,129 @@
   <div id="dueBanner" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:13px;align-items:center;justify-content:space-between;gap:10px"></div>
   <!-- LEADS -->
   <section class="panel active" id="leads">
-    <div class="row">
-      <label>Locations (Multi-Select: States & Cities)<div class="ms" id="areaMS"></div></label>
-      <label>Niches / Categories (Multi-Select)<div class="ms" id="catMS"></div></label>
-      <label>Platform / Tech / Need (Multi-Select)<div class="ms" id="platMS"></div></label>
-      <label>Max sites to scan<input id="maxScan" type="number" value="300" min="10" max="500" style="min-width:90px" /></label>
-      <label>Directory Source
-        <select id="sourceFilter" style="min-width:145px">
-          <option value="all">🌐 All Sources</option>
-          <option value="Google Places / Maps">📍 Google Places / Maps</option>
-          <option value="JustDial">📖 JustDial (India)</option>
-          <option value="IndiaMART">🏭 IndiaMART (B2B)</option>
-          <option value="YellowPages">📒 YellowPages</option>
-          <option value="Yelp">⭐ Yelp</option>
-          <option value="OpenStreetMap">🗺️ OpenStreetMap</option>
-          <option value="Shopify Store">🛍️ Shopify Store</option>
-          <option value="Web Discovery">🔍 Web Discovery</option>
-        </select></label>
-      <button id="goLeads">Find Leads</button>
-      <button id="stopLeads" class="sec" style="display:none;color:#b91c1c;border-color:#fecaca;background:#fef2f2">⏹ Stop</button>
-      <button class="sec" onclick="startPitchQueue()" title="Pitch unpitched leads one-by-one">⚡ Pitch Queue</button>
-      <button class="sec" onclick="searchGoogleMapsLeads()">📍 Google Maps</button>
-      <button class="sec" onclick="searchLinkedInLeads()">in LinkedIn Leads</button>
-      <button class="sec" onclick="exportCSV('leads')">⬇ CSV</button>
-      <label class="chk"><input type="checkbox" id="onlyEmail" /> Only with email</label>
-      <label class="chk"><input type="checkbox" id="hidePitched" /> Hide pitched</label>
-      <label class="chk" title="Only show established businesses with verified contact and good lead score"><input type="checkbox" id="highReputation" /> ⭐ High-Value / Established Only</label>
-      <input id="leadFilter" placeholder="🔍 Filter leads (name, city, issue)..." style="min-width:210px" />
+    <!-- 1-Click Quick Picks Ribbon -->
+    <div class="quick-ribbon" id="quickPicksRibbon">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);align-self:center;flex-shrink:0;margin-right:2px">⚡ Quick Picks:</div>
+      <div class="qp-chip" onclick="quickSearchPreset('dubai_food')">🇦🇪 Dubai Restaurants &amp; Cafes</div>
+      <div class="qp-chip" onclick="quickSearchPreset('indore_health_noweb')">🏥 Indore Clinics (No Website) 🚀</div>
+      <div class="qp-chip" onclick="quickSearchPreset('usa_shopify')">🛍️ USA Shopify Stores</div>
+      <div class="qp-chip" onclick="quickSearchPreset('mumbai_realestate')">🏠 Mumbai Real Estate &amp; Builders</div>
+      <div class="qp-chip" onclick="quickSearchPreset('speed_fix')">⚡ WP Speed &amp; Mobile Fix</div>
+      <div class="qp-chip" onclick="quickSearchPreset('delhi_taxi')">🚗 Delhi Car Rental &amp; Taxi</div>
+      <div class="qp-chip" onclick="quickSearchPreset('jaipur_resorts')">🏨 Jaipur Luxury Resorts</div>
     </div>
-    <div id="presetBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center"></div>
+
+    <!-- Tier 1: Core Search Card -->
+    <div class="search-card">
+      <div class="search-row-main">
+        <div class="search-box-field">
+          <span>📍 Locations (Cities &amp; States)</span>
+          <div class="ms" id="areaMS"></div>
+        </div>
+        <div class="search-box-field">
+          <span>🏷️ Business Category / Niche</span>
+          <div class="ms" id="catMS"></div>
+        </div>
+        <div class="search-box-field">
+          <span>💻 Platform / Tech / Need</span>
+          <div class="ms" id="platMS"></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <button id="goLeads" class="search-btn-primary"><span>🔍 Find Leads</span></button>
+          <button id="stopLeads" class="sec" style="display:none;color:#b91c1c;border-color:#fecaca;background:#fef2f2;height:42px;padding:0 14px">⏹ Stop</button>
+        </div>
+      </div>
+
+      <!-- Active Filter Chips Bar -->
+      <div class="chips-container" id="activeChipsBar">
+        <span style="font-size:11.5px;color:var(--muted);font-weight:600">Active Selections:</span>
+        <div id="chipsList" style="display:inline-flex;gap:6px;flex-wrap:wrap"></div>
+        <button type="button" class="sec" onclick="clearAllSelections()" style="padding:2px 8px;font-size:11px;border-radius:99px;margin-left:auto;color:#ef4444">Clear All</button>
+      </div>
+    </div>
+
+    <!-- Tier 2: Refinement & Action Toolbar -->
+    <div class="refinement-bar">
+      <!-- Left: Instant Filter Input & Quick Toggle Pills -->
+      <div class="refinement-left">
+        <input id="leadFilter" placeholder="🔍 Search in results (name, city, issue)..." style="min-width:220px;max-width:280px;padding:6.5px 11px;font-size:12.5px" />
+        
+        <div class="tog-pill" id="pillEmail" onclick="toggleQuickFilter('email')">✉ With Email</div>
+        <div class="tog-pill" id="pillWhatsApp" onclick="toggleQuickFilter('whatsapp')">💬 Direct Phone / WA</div>
+        <div class="tog-pill" id="pillNoWeb" onclick="toggleQuickFilter('noweb')">🌐 No Website Only</div>
+        <div class="tog-pill" id="pillHidePitched" onclick="toggleQuickFilter('hidepitched')">👁 Hide Pitched</div>
+        <div class="tog-pill" id="pillHighRep" onclick="toggleQuickFilter('highrep')">⭐ High-Value Only</div>
+
+        <button type="button" class="sec" id="advToggleBtn" onclick="toggleAdvDrawer()" style="padding:5.5px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px">
+          <span>⚙️ Settings</span> <span id="advChevron">▾</span>
+        </button>
+
+        <!-- Hidden proxy checkboxes so existing JS handlers work smoothly -->
+        <input type="checkbox" id="onlyEmail" style="display:none" />
+        <input type="checkbox" id="hidePitched" style="display:none" />
+        <input type="checkbox" id="highReputation" style="display:none" />
+      </div>
+
+      <!-- Right: Action Buttons & View Mode Toggle -->
+      <div class="refinement-right">
+        <!-- View Toggle (Table vs Cards) -->
+        <div style="display:inline-flex;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;background:#f8fafc">
+          <button type="button" id="btnViewTable" onclick="setLeadViewMode('table')" style="padding:6px 10px;font-size:12px;background:var(--acc);color:#fff;border:none;border-radius:0;box-shadow:none" title="Table View">📋 Table</button>
+          <button type="button" id="btnViewCards" onclick="setLeadViewMode('cards')" class="sec" style="padding:6px 10px;font-size:12px;border:none;border-radius:0;box-shadow:none" title="Card Grid View">🗂️ Cards</button>
+        </div>
+
+        <button class="sec" onclick="startPitchQueue()" style="color:#4f46e5;font-weight:700;padding:6px 11px;font-size:12px" title="Pitch unpitched leads one-by-one">⚡ Pitch Queue</button>
+        <button class="sec" onclick="exportCSV('leads')" style="padding:6px 11px;font-size:12px;color:#047857;background:#ecfdf5;border-color:#a7f3d0">⬇ CSV</button>
+
+        <!-- Dropdown for extra tools -->
+        <div style="position:relative;display:inline-block">
+          <button type="button" class="sec" onclick="toggleMoreTools()" style="padding:6px 10px;font-size:12px">More ▾</button>
+          <div id="moreToolsMenu" style="display:none;position:absolute;right:0;top:110%;background:#fff;border:1px solid var(--bd2);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.12);z-index:30;padding:6px;min-width:180px">
+            <button type="button" class="sec" onclick="searchGoogleMapsLeads();toggleMoreTools()" style="width:100%;text-align:left;padding:7px 10px;font-size:12px;margin-bottom:3px">📍 Google Maps Search</button>
+            <button type="button" class="sec" onclick="searchLinkedInLeads();toggleMoreTools()" style="width:100%;text-align:left;padding:7px 10px;font-size:12px">💼 LinkedIn Leads Search</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced Settings Drawer (Collapsible) -->
+    <div class="adv-drawer" id="advDrawer">
+      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;width:100%">
+        <label style="font-size:12px;font-weight:600;color:var(--muted)">Max sites to scan:
+          <input id="maxScan" type="number" value="300" min="10" max="500" style="min-width:90px;margin-top:4px" />
+        </label>
+        <label style="font-size:12px;font-weight:600;color:var(--muted)">Directory Source:
+          <select id="sourceFilter" style="min-width:180px;margin-top:4px">
+            <option value="all">🌐 All Sources</option>
+            <option value="Google Places / Maps">📍 Google Places / Maps</option>
+            <option value="JustDial">📖 JustDial (India)</option>
+            <option value="IndiaMART">🏭 IndiaMART (B2B)</option>
+            <option value="YellowPages">📒 YellowPages</option>
+            <option value="Yelp">⭐ Yelp</option>
+            <option value="OpenStreetMap">🗺️ OpenStreetMap</option>
+            <option value="Shopify Store">🛍️ Shopify Store</option>
+            <option value="Web Discovery">🔍 Web Discovery</option>
+          </select>
+        </label>
+        <span class="small" style="color:var(--muted);margin-left:auto">Tip: Google Places &amp; JustDial give direct phone &amp; WhatsApp numbers.</span>
+      </div>
+    </div>
+
+    <!-- Presets bar (Saved Presets) -->
+    <div id="presetBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center"></div>
+
+    <!-- Progress Bar & Status -->
     <div class="bar"><div id="bar"></div></div>
     <div id="log"></div>
-    <div class="stats" id="lstats"></div>
-    <div class="wrap"><table id="ltable"></table></div>
+
+    <!-- Clean Stats Counter Cards -->
+    <div class="stats" id="lstats" style="margin-top:12px"></div>
+
+    <!-- Table View -->
+    <div class="wrap" id="ltableWrap"><table id="ltable"></table></div>
+
+    <!-- Card Grid View -->
+    <div class="leads-cards-grid" id="lcardsWrap"></div>
   </section>
 
   <!-- CHECK URLS -->
@@ -961,9 +1157,9 @@ const LOC_GROUPS = [
   ['🌏 Australia, APAC, LATAM & Africa', ['Sydney, Australia','Melbourne, Australia','Brisbane, Australia','Perth, Australia','Adelaide, Australia','Auckland, New Zealand','Wellington, New Zealand','Singapore','Kuala Lumpur, Malaysia','Bangkok, Thailand','Jakarta, Indonesia','Manila, Philippines','Ho Chi Minh City, Vietnam','Tokyo, Japan','Seoul, South Korea','Hong Kong','Taipei, Taiwan','Mexico City, Mexico','Sao Paulo, Brazil','Buenos Aires, Argentina','Bogota, Colombia','Santiago, Chile','Johannesburg, South Africa','Cape Town, South Africa','Nairobi, Kenya','Lagos, Nigeria']],
 ];
 
-function makeMultiSelect(elId, groups, initial, { allowCustom = false, placeholder = 'Search...' } = {}) {
+function makeMultiSelect(elId, groups, initial, { allowCustom = false, placeholder = 'Search...', onChange = null } = {}) {
   const el = $(elId);
-  if (!el) return { get: () => [], set: () => {} };
+  if (!el) return { get: () => [], set: () => {}, remove: () => {}, clear: () => {}, lookupLabel: (v) => v };
   const selected = new Set(initial);
   const custom = [];
 
@@ -978,11 +1174,15 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
   };
 
   const lookupLabel = (v) => {
+    if (v === 'all') return 'All Leads (Full Volume)';
     for (const [, items] of groups) {
       for (const it of items) {
         const n = norm(it);
         if (n.val === v) return n.label;
       }
+    }
+    for (const c of custom) {
+      if (c === v) return c;
     }
     return v.replace(/_/g, ' ');
   };
@@ -1004,7 +1204,7 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
     }
   };
 
-  const render = () => {
+  const render = (fireChange = false) => {
     const f = q.value.trim().toLowerCase();
     let html = '';
     const allGrps = custom.length ? [['Custom', custom.map((c) => ({ val: c, label: c, sub: '' }))], ...groups] : groups;
@@ -1023,9 +1223,10 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
         selected.delete('all');
         cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
       }
-      render();
+      render(true);
     });
     updateLabel();
+    if (fireChange && typeof onChange === 'function') onChange([...selected]);
   };
 
   btn.onclick = (e) => {
@@ -1035,22 +1236,25 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
     if (el.classList.contains('open')) q.focus();
   };
   el.querySelector('.ms-drop').onclick = (e) => e.stopPropagation();
-  q.oninput = render;
+  q.oninput = () => render(false);
   el.querySelector('.ms-all').onclick = () => {
     const f = q.value.trim().toLowerCase();
     groups.flatMap((g) => g[1]).map(norm).filter((n) => !f || n.val.toLowerCase().includes(f) || n.label.toLowerCase().includes(f)).slice(0, 30).forEach((n) => selected.add(n.val));
-    render();
+    render(true);
   };
-  el.querySelector('.ms-clr').onclick = () => { selected.clear(); render(); };
+  el.querySelector('.ms-clr').onclick = () => { selected.clear(); render(true); };
   if (allowCustom) el.querySelector('.ms-add').onclick = () => {
     const v = q.value.trim();
-    if (v) { custom.unshift(v); selected.add(v); q.value = ''; render(); }
+    if (v) { custom.unshift(v); selected.add(v); q.value = ''; render(true); }
   };
   document.addEventListener('click', () => el.classList.remove('open'));
-  render();
+  render(false);
   return {
     get: () => [...selected],
-    set: (arr) => { selected.clear(); (arr || []).forEach((v) => selected.add(v)); render(); },
+    set: (arr) => { selected.clear(); (arr || []).forEach((v) => selected.add(v)); render(true); },
+    remove: (v) => { selected.delete(v); render(true); },
+    clear: () => { selected.clear(); render(true); },
+    lookupLabel,
   };
 }
 
@@ -1179,9 +1383,110 @@ const PLATFORM_GROUPS = [
   ]]
 ];
 
-const areaMS = makeMultiSelect('areaMS', LOC_GROUPS, ['Dubai, UAE'], { allowCustom: true, placeholder: 'Search state, city or type custom...' });
-let catMS = makeMultiSelect('catMS', CATEGORY_GROUPS, ['restaurant'], { placeholder: 'Search niche or category...' });
-let platMS = makeMultiSelect('platMS', PLATFORM_GROUPS, ['all'], { placeholder: 'Search platform, tech or need...' });
+const onFilterChange = () => { updateActiveChips(); };
+const areaMS = makeMultiSelect('areaMS', LOC_GROUPS, ['Dubai, UAE'], { allowCustom: true, placeholder: 'Search state, city or type custom...', onChange: onFilterChange });
+let catMS = makeMultiSelect('catMS', CATEGORY_GROUPS, ['restaurant'], { placeholder: 'Search niche or category...', onChange: onFilterChange });
+let platMS = makeMultiSelect('platMS', PLATFORM_GROUPS, ['all'], { placeholder: 'Search platform, tech or need...', onChange: onFilterChange });
+
+// Active Filter Chips Management
+function updateActiveChips() {
+  const container = $('chipsList');
+  if (!container) return;
+  const areas = areaMS ? areaMS.get() : [];
+  const cats = catMS ? catMS.get() : [];
+  const plats = platMS ? platMS.get() : [];
+
+  let html = '';
+  areas.forEach((a) => {
+    html += `<span class="active-chip" style="background:#e0f2fe;color:#0369a1;border-color:#bae6fd">📍 ${esc(a)} <span class="chip-del" onclick="removeFilterItem('area','${esc(a)}')" title="Remove">✕</span></span>`;
+  });
+  cats.forEach((c) => {
+    const lbl = catMS ? catMS.lookupLabel(c) : c;
+    html += `<span class="active-chip" style="background:#fef3c7;color:#92400e;border-color:#fde68a">🏷️ ${esc(lbl)} <span class="chip-del" onclick="removeFilterItem('cat','${esc(c)}')" title="Remove">✕</span></span>`;
+  });
+  plats.forEach((p) => {
+    if (p === 'all' && (areas.length || cats.length)) return;
+    const lbl = platMS ? platMS.lookupLabel(p) : p;
+    html += `<span class="active-chip" style="background:#ede9fe;color:#6d28d9;border-color:#ddd6fe">💻 ${esc(lbl)} <span class="chip-del" onclick="removeFilterItem('plat','${esc(p)}')" title="Remove">✕</span></span>`;
+  });
+
+  if (!areas.length && !cats.length && (!plats.length || (plats.length === 1 && plats[0] === 'all'))) {
+    html = `<span style="font-size:11.5px;color:var(--muted);font-style:italic">No filters active (searching all leads)</span>`;
+  }
+  container.innerHTML = html;
+}
+
+function removeFilterItem(type, val) {
+  if (type === 'area' && areaMS) areaMS.remove(val);
+  else if (type === 'cat' && catMS) catMS.remove(val);
+  else if (type === 'plat' && platMS) platMS.remove(val);
+  updateActiveChips();
+}
+
+function clearAllSelections() {
+  if (areaMS) areaMS.clear();
+  if (catMS) catMS.clear();
+  if (platMS) platMS.set(['all']);
+  updateActiveChips();
+  showToast('Cleared all active selections');
+}
+
+// 1-Click Quick Picks Presets
+const QUICK_PRESETS = {
+  dubai_food: {
+    name: '🇦🇪 Dubai Restaurants & Cafes',
+    areas: ['Dubai, UAE'],
+    cats: ['restaurant', 'coffee_tea_beverages'],
+    plats: ['all'],
+  },
+  indore_health_noweb: {
+    name: '🏥 Indore Clinics (No Website) 🚀',
+    areas: ['Indore, India'],
+    cats: ['hospital_clinic', 'dentist_clinic', 'physio_chiro_wellness'],
+    plats: ['nowebsite'],
+  },
+  usa_shopify: {
+    name: '🛍️ USA Shopify Stores',
+    areas: ['California, USA', 'Texas, USA', 'New York State, USA'],
+    cats: ['jewelry', 'clothing', 'boutique_tailor'],
+    plats: ['shopify'],
+  },
+  mumbai_realestate: {
+    name: '🏠 Mumbai Real Estate & Interior',
+    areas: ['Mumbai, India'],
+    cats: ['real_estate', 'interior_design', 'interior_architect'],
+    plats: ['all'],
+  },
+  speed_fix: {
+    name: '⚡ WP Speed & Mobile Fix',
+    areas: ['Indore, India', 'Mumbai, India', 'New Delhi, India'],
+    cats: ['restaurant', 'hotel', 'jewelry'],
+    plats: ['speed_slow', 'wordpress'],
+  },
+  delhi_taxi: {
+    name: '🚗 Delhi Car Rental & Taxi',
+    areas: ['New Delhi, India', 'Noida, India', 'Gurugram, India'],
+    cats: ['car_rental_taxi', 'automobile_service'],
+    plats: ['all'],
+  },
+  jaipur_resorts: {
+    name: '🏨 Jaipur Luxury Resorts',
+    areas: ['Jaipur, India'],
+    cats: ['hotel', 'resort_farmhouse', 'wedding'],
+    plats: ['all'],
+  },
+};
+
+function quickSearchPreset(key) {
+  const p = QUICK_PRESETS[key];
+  if (!p) return;
+  areaMS.set(p.areas);
+  catMS.set(p.cats);
+  platMS.set(p.plats);
+  updateActiveChips();
+  showToast(`⚡ Quick Pick: ${p.name}`);
+  $('goLeads').click();
+}
 
 $('skillPreset').onchange = () => { $('kws').value = $('skillPreset').value; };
 const DEFAULT_PRESETS = [
@@ -1204,6 +1509,7 @@ function applyPreset(i) {
   areaMS.set(p.areas);
   catMS.set(p.cats);
   platMS.set(Array.isArray(p.platforms) ? p.platforms : (p.platform ? [p.platform] : ['all']));
+  updateActiveChips();
   showToast(`Loaded preset: ${p.name}`);
 }
 function savePreset() {
@@ -1213,6 +1519,7 @@ function savePreset() {
   lsSet('presets', presets); renderPresets(); showToast('✔ Search preset saved!');
 }
 renderPresets();
+updateActiveChips();
 
 // ---------- Safe LinkedIn Search Helpers (uses your own logged-in browser) ----------
 const LI_LOC = {
@@ -1469,6 +1776,161 @@ function leadRow(l, kind, idx) {
 }
 const LHEAD = '<tr><th>Business</th><th>Directory Source</th><th>Website</th><th>Platform</th><th>Email</th><th>Phone</th><th>Social</th><th>Pitch opportunities</th><th></th></tr>';
 
+let filterOnlyEmail = false;
+let filterDirectWA = false;
+let filterNoWebOnly = false;
+let filterHidePitched = false;
+let filterHighRep = false;
+
+function toggleQuickFilter(type) {
+  if (type === 'email') {
+    filterOnlyEmail = !filterOnlyEmail;
+    $('onlyEmail').checked = filterOnlyEmail;
+    $('pillEmail').classList.toggle('active', filterOnlyEmail);
+  } else if (type === 'whatsapp') {
+    filterDirectWA = !filterDirectWA;
+    $('pillWhatsApp').classList.toggle('active-wa', filterDirectWA);
+  } else if (type === 'noweb') {
+    filterNoWebOnly = !filterNoWebOnly;
+    $('pillNoWeb').classList.toggle('active-noweb', filterNoWebOnly);
+  } else if (type === 'hidepitched') {
+    filterHidePitched = !filterHidePitched;
+    $('hidePitched').checked = filterHidePitched;
+    $('pillHidePitched').classList.toggle('active', filterHidePitched);
+  } else if (type === 'highrep') {
+    filterHighRep = !filterHighRep;
+    $('highReputation').checked = filterHighRep;
+    $('pillHighRep').classList.toggle('active', filterHighRep);
+  }
+  renderLeads();
+}
+
+function toggleAdvDrawer() {
+  const drawer = $('advDrawer');
+  const chev = $('advChevron');
+  if (!drawer) return;
+  drawer.classList.toggle('open');
+  if (chev) {
+    chev.textContent = drawer.classList.contains('open') ? '▴' : '▾';
+  }
+}
+
+function toggleMoreTools() {
+  const m = $('moreToolsMenu');
+  if (!m) return;
+  m.style.display = m.style.display === 'block' ? 'none' : 'block';
+}
+document.addEventListener('click', (e) => {
+  const m = $('moreToolsMenu');
+  if (m && m.style.display === 'block' && !e.target.closest('#moreToolsMenu') && !e.target.closest('button[onclick*="toggleMoreTools"]')) {
+    m.style.display = 'none';
+  }
+});
+
+let leadViewMode = lsGet('leadViewMode', 'table');
+
+function setLeadViewMode(mode) {
+  leadViewMode = mode;
+  lsSet('leadViewMode', mode);
+  const isTable = mode === 'table';
+  
+  const btnT = $('btnViewTable'), btnC = $('btnViewCards');
+  if (btnT && btnC) {
+    if (isTable) {
+      btnT.style.background = 'var(--acc)';
+      btnT.style.color = '#fff';
+      btnC.style.background = '#ffffff';
+      btnC.style.color = '#334155';
+    } else {
+      btnC.style.background = 'var(--acc)';
+      btnC.style.color = '#fff';
+      btnT.style.background = '#ffffff';
+      btnT.style.color = '#334155';
+    }
+  }
+
+  const tableWrap = $('ltableWrap');
+  const cardsWrap = $('lcardsWrap');
+  if (tableWrap && cardsWrap) {
+    tableWrap.style.display = isTable ? 'block' : 'none';
+    cardsWrap.style.display = isTable ? 'none' : 'grid';
+  }
+  renderLeads();
+}
+
+function leadCard(l, idx) {
+  if (!l) return '';
+  const isNoWeb = l.platform === 'No Website' || !l.website;
+  const plat = isNoWeb
+    ? `<span class="pill" style="background:#fee2e2;color:#991b1b;border-color:#fca5a5;font-weight:700">🌐 No Website</span>`
+    : `<span class="pill ${['WordPress','Shopify'].includes(l.platform) ? l.platform : 'other'}">${esc(l.platform)}</span>`
+      + (l.woocommerce ? '<span class="pill WordPress">WooCommerce</span>' : '')
+      + (l.theme ? `<span class="small" style="color:var(--muted)"> · ${esc(l.theme)}</span>` : '');
+  
+  const key = l.website || l.osm || l.name;
+  const st = trackedMap().get(key);
+  const src = l.source || 'Web Discovery';
+  const srcPillMap = {
+    'Google Places': 'background:#e0f2fe;color:#0369a1;border-color:#bae6fd;',
+    'Google Places / Maps': 'background:#e0f2fe;color:#0369a1;border-color:#bae6fd;',
+    'JustDial': 'background:#ffedd5;color:#c2410c;border-color:#fed7aa;',
+    'IndiaMART': 'background:#ccfbf1;color:#0f766e;border-color:#99f6e4;',
+    'YellowPages': 'background:#fef3c7;color:#92400e;border-color:#fde68a;',
+    'Yelp': 'background:#fee2e2;color:#b91c1c;border-color:#fecaca;',
+    'OpenStreetMap': 'background:#dcfce7;color:#15803d;border-color:#bbf7d0;',
+    'Nominatim / OSM': 'background:#dcfce7;color:#15803d;border-color:#bbf7d0;',
+    'Shopify Store': 'background:#ecfdf5;color:#047857;border-color:#a7f3d0;',
+    'Web Discovery': 'background:#f3e8ff;color:#7e22ce;border-color:#e9d5ff;'
+  };
+  const srcStyle = srcPillMap[src] || 'background:#f1f5f9;color:#475569;border-color:#cbd5e1;';
+  const waDigits = getWhatsAppDigits(l);
+  const phones = l.phones || [];
+  const emails = l.emails || [];
+
+  return `<div class="lead-card-box">
+    <div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--txt);line-height:1.3">${esc(l.name)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">🏷️ ${esc(l.category || 'Business')}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;align-items:center">
+          ${leadScore(l)}
+          ${st ? `<span class="pill Shopify">✔ ${esc(st)}</span>` : ''}
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0">
+        <span class="pill" style="${srcStyle}font-size:11px;font-weight:600">● ${esc(src)}</span>
+        ${plat}
+      </div>
+
+      <div style="font-size:12px;color:#334155;margin:8px 0;display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span>🌐</span>
+          ${l.website ? `<a target="_blank" href="${esc(l.website)}" style="color:var(--acc);font-weight:600;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px">${esc(l.website.replace(/^https?:\/\/(www\.)?/, '').slice(0, 36))}</a>` : '<span style="color:#dc2626;font-weight:700">❌ No Website (High-ticket Pitch!)</span>'}
+        </div>
+        ${l.address ? `<div style="display:flex;align-items:flex-start;gap:6px;color:var(--muted);font-size:11.5px"><span>📍</span><span>${esc(l.address)}</span></div>` : ''}
+        ${phones.length ? `<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#047857"><span>📞</span><span>${phones.map(esc).join(', ')}</span></div>` : ''}
+        ${emails.length ? `<div style="display:flex;align-items:center;gap:6px;font-size:11.5px"><span>✉️</span><a target="_blank" href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emails[0])}" style="color:var(--acc)">${esc(emails[0])}</a></div>` : ''}
+      </div>
+
+      <div style="margin:10px 0 12px;display:flex;flex-wrap:wrap;gap:4px">
+        ${(l.opportunities || []).length ? l.opportunities.map((o) => `<span class="pill op" style="font-size:11px">${esc(o)}</span>`).join('') : '<span class="pill Shopify" style="font-size:11px">Clean site → Maintenance pitch</span>'}
+      </div>
+    </div>
+
+    <div style="border-top:1px solid #f1f5f9;padding-top:10px;margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <button onclick="openPitch('leads',${idx})" style="flex:1;min-width:100px;padding:7px 10px;font-size:12px">
+        ${isNoWeb ? '✉ Pitch Web' : '✉ Pitch Lead'}
+      </button>
+      ${waDigits ? `<button type="button" class="sec" style="color:#047857;background:#ecfdf5;border-color:#a7f3d0;font-weight:700;padding:7px 10px;font-size:12px" onclick="openDirectWhatsApp('leads',${idx})" title="Direct WhatsApp Pitch">💬 WhatsApp</button>` : ''}
+      ${l.socials?.instagram ? `<button type="button" class="sec" style="color:#b91c1c;background:#fef2f2;border-color:#fecaca;font-weight:600;padding:7px 10px;font-size:12px" onclick="openDirectInstaDM('leads',${idx})" title="Direct Instagram DM">📸 Insta</button>` : ''}
+      <button type="button" class="sec" style="padding:7px 9px;font-size:12px;font-weight:600" onclick="openOwnerModal('leads',${idx})" title="Decision Maker Search">👤 Owner</button>
+    </div>
+  </div>`;
+}
+
 function renderLeads() {
   const q = ($('leadFilter')?.value || '').trim().toLowerCase();
   const sf = $('sourceFilter')?.value || 'all';
@@ -1478,6 +1940,8 @@ function renderLeads() {
     if (sf !== 'all' && s !== sf && !s.includes(sf)) return false;
     if ($('onlyEmail').checked && !(l.emails || []).length) return false;
     if ($('hidePitched')?.checked && tm.has(l.website || l.osm || l.name)) return false;
+    if (filterDirectWA && !getWhatsAppDigits(l)) return false;
+    if (filterNoWebOnly && !(l.platform === 'No Website' || !l.website)) return false;
     if ($('highReputation')?.checked) {
       const hasContact = (l.phones || []).length > 0 || (l.emails || []).length > 0;
       const hasAddr = (l.address || '').length >= 6;
@@ -1486,7 +1950,25 @@ function renderLeads() {
     if (q && !`${l.name} ${l.address} ${l.platform} ${l.source || ''} ${(l.opportunities || []).join(' ')}`.toLowerCase().includes(q)) return false;
     return true;
   });
+
+  // Render Table View
   $('ltable').innerHTML = LHEAD + list.map(([l, i]) => leadRow(l, 'leads', i)).join('');
+
+  // Render Cards Grid View
+  const cardsWrap = $('lcardsWrap');
+  if (cardsWrap) {
+    if (!list.length) {
+      cardsWrap.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--muted);background:#fff;border-radius:14px;border:1px dashed var(--bd)">
+        <div style="font-size:28px;margin-bottom:8px">🔍</div>
+        <div style="font-weight:600;font-size:14px">No leads match the current filters</div>
+        <div style="font-size:12px;margin-top:4px">Try clearing filters or search for another location.</div>
+      </div>`;
+    } else {
+      cardsWrap.innerHTML = list.map(([l, i]) => leadCard(l, i)).join('');
+    }
+  }
+
+  // Update Stats Counters
   const c = (p) => data.leads.filter((l) => l.platform === p).length;
   const sc = (s) => data.leads.filter((l) => (l.source || '').toLowerCase().includes(s.toLowerCase())).length;
   $('lstats').innerHTML = `<div class="stat"><b>${data.leads.length}</b> leads</div>
@@ -1506,11 +1988,13 @@ function renderLeads() {
       <span style="color:#7e22ce;font-weight:600">🔍 Web: ${sc('Web Discovery')}</span>
     </div>`;
 }
+
 $('onlyEmail').onchange = renderLeads;
 $('hidePitched').onchange = renderLeads;
 $('highReputation').onchange = renderLeads;
 $('leadFilter').oninput = renderLeads;
 $('sourceFilter').onchange = renderLeads;
+setLeadViewMode(leadViewMode);
 
 let leadAbort = null;
 $('stopLeads').onclick = () => { if (leadAbort) leadAbort.abort(); };
