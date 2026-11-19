@@ -124,7 +124,7 @@
   }
   .ms-btn:hover { background:#fff; transform:none; border-color:var(--acc); }
   .ms-drop {
-    display:none; position:absolute; top:108%; left:0; width:330px; max-width:90vw;
+    display:none; position:absolute; top:108%; left:0; width:360px; max-width:92vw;
     background:#ffffff; border:1px solid var(--bd2); border-radius:12px; padding:11px; z-index:25;
     box-shadow:0 16px 40px rgba(15,23,42,.15);
   }
@@ -132,11 +132,11 @@
   .ms-drop input[type=text] { width:100%; min-width:0; padding:7.5px 10px; font-size:13px; margin-bottom:7px; }
   .ms-bar { display:flex; gap:6px; margin-bottom:7px; flex-wrap:wrap; }
   .ms-bar button { padding:4px 10px; font-size:11.5px; border-radius:6px; }
-  .ms-list { max-height:245px; overflow:auto; display:flex; flex-direction:column; gap:2px; }
+  .ms-list { max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; }
   .ms-grp { font-size:11px; color:var(--acc); font-weight:700; padding:7px 5px 3px; text-transform:uppercase; letter-spacing:.04em; }
-  .ms-item { display:flex; flex-direction:row; align-items:center; gap:8px; padding:5px 7px; border-radius:6px; cursor:pointer; font-size:13px; color:var(--txt); font-weight:400; }
+  .ms-item { display:flex; flex-direction:row; align-items:flex-start; gap:8px; padding:6px 8px; border-radius:6px; cursor:pointer; font-size:13px; color:var(--txt); font-weight:400; line-height:1.35; }
   .ms-item:hover { background:#eef2ff; }
-  .ms-item input { min-width:auto; margin:0; accent-color:var(--acc); }
+  .ms-item input { min-width:auto; margin-top:2px; accent-color:var(--acc); flex-shrink:0; }
   #modal { background:rgba(15,23,42,.42) !important; backdrop-filter:blur(5px); }
   #modal > div { background:#ffffff !important; color:var(--txt); border:1px solid var(--bd) !important; border-radius:16px !important; box-shadow:0 24px 60px rgba(15,23,42,.22); padding:22px !important; }
   @media (max-width:860px) {
@@ -193,34 +193,7 @@
     <div class="row">
       <label>Locations (Multi-Select: States & Cities)<div class="ms" id="areaMS"></div></label>
       <label>Niches / Categories (Multi-Select)<div class="ms" id="catMS"></div></label>
-      <label>Platform / Tech / Need
-        <select id="platform" style="min-width:230px">
-          <optgroup label="Maximum Volume (All Leads)">
-            <option value="all" selected>🌐 All Leads (Websites + No Website, 50-100+ Leads)</option>
-          </optgroup>
-          <optgroup label="Web Development Opportunities">
-            <option value="nowebsite">🚀 Businesses with NO website (Pitch Website Build)</option>
-            <option value="seo_need">Needs SEO Fix (missing meta/H1/OG)</option>
-            <option value="design_need">Needs Redesign / Mobile / Speed Fix</option>
-          </optgroup>
-          <optgroup label="CMS &amp; E-Commerce (Targeted)">
-            <option value="both">WordPress + Shopify (Active sites)</option>
-            <option value="wordpress">Only WordPress</option>
-            <option value="woocommerce">Only WooCommerce</option>
-            <option value="shopify">Only Shopify</option>
-            <option value="ecommerce_other">Magento / BigCommerce</option>
-            <option value="migration">Wix / Squarespace / GoDaddy (Migration pitch)</option>
-          </optgroup>
-          <optgroup label="Web &amp; Code Stacks (IT)">
-            <option value="php">PHP (all PHP / Laravel / CI)</option>
-            <option value="laravel">Laravel</option>
-            <option value="codeigniter">CodeIgniter</option>
-            <option value="react">React / Next.js</option>
-            <option value="angular">Angular</option>
-            <option value="vue">Vue / Nuxt</option>
-            <option value="bootstrap">Bootstrap / Custom HTML</option>
-          </optgroup>
-        </select></label>
+      <label>Platform / Tech / Need (Multi-Select)<div class="ms" id="platMS"></div></label>
       <label>Max sites to scan<input id="maxScan" type="number" value="300" min="10" max="500" style="min-width:90px" /></label>
       <label>Directory Source
         <select id="sourceFilter" style="min-width:145px">
@@ -869,36 +842,89 @@ const LOC_GROUPS = [
 
 function makeMultiSelect(elId, groups, initial, { allowCustom = false, placeholder = 'Search...' } = {}) {
   const el = $(elId);
+  if (!el) return { get: () => [], set: () => {} };
   const selected = new Set(initial);
   const custom = [];
+
+  const norm = (it) => {
+    if (typeof it === 'object' && it !== null) {
+      const val = it.val !== undefined ? it.val : it[0];
+      const label = it.label !== undefined ? it.label : (it[1] !== undefined ? it[1] : val);
+      const sub = it.sub || it[2] || '';
+      return { val, label, sub };
+    }
+    return { val: it, label: it.replace(/_/g, ' / '), sub: '' };
+  };
+
+  const lookupLabel = (v) => {
+    for (const [, items] of groups) {
+      for (const it of items) {
+        const n = norm(it);
+        if (n.val === v) return n.label;
+      }
+    }
+    return v.replace(/_/g, ' ');
+  };
+
   el.innerHTML = `<button type="button" class="ms-btn"><span class="ms-lbl"></span><span>▾</span></button>
     <div class="ms-drop"><input type="text" class="ms-q" placeholder="${placeholder}" />
       <div class="ms-bar"><button type="button" class="sec ms-all">Select All</button><button type="button" class="sec ms-clr">Clear</button>${allowCustom ? '<button type="button" class="sec ms-add">+ Add typed</button>' : ''}</div>
       <div class="ms-list"></div></div>`;
   const btn = el.querySelector('.ms-btn'), lbl = el.querySelector('.ms-lbl'), q = el.querySelector('.ms-q'), list = el.querySelector('.ms-list');
+
   const updateLabel = () => {
     const arr = [...selected];
-    lbl.textContent = arr.length ? (arr.length <= 2 ? arr.map((x) => x.replace(/_/g, ' ')).join(', ') : `${arr[0].replace(/_/g, ' ')} (+${arr.length - 1} more)`) : 'Select...';
+    if (!arr.length) { lbl.textContent = 'Select...'; return; }
+    if (arr.includes('all')) { lbl.textContent = '🌐 All Leads (Full Volume)'; return; }
+    if (arr.length <= 2) {
+      lbl.textContent = arr.map(lookupLabel).join(', ');
+    } else {
+      lbl.textContent = `${lookupLabel(arr[0])} (+${arr.length - 1} more)`;
+    }
   };
+
   const render = () => {
     const f = q.value.trim().toLowerCase();
     let html = '';
-    const allGrps = custom.length ? [['Custom', custom], ...groups] : groups;
+    const allGrps = custom.length ? [['Custom', custom.map((c) => ({ val: c, label: c, sub: '' }))], ...groups] : groups;
     for (const [g, items] of allGrps) {
-      const hits = items.filter((it) => !f || it.toLowerCase().includes(f));
+      const normalizedItems = items.map(norm);
+      const hits = normalizedItems.filter((n) => !f || n.val.toLowerCase().includes(f) || n.label.toLowerCase().includes(f) || n.sub.toLowerCase().includes(f));
       if (!hits.length) continue;
-      html += `<div class="ms-grp">${esc(g)}</div>` + hits.map((it) => `<label class="ms-item"><input type="checkbox" value="${esc(it)}" ${selected.has(it) ? 'checked' : ''} /><span>${esc(it.replace(/_/g, ' / '))}</span></label>`).join('');
+      html += `<div class="ms-grp">${esc(g)}</div>` + hits.map((n) => `<label class="ms-item"><input type="checkbox" value="${esc(n.val)}" ${selected.has(n.val) ? 'checked' : ''} /><span><b>${esc(n.label)}</b>${n.sub ? `<span class="small" style="color:var(--muted);display:block;margin-top:2px">${esc(n.sub)}</span>` : ''}</span></label>`).join('');
     }
-    list.innerHTML = html || '<div class="small" style="padding:6px">No match — click "+ Add typed"</div>';
-    list.querySelectorAll('input').forEach((cb) => cb.onchange = () => { cb.checked ? selected.add(cb.value) : selected.delete(cb.value); updateLabel(); });
+    list.innerHTML = html || '<div class="small" style="padding:6px">No match</div>';
+    list.querySelectorAll('input').forEach((cb) => cb.onchange = () => {
+      if (cb.value === 'all') {
+        if (cb.checked) { selected.clear(); selected.add('all'); }
+        else { selected.delete('all'); }
+      } else {
+        selected.delete('all');
+        cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
+      }
+      render();
+    });
     updateLabel();
   };
-  btn.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.ms.open').forEach((m) => m !== el && m.classList.remove('open')); el.classList.toggle('open'); if (el.classList.contains('open')) q.focus(); };
+
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.ms.open').forEach((m) => m !== el && m.classList.remove('open'));
+    el.classList.toggle('open');
+    if (el.classList.contains('open')) q.focus();
+  };
   el.querySelector('.ms-drop').onclick = (e) => e.stopPropagation();
   q.oninput = render;
-  el.querySelector('.ms-all').onclick = () => { const f = q.value.trim().toLowerCase(); groups.flatMap((g) => g[1]).filter((it) => !f || it.toLowerCase().includes(f)).slice(0, 30).forEach((it) => selected.add(it)); render(); };
+  el.querySelector('.ms-all').onclick = () => {
+    const f = q.value.trim().toLowerCase();
+    groups.flatMap((g) => g[1]).map(norm).filter((n) => !f || n.val.toLowerCase().includes(f) || n.label.toLowerCase().includes(f)).slice(0, 30).forEach((n) => selected.add(n.val));
+    render();
+  };
   el.querySelector('.ms-clr').onclick = () => { selected.clear(); render(); };
-  if (allowCustom) el.querySelector('.ms-add').onclick = () => { const v = q.value.trim(); if (v) { custom.unshift(v); selected.add(v); q.value = ''; render(); } };
+  if (allowCustom) el.querySelector('.ms-add').onclick = () => {
+    const v = q.value.trim();
+    if (v) { custom.unshift(v); selected.add(v); q.value = ''; render(); }
+  };
   document.addEventListener('click', () => el.classList.remove('open'));
   render();
   return {
@@ -907,19 +933,142 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
   };
 }
 
-const areaMS = makeMultiSelect('areaMS', LOC_GROUPS, ['Dubai, UAE'], { allowCustom: true, placeholder: 'Search state, city or type custom...' });
-let catMS = makeMultiSelect('catMS', [['Niches', ['restaurant', 'jewelry', 'shopping']]], ['restaurant'], { placeholder: 'Search niche...' });
+const CATEGORY_GROUPS = [
+  ['🍽️ Food, Dining & Hospitality', [
+    ['restaurant', '🍴 Restaurant & Cafe', 'Dine-in, family restaurants, cafes & bistros'],
+    ['bakery_sweets', '🥐 Bakery & Sweets', 'Cakes, pastry, confectionery & chocolate shops'],
+    ['coffee_tea_beverages', '☕ Coffee & Tea Lounge', 'Specialty roasters, tea bars & beverage shops'],
+    ['catering_tiffin', '🍱 Catering & Tiffin Service', 'Marriage catering, corporate tiffin & cloud kitchens'],
+    ['hotel', '🏨 Hotel & Lodging', 'Boutique hotels, motels, guest houses & resorts'],
+    ['resort_farmhouse', '🏊 Resort & Farmhouse', 'Weekend farmhouses, water parks & luxury holiday stays']
+  ]],
+  ['🛍️ Retail, Fashion & E-Commerce', [
+    ['jewelry', '💎 Jewelry & Watches', 'Gold, diamond, luxury watches & bridal jewelry'],
+    ['clothing', '👗 Clothing & Apparel', 'Fashion boutiques, clothing brands & ethnic wear'],
+    ['boutique_tailor', '✂️ Designer Boutique & Tailor', 'Custom tailoring, designer suits & dresses'],
+    ['furniture_decor', '🛋️ Furniture & Home Decor', 'Furnishings, lighting, interior items & carpets'],
+    ['electronics_mobile', '📱 Electronics & Mobile', 'Mobile stores, laptops, TV & appliance retailers'],
+    ['cosmetics_skincare', '💄 Cosmetics & Skincare', 'Beauty products, organic skincare & perfumes'],
+    ['florist_gifts', '💐 Florist & Gift Shop', 'Bouquets, celebration gifts & hampers'],
+    ['optician', '👓 Optician & Eyewear', 'Eyeglasses, sunglasses & vision optical clinics'],
+    ['shopping', '🛍️ General Retail & Boutiques', 'Departmental stores & lifestyle retail shops'],
+    ['sports_outdoor', '⚽ Sports & Outdoor Gear', 'Sports equipment, bicycles & fitness gear'],
+    ['toys_baby', '🧸 Toys & Baby Goods', 'Kids toys, baby clothing & nursery essentials'],
+    ['books_stationery', '📚 Books & Stationery', 'Independent bookstores, school & office stationery'],
+    ['art_antiques', '🎨 Art & Antiques', 'Art galleries, antique collectibles & handicrafts'],
+    ['music_instruments', '🎸 Musical Instruments', 'Guitars, keyboards, sound gear & music shops'],
+    ['grocery_organic', '🥑 Grocery & Organic Store', 'Supermarkets, organic food & health stores']
+  ]],
+  ['🏥 Healthcare, Doctors & Wellness', [
+    ['dentist_clinic', '🦷 Dental Clinic & Dentist', 'Cosmetic dentistry, dental implants & clinics'],
+    ['hospital_clinic', '🏥 Hospital & Multispecialty Clinic', 'Hospitals, diagnostic centres & pathology labs'],
+    ['physio_chiro_wellness', '💆 Physiotherapy & Wellness', 'Physio clinics, chiropractors & rehab centres'],
+    ['ayurveda_homeopathy', '🌿 Ayurveda & Homeopathy', 'Ayurvedic doctors, holistic medicine & retreats'],
+    ['pharmacy_supplements', '💊 Pharmacy & Supplements', 'Chemist shops, vitamins & sports nutrition'],
+    ['gym_fitness', '🏋️ Gym & Fitness Centre', 'Gyms, crossfit, bodybuilding & yoga studios']
+  ]],
+  ['✂️ Beauty, Salons & Events', [
+    ['salon_beauty', '💇 Beauty Salon & Spa', 'Hair salons, beauty parlours & luxury day spas'],
+    ['wedding', '👰 Wedding & Bridal Studio', 'Bridal lehengas, wedding attire & bridal makeup'],
+    ['event_planner', '🎉 Event & Wedding Planner', 'Event organizers, stage decorators & party planners'],
+    ['event_catering', '🎪 Event Venue & Caterer', 'Banquet halls, celebration venues & caterers'],
+    ['photography_studio', '📷 Photography Studio', 'Wedding photographers, portrait & commercial studios'],
+    ['tattoo_piercing', '🖋️ Tattoo & Piercing Studio', 'Tattoo artists & body piercing parlours']
+  ]],
+  ['🏠 Real Estate, Interior & Construction', [
+    ['real_estate', '🏢 Real Estate & Property', 'Realtors, property dealers, brokers & agencies'],
+    ['roofing_construction', '🔨 Roofing & Construction', 'Roofing contractors, civil builders & painters'],
+    ['interior_design', '🛋️ Interior Design Studio', 'Interior decorators, home designers & modular kitchens'],
+    ['interior_architect', '📐 Architecture & Interior Firm', 'Architects, turnkey interior contractors & CAD'],
+    ['architecture_cad', '🏛️ Architectural Engineering', 'Structural engineers, CAD designers & surveyors'],
+    ['solar_energy', '☀️ Solar Panel & Energy', 'Solar installers, rooftop solar & inverters'],
+    ['home_services_solar', '🔧 Home Services & Repairs', 'Plumbing, electrical & general maintenance'],
+    ['hardware_garden', '🧰 Hardware & Garden Tools', 'Hardware tools, paints, sanitary & garden nurseries']
+  ]],
+  ['💼 Professional & Financial Services', [
+    ['finance_ca_tax', '📊 Chartered Accountant (CA) & Tax', 'CA firms, GST consultants, tax advisors & loan agents'],
+    ['lawyer_accountant', '⚖️ Law Firm & Legal Advisors', 'Advocates, legal attorneys & corporate lawyers'],
+    ['it_software', '💻 IT & Software Agency', 'Software development companies & tech agencies'],
+    ['marketing_seo', '📈 Marketing & SEO Agency', 'Digital marketing agencies, PR & advertising firms'],
+    ['graphic_printing', '🖨️ Printing & Graphic Studio', 'Print shops, visiting card printers & designers'],
+    ['coworking_space', '🏢 Coworking & Shared Office', 'Coworking spaces, flexi desks & private cabins']
+  ]],
+  ['🚗 Automotive, Transport & Packers', [
+    ['car_dealer', '🚗 Car Dealer & Dealership', 'New/used car showrooms & bike dealerships'],
+    ['automobile_service', '🔧 Auto Garage & Car Repair', 'Multi-brand car garages, bike repair & denting'],
+    ['car_rental_taxi', '🚕 Car Rental & Taxi Service', 'Cab bookings, airport taxi & luxury car rentals'],
+    ['packers_movers', '📦 Packers & Movers', 'Household shifting, domestic movers & transport'],
+    ['logistics_moving', '🚚 Logistics & Courier', 'Logistics companies, freight forwarding & couriers'],
+    ['travel_agency', '✈️ Travel & Tour Agency', 'Holiday packages, flight booking & visa consultants']
+  ]],
+  ['🎓 Education & Coaching', [
+    ['school_coaching', '🏫 School & Coaching Institute', 'Schools, coaching classes, NEET/JEE test prep'],
+    ['coaching_tuition', '📖 Tuition & Training Academy', 'Subject tuitions, computer institutes & academies']
+  ]],
+  ['🏭 Industrial, Manufacturing & B2B', [
+    ['manufacturing_industrial', '🏭 Manufacturing & Factory', 'Industrial equipment, machinery & manufacturing plants'],
+    ['export_import_wholesale', '🌐 Export / Import & Wholesale', 'B2B wholesalers, merchant exporters & distributors'],
+    ['cleaning_pest_control', '🧹 Cleaning & Pest Control', 'Deep cleaning services & commercial pest control'],
+    ['security_cctv', '📹 CCTV Installation & Security', 'Security cameras, electronic security & guards'],
+    ['laundry_drycleaning', '👔 Dry Cleaning & Laundry', 'Commercial laundry & professional dry cleaning']
+  ]],
+  ['🐾 Pets & Spirituality', [
+    ['pet_shop', '🐕 Pet Shop & Vet Clinic', 'Pet supplies, dog grooming & veterinary doctors'],
+    ['astrology_spiritual', '🔮 Astrology & Vastu Shastra', 'Vastu consultants, horoscope & spiritual advisors']
+  ]]
+];
 
-fetch('/api/meta').then((r) => r.json()).then((m) => {
-  catMS = makeMultiSelect('catMS', [['All Niches', m.categories]], ['restaurant'], { placeholder: 'Search niche...' });
-});
+const PLATFORM_GROUPS = [
+  ['🎯 Maximum Volume (Default)', [
+    ['all', '🌐 All Leads (Full Volume)', 'Best for maximum leads volume across all niches (50–100+ leads)']
+  ]],
+  ['🚀 High-Ticket Pitch Opportunities', [
+    ['nowebsite', '🚀 Businesses with NO website', 'Pitch complete new mobile website & Google business setup'],
+    ['seo_need', '🔍 Needs SEO Fix (Meta, H1, Schema)', 'Rank higher on Google and fix search visibility'],
+    ['design_need', '📱 Needs Redesign / Mobile / Speed Fix', 'Convert mobile visitors into paying customers'],
+    ['speed_slow', '⚡ Slow Loading Site (>3.5s)', 'Fix Core Web Vitals and high bounce rates'],
+    ['ssl_broken', '🔒 Missing SSL / Insecure HTTP', 'Urgent security fix pitch to protect business reputation']
+  ]],
+  ['🛒 E-Commerce & Online Stores', [
+    ['shopify', '🛍️ Shopify Stores', 'Theme customization, speed, checkout & app integration'],
+    ['woocommerce', '🛒 WooCommerce (WordPress Store)', 'Store maintenance, payment gateways & design refresh'],
+    ['magento', '🏬 Magento / Adobe Commerce', 'Enterprise e-commerce maintenance & updates'],
+    ['bigcommerce', '📦 BigCommerce', 'High-growth direct-to-consumer store owners'],
+    ['prestashop', '🏪 PrestaShop / OpenCart', 'Open-source store redesigns and modern upgrades']
+  ]],
+  ['🌐 CMS & Website Builders', [
+    ['wordpress', '🔵 Only WordPress (Custom & CMS)', 'Largest client base for maintenance & rebuilds'],
+    ['elementor', '🎨 Elementor / Divi (WP Builders)', 'Visual page builder fixes, updates & cleanups'],
+    ['webflow', '🌊 Webflow (Designer Sites)', 'Modern high-ticket tech startups & design agencies'],
+    ['migration', '🔄 Wix / Squarespace / GoDaddy', 'Migration pitch: move from expensive builders to WordPress'],
+    ['drupal_joomla', '🏛️ Drupal / Joomla', 'Legacy CMS upgrade and migration pitch']
+  ]],
+  ['💻 Frontend & Modern Web', [
+    ['react', '⚛️ React / Next.js', 'High-performance interactive web apps & headless sites'],
+    ['vue', '💚 Vue / Nuxt.js', 'Modern progressive web applications'],
+    ['angular', '🅰️ Angular', 'Enterprise web application clients'],
+    ['bootstrap', '🎨 Bootstrap / Tailwind / Custom HTML', 'Custom CSS, responsive styling & landing pages']
+  ]],
+  ['⚙️ Backend & Full-Stack (IT)', [
+    ['php', '🐘 PHP (Core PHP / Frameworks)', 'PHP web apps, backend maintenance & API integrations'],
+    ['laravel', '🔴 Laravel', 'Custom web application & portal development'],
+    ['codeigniter', '🔥 CodeIgniter', 'Legacy PHP portal modernization & upgrades'],
+    ['nodejs', '🟢 Node.js / Express', 'Fast APIs, microservices & backend stacks'],
+    ['python', '🐍 Python / Django', 'Data-driven portals, automation & web apps']
+  ]]
+];
+
+const areaMS = makeMultiSelect('areaMS', LOC_GROUPS, ['Dubai, UAE'], { allowCustom: true, placeholder: 'Search state, city or type custom...' });
+let catMS = makeMultiSelect('catMS', CATEGORY_GROUPS, ['restaurant'], { placeholder: 'Search niche or category...' });
+let platMS = makeMultiSelect('platMS', PLATFORM_GROUPS, ['all'], { placeholder: 'Search platform, tech or need...' });
+
 $('skillPreset').onchange = () => { $('kws').value = $('skillPreset').value; };
 const DEFAULT_PRESETS = [
-  { name: '🇮🇳 MP Gyms & Fitness (All)', areas: ['Madhya Pradesh, India'], cats: ['gym_fitness'], platform: 'all' },
-  { name: '🇦🇪 Dubai Restaurants (All)', areas: ['Dubai, UAE'], cats: ['restaurant'], platform: 'all' },
-  { name: '🇦🇪 Dubai Jewelry (Shopify)', areas: ['Dubai, UAE'], cats: ['jewelry'], platform: 'shopify' },
-  { name: '🇺🇸 USA Roofing (WP)', areas: ['Texas, USA', 'Florida, USA', 'California, USA'], cats: ['roofing_construction'], platform: 'wordpress' },
-  { name: '🇮🇳 India Restaurants (All)', areas: ['Indore, India', 'Mumbai, India', 'Delhi, India'], cats: ['restaurant'], platform: 'all' },
+  { name: '🇮🇳 MP Gyms & Fitness (All)', areas: ['Madhya Pradesh, India'], cats: ['gym_fitness'], platforms: ['all'] },
+  { name: '🇦🇪 Dubai Restaurants (All)', areas: ['Dubai, UAE'], cats: ['restaurant'], platforms: ['all'] },
+  { name: '🇦🇪 Dubai Jewelry (Shopify)', areas: ['Dubai, UAE'], cats: ['jewelry'], platforms: ['shopify'] },
+  { name: '🇺🇸 USA Roofing (WP)', areas: ['Texas, USA', 'Florida, USA', 'California, USA'], cats: ['roofing_construction'], platforms: ['wordpress'] },
+  { name: '🇮🇳 India Restaurants (All)', areas: ['Indore, India', 'Mumbai, India', 'Delhi, India'], cats: ['restaurant'], platforms: ['all'] },
 ];
 let presets = lsGet('presets', DEFAULT_PRESETS);
 function renderPresets() {
@@ -931,13 +1080,15 @@ function renderPresets() {
 }
 function applyPreset(i) {
   const p = presets[i]; if (!p) return;
-  areaMS.set(p.areas); catMS.set(p.cats); $('platform').value = p.platform;
+  areaMS.set(p.areas);
+  catMS.set(p.cats);
+  platMS.set(Array.isArray(p.platforms) ? p.platforms : (p.platform ? [p.platform] : ['all']));
   showToast(`Loaded preset: ${p.name}`);
 }
 function savePreset() {
   const name = prompt('Preset name (e.g. "Canada Real Estate WP"):');
   if (!name) return;
-  presets.push({ name: name.trim(), areas: areaMS.get(), cats: catMS.get(), platform: $('platform').value });
+  presets.push({ name: name.trim(), areas: areaMS.get(), cats: catMS.get(), platforms: platMS.get(), platform: platMS.get()[0] || 'all' });
   lsSet('presets', presets); renderPresets(); showToast('✔ Search preset saved!');
 }
 renderPresets();
@@ -1248,7 +1399,8 @@ $('goLeads').onclick = async () => {
   leadAbort = new AbortController();
   data.leads = []; $('log').innerHTML = ''; $('bar').style.width = '0'; renderLeads();
   try {
-    await streamPost('/api/leads', { areas: areaMS.get(), categories: catMS.get(), platform: $('platform').value, maxScan: $('maxScan').value }, (m) => {
+    const chosenPlatforms = platMS.get().length ? platMS.get() : ['all'];
+    await streamPost('/api/leads', { areas: areaMS.get(), categories: catMS.get(), platform: chosenPlatforms, platforms: chosenPlatforms, maxScan: $('maxScan').value }, (m) => {
       if (m.stage === 'lead') { data.leads.push(m.lead); lsSet('leads', data.leads); renderLeads(); }
       else if (m.stage === 'progress') $('bar').style.width = (m.done / m.total * 100) + '%';
       else if (m.stage === 'result') { data.leads = m.leads; lsSet('leads', data.leads); renderLeads(); $('bar').style.width = '100%'; }
