@@ -1104,10 +1104,10 @@ hello@roofersllc.com"></textarea>
             <option value="all">🚀 All-in-One Full Digital Suite (Agency / Multi-Service)</option>
           </select>
 
-          <label style="font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:4px">2. Target Business Niches (Select one or more)</label>
-          <div id="regNichesContainer" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+          <label style="font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:4px">2. Target Business Niche (Select 1 primary niche for Free Starter)</label>
+          <div id="regNichesContainer" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">
             <div class="reg-niche-chip active" data-val="restaurant" onclick="toggleRegNiche(this)">🍴 Restaurants &amp; Cafes</div>
-            <div class="reg-niche-chip active" data-val="hospital_clinic" onclick="toggleRegNiche(this)">🏥 Doctors &amp; Clinics</div>
+            <div class="reg-niche-chip" data-val="hospital_clinic" onclick="toggleRegNiche(this)">🏥 Doctors &amp; Clinics</div>
             <div class="reg-niche-chip" data-val="real_estate" onclick="toggleRegNiche(this)">🏢 Real Estate</div>
             <div class="reg-niche-chip" data-val="salon_beauty" onclick="toggleRegNiche(this)">💇 Salons &amp; Spas</div>
             <div class="reg-niche-chip" data-val="jewelry" onclick="toggleRegNiche(this)">💎 Jewelry &amp; Retail</div>
@@ -1116,6 +1116,7 @@ hello@roofersllc.com"></textarea>
             <div class="reg-niche-chip" data-val="interior_design" onclick="toggleRegNiche(this)">🛋️ Interior Designers</div>
             <div class="reg-niche-chip" data-val="finance_ca_tax" onclick="toggleRegNiche(this)">📊 CA &amp; Consultants</div>
           </div>
+          <div style="font-size:11px;color:#059669;margin-bottom:10px;font-weight:600">🌱 Free Starter includes 1 Niche, 1 City &amp; 1 Focus (Sign-up locked · Upgrade to Pro for 5).</div>
 
           <label style="font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:4px">3. Target Primary City / Region</label>
           <input type="text" id="reg_city" list="regCityList" placeholder="e.g. Mumbai, India or Dubai, UAE" value="Indore, India" style="width:100%;padding:7px 10px;font-size:12.5px;border-radius:7px;border:1px solid var(--bd);background:#fff" />
@@ -1176,9 +1177,9 @@ hello@roofersllc.com"></textarea>
           <div style="margin:12px 0 16px"><span style="font-size:32px;font-weight:800;color:#0f172a">₹0</span> <span style="font-size:12px;color:var(--muted)">/ forever</span></div>
           <ul style="margin:0;padding-left:18px;font-size:12.5px;color:#475569;line-height:1.75">
             <li><b>10 Leads</b> per day</li>
+            <li><b>1 Location · 1 Category · 1 Tech</b> (Locked to sign-up choices)</li>
             <li>Basic Website Pitch</li>
             <li>Standard Web Audit Link</li>
-            <li>Single City &amp; Niche Focus</li>
             <li>Top 10 CSV Export</li>
           </ul>
         </div>
@@ -1199,6 +1200,7 @@ hello@roofersllc.com"></textarea>
           </div>
           <ul style="margin:0;padding-left:18px;font-size:12.5px;color:#334155;line-height:1.75">
             <li><b>150 Leads</b> per day (4,500/mo)</li>
+            <li><b>Up to 5 Locations · 5 Categories · 5 Platforms</b> simultaneously</li>
             <li><b>All 6 Service Pitches</b> (Web, SEO, SMO, Post, Graphic, Flyer)</li>
             <li><b>WhatsApp Anti-Ban Spin-tax</b></li>
             <li><b>Cold Calling Objection Cheat-Sheet</b></li>
@@ -1222,6 +1224,7 @@ hello@roofersllc.com"></textarea>
           </div>
           <ul style="margin:0;padding-left:18px;font-size:12.5px;color:#475569;line-height:1.75">
             <li><b>Unlimited Leads</b> (No Daily Caps)</li>
+            <li><b>Unlimited Locations · Unlimited Categories · Unlimited Platforms</b> (Multi-city expansion)</li>
             <li><b>White-Label Web Audit</b> (Your Agency Name &amp; Logo)</li>
             <li><b>1-Click Branded PDF Audit Export</b></li>
             <li><b>Mini CRM Pipeline</b> (Follow-up Reminders)</li>
@@ -1314,8 +1317,31 @@ function switchAuthTab(tab) {
   }
 }
 
+const PLAN_LIMITS = {
+  free: { maxLocations: 1, maxCategories: 1, maxPlatforms: 1, name: 'Free Starter' },
+  pro: { maxLocations: 5, maxCategories: 5, maxPlatforms: 5, name: 'Freelancer Pro' },
+  agency: { maxLocations: Infinity, maxCategories: Infinity, maxPlatforms: Infinity, name: 'Agency Unlimited' }
+};
+
+function getCurrentUserPlan() {
+  const isSuper = Boolean(currentUser?.isSuperAdmin || currentUser?.role === 'superadmin' || (currentUser?.email && currentUser.email.toLowerCase() === 'parvpathak12@gmail.com'));
+  if (isSuper) return 'agency';
+  return (currentUserQuota?.plan || currentUser?.plan || 'free').toLowerCase();
+}
+
+function getMaxSelectLimit(type) {
+  const plan = getCurrentUserPlan();
+  const cfg = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+  if (type === 'area' || type === 'location') return cfg.maxLocations;
+  if (type === 'cat' || type === 'category') return cfg.maxCategories;
+  if (type === 'plat' || type === 'platform') return cfg.maxPlatforms;
+  return Infinity;
+}
+
 function toggleRegNiche(el) {
-  if (el) el.classList.toggle('active');
+  if (!el) return;
+  document.querySelectorAll('#regNichesContainer .reg-niche-chip').forEach((c) => c.classList.remove('active'));
+  el.classList.add('active');
 }
 
 // ---------- Subscription, Pricing & Export Functions ----------
@@ -1355,6 +1381,7 @@ async function demoSwitchPlan(plan) {
       }
       currentUserQuota = d.quota;
       updateQuotaUI(d.quota);
+      refreshPlanLimitsUI();
       showToast(`🎉 Plan upgraded to ${plan.toUpperCase()} successfully!`);
       closePricingModal();
     } else {
@@ -1362,6 +1389,7 @@ async function demoSwitchPlan(plan) {
     }
   } catch (err) {
     if (currentUser) currentUser.plan = plan;
+    refreshPlanLimitsUI();
     showToast(`✔ Switched to ${plan.toUpperCase()} plan.`);
     closePricingModal();
   }
@@ -1411,6 +1439,10 @@ function updateQuotaUI(quota) {
   if (headerLabel) {
     if (isUnlimited) headerLabel.textContent = '👑 Unlimited Leads';
     else headerLabel.textContent = `⚡ ${Math.max(0, limit - used)} / ${limit} Leads Left`;
+  }
+
+  if (typeof refreshPlanLimitsUI === 'function') {
+    refreshPlanLimitsUI();
   }
 }
 
@@ -1662,11 +1694,16 @@ const LOC_GROUPS = [
   ['🌏 Australia, APAC, LATAM & Africa', ['Sydney, Australia','Melbourne, Australia','Brisbane, Australia','Perth, Australia','Adelaide, Australia','Auckland, New Zealand','Wellington, New Zealand','Singapore','Kuala Lumpur, Malaysia','Bangkok, Thailand','Jakarta, Indonesia','Manila, Philippines','Ho Chi Minh City, Vietnam','Tokyo, Japan','Seoul, South Korea','Hong Kong','Taipei, Taiwan','Mexico City, Mexico','Sao Paulo, Brazil','Buenos Aires, Argentina','Bogota, Colombia','Santiago, Chile','Johannesburg, South Africa','Cape Town, South Africa','Nairobi, Kenya','Lagos, Nigeria']],
 ];
 
-function makeMultiSelect(elId, groups, initial, { allowCustom = false, placeholder = 'Search...', onChange = null } = {}) {
+function makeMultiSelect(elId, groups, initial, { allowCustom = false, placeholder = 'Search...', onChange = null, type = 'item' } = {}) {
   const el = $(elId);
-  if (!el) return { get: () => [], set: () => {}, remove: () => {}, clear: () => {}, lookupLabel: (v) => v };
+  if (!el) return { get: () => [], set: () => {}, remove: () => {}, clear: () => {}, refresh: () => {}, lookupLabel: (v) => v };
   const selected = new Set(initial);
   const custom = [];
+
+  const typeNames = { area: 'Locations', cat: 'Categories', plat: 'Platforms' };
+  const typeSingular = { area: 'Location', cat: 'Category', plat: 'Platform' };
+  const tName = typeNames[type] || 'Items';
+  const tSing = typeSingular[type] || 'Item';
 
   const norm = (it) => {
     if (typeof it === 'object' && it !== null) {
@@ -1693,23 +1730,55 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
   };
 
   el.innerHTML = `<button type="button" class="ms-btn"><span class="ms-lbl"></span><span>▾</span></button>
-    <div class="ms-drop"><input type="text" class="ms-q" placeholder="${placeholder}" />
+    <div class="ms-drop">
+      <div class="ms-slot-bar" style="display:flex;align-items:center;justify-content:space-between;padding:5px 9px;margin-bottom:7px;border-radius:7px;font-size:11.5px;background:#f8fafc;border:1px solid #e2e8f0">
+        <span class="ms-slot-text" style="font-weight:600;color:#334155"></span>
+        <a href="javascript:void(0)" class="ms-slot-upgrade" style="color:#4f46e5;font-weight:700;text-decoration:none;font-size:11px">⚡ Upgrade</a>
+      </div>
+      <input type="text" class="ms-q" placeholder="${placeholder}" />
       <div class="ms-bar"><button type="button" class="sec ms-all">Select All</button><button type="button" class="sec ms-clr">Clear</button>${allowCustom ? '<button type="button" class="sec ms-add">+ Add typed</button>' : ''}</div>
       <div class="ms-list"></div></div>`;
   const btn = el.querySelector('.ms-btn'), lbl = el.querySelector('.ms-lbl'), q = el.querySelector('.ms-q'), list = el.querySelector('.ms-list');
+  const slotText = el.querySelector('.ms-slot-text'), slotUpgrade = el.querySelector('.ms-slot-upgrade');
 
   const updateLabel = () => {
     const arr = [...selected];
-    if (!arr.length) { lbl.textContent = 'Select...'; return; }
-    if (arr.includes('all')) { lbl.textContent = '🌐 All Leads (Full Volume)'; return; }
+    const limit = getMaxSelectLimit(type);
+    const slotBadge = limit === Infinity ? '' : ` (${arr.length}/${limit})`;
+    if (!arr.length) { lbl.textContent = `Select ${tSing}...${slotBadge}`; return; }
+    if (arr.includes('all')) { lbl.textContent = `🌐 All Leads (Full Volume)${slotBadge}`; return; }
     if (arr.length <= 2) {
-      lbl.textContent = arr.map(lookupLabel).join(', ');
+      lbl.textContent = arr.map(lookupLabel).join(', ') + slotBadge;
     } else {
-      lbl.textContent = `${lookupLabel(arr[0])} (+${arr.length - 1} more)`;
+      lbl.textContent = `${lookupLabel(arr[0])} (+${arr.length - 1} more)${slotBadge}`;
     }
   };
 
   const render = (fireChange = false) => {
+    const limit = getMaxSelectLimit(type);
+    const plan = getCurrentUserPlan();
+    const planName = PLAN_LIMITS[plan]?.name || 'Free Starter';
+
+    // Clamp selection if exceeding current plan limit
+    if (limit < Infinity && selected.size > limit) {
+      const trimmed = [...selected].slice(0, limit);
+      selected.clear();
+      trimmed.forEach((v) => selected.add(v));
+    }
+
+    if (slotText) {
+      if (limit === Infinity) {
+        slotText.innerHTML = `👑 <b>Agency:</b> Unlimited ${tName}`;
+        if (slotUpgrade) slotUpgrade.style.display = 'none';
+      } else {
+        slotText.innerHTML = `<b>${planName}:</b> ${selected.size}/${limit} ${tName} used`;
+        if (slotUpgrade) {
+          slotUpgrade.style.display = 'inline';
+          slotUpgrade.onclick = (e) => { e.preventDefault(); e.stopPropagation(); openPricingModal('pro'); };
+        }
+      }
+    }
+
     const f = q.value.trim().toLowerCase();
     let html = '';
     const allGrps = custom.length ? [['Custom', custom.map((c) => ({ val: c, label: c, sub: '' }))], ...groups] : groups;
@@ -1726,7 +1795,21 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
         else { selected.delete('all'); }
       } else {
         selected.delete('all');
-        cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
+        if (cb.checked) {
+          const curLimit = getMaxSelectLimit(type);
+          if (selected.size >= curLimit) {
+            cb.checked = false;
+            const curPlan = getCurrentUserPlan();
+            const curPlanName = PLAN_LIMITS[curPlan]?.name || 'Free Starter';
+            const targetUpgrade = curPlan === 'free' ? 'pro' : 'agency';
+            showToast(`⚠️ ${curPlanName} allows max ${curLimit} ${curLimit === 1 ? tSing : tName}. Upgrade to unlock more slots!`);
+            openPricingModal(targetUpgrade);
+            return;
+          }
+          selected.add(cb.value);
+        } else {
+          selected.delete(cb.value);
+        }
       }
       render(true);
     });
@@ -1743,12 +1826,28 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
   el.querySelector('.ms-drop').onclick = (e) => e.stopPropagation();
   q.oninput = () => render(false);
   el.querySelector('.ms-all').onclick = () => {
+    const limit = getMaxSelectLimit(type);
+    if (limit < 20) {
+      const curPlan = getCurrentUserPlan();
+      const curPlanName = PLAN_LIMITS[curPlan]?.name || 'Free Starter';
+      showToast(`⚠️ "Select All" requires Agency Unlimited plan! ${curPlanName} allows max ${limit} ${tName}.`);
+      openPricingModal('agency');
+      return;
+    }
     const f = q.value.trim().toLowerCase();
     groups.flatMap((g) => g[1]).map(norm).filter((n) => !f || n.val.toLowerCase().includes(f) || n.label.toLowerCase().includes(f)).slice(0, 30).forEach((n) => selected.add(n.val));
     render(true);
   };
   el.querySelector('.ms-clr').onclick = () => { selected.clear(); render(true); };
   if (allowCustom) el.querySelector('.ms-add').onclick = () => {
+    const limit = getMaxSelectLimit(type);
+    if (selected.size >= limit) {
+      const curPlan = getCurrentUserPlan();
+      const curPlanName = PLAN_LIMITS[curPlan]?.name || 'Free Starter';
+      showToast(`⚠️ ${curPlanName} allows max ${limit} ${tName}. Upgrade to unlock more slots!`);
+      openPricingModal('pro');
+      return;
+    }
     const v = q.value.trim();
     if (v) { custom.unshift(v); selected.add(v); q.value = ''; render(true); }
   };
@@ -1756,9 +1855,16 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
   render(false);
   return {
     get: () => [...selected],
-    set: (arr) => { selected.clear(); (arr || []).forEach((v) => selected.add(v)); render(true); },
+    set: (arr) => {
+      selected.clear();
+      const limit = getMaxSelectLimit(type);
+      const safe = (arr || []).slice(0, limit);
+      safe.forEach((v) => selected.add(v));
+      render(true);
+    },
     remove: (v) => { selected.delete(v); render(true); },
     clear: () => { selected.clear(); render(true); },
+    refresh: () => render(false),
     lookupLabel,
   };
 }
@@ -1896,9 +2002,16 @@ const PLATFORM_GROUPS = [
 ];
 
 const onFilterChange = () => { updateActiveChips(); };
-const areaMS = makeMultiSelect('areaMS', LOC_GROUPS, ['Dubai, UAE'], { allowCustom: true, placeholder: 'Search state, city or type custom...', onChange: onFilterChange });
-let catMS = makeMultiSelect('catMS', CATEGORY_GROUPS, ['restaurant'], { placeholder: 'Search niche or category...', onChange: onFilterChange });
-let platMS = makeMultiSelect('platMS', PLATFORM_GROUPS, ['all'], { placeholder: 'Search platform, tech or need...', onChange: onFilterChange });
+const areaMS = makeMultiSelect('areaMS', LOC_GROUPS, ['Indore, India'], { allowCustom: true, placeholder: 'Search state, city or type custom...', type: 'area', onChange: onFilterChange });
+let catMS = makeMultiSelect('catMS', CATEGORY_GROUPS, ['restaurant'], { placeholder: 'Search niche or category...', type: 'cat', onChange: onFilterChange });
+let platMS = makeMultiSelect('platMS', PLATFORM_GROUPS, ['all'], { placeholder: 'Search platform, tech or need...', type: 'plat', onChange: onFilterChange });
+
+function refreshPlanLimitsUI() {
+  if (typeof areaMS !== 'undefined' && areaMS?.refresh) areaMS.refresh();
+  if (typeof catMS !== 'undefined' && catMS?.refresh) catMS.refresh();
+  if (typeof platMS !== 'undefined' && platMS?.refresh) platMS.refresh();
+  if (typeof updateActiveChips === 'function') updateActiveChips();
+}
 
 // Active Filter Chips Management
 function updateActiveChips() {
@@ -1947,8 +2060,10 @@ function clearAllSelections() {
 function applyUserPreferences(prof) {
   if (!prof) return;
   const city = prof.targetCity || 'Indore, India';
-  const niches = (prof.targetNiches && prof.targetNiches.length) ? prof.targetNiches : ['restaurant'];
+  const rawNiches = (prof.targetNiches && prof.targetNiches.length) ? prof.targetNiches : ['restaurant'];
   const service = prof.primaryService || 'web';
+  const catLimit = getMaxSelectLimit('cat');
+  const niches = rawNiches.slice(0, catLimit);
 
   try {
     if (typeof areaMS !== 'undefined' && areaMS && typeof areaMS.set === 'function') {
@@ -1964,10 +2079,11 @@ function applyUserPreferences(prof) {
 
   try {
     if (typeof platMS !== 'undefined' && platMS && typeof platMS.set === 'function') {
+      const platLimit = getMaxSelectLimit('plat');
       if (service === 'seo') platMS.set(['seo_need']);
       else if (service === 'smo') platMS.set(['smo_social']);
       else if (service === 'post') platMS.set(['post_design']);
-      else if (service === 'graphic') platMS.set(['graphic_design', 'flyer_brochure']);
+      else if (service === 'graphic') platMS.set(['graphic_design', 'flyer_brochure'].slice(0, platLimit));
       else platMS.set(['all']);
     }
   } catch (e) {}

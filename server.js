@@ -86,9 +86,20 @@ const server = http.createServer(async (req, res) => {
       let leadsStreamedThisRun = 0;
       const maxAllowedThisRun = quota.isUnlimited ? 500 : quota.remaining;
 
+      // Enforce plan-based slot limits (Free: 1, Pro: 5, Agency: Unlimited)
+      const slotLimit = quota.isUnlimited ? 100 : (quota.plan === 'pro' ? 5 : 1);
+      const cleanAreas = Array.isArray(b.areas) ? b.areas.slice(0, slotLimit) : (b.areas ? [b.areas] : []);
+      const cleanCats = Array.isArray(b.categories) ? b.categories.slice(0, slotLimit) : (b.categories ? [b.categories] : []);
+      const rawPlats = b.platform || b.platforms || ['all'];
+      const cleanPlats = Array.isArray(rawPlats) ? rawPlats.slice(0, slotLimit) : [rawPlats];
+
       try {
         const r = await findLeads({
           ...b,
+          areas: cleanAreas,
+          categories: cleanCats,
+          platform: cleanPlats,
+          platforms: cleanPlats,
           maxScan: Math.min(Number(b.maxScan) || 200, 500),
           signal: ctrl.signal,
           onProgress: (m) => {
