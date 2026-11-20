@@ -253,6 +253,24 @@
     .user-card { display:none; }
     main { padding:14px; }
   }
+
+  /* Personalized Onboarding & Niche Chips */
+  .reg-niche-chip {
+    padding:4px 9px; font-size:11px; font-weight:500; border-radius:99px;
+    border:1px solid #cbd5e1; background:#ffffff; color:#475569;
+    cursor:pointer; user-select:none; transition:all .15s ease;
+  }
+  .reg-niche-chip:hover { border-color:#6366f1; color:#4f46e5; }
+  .reg-niche-chip.active { background:#4f46e5; color:#ffffff; border-color:#4338ca; font-weight:600; }
+  .reg-city-pill {
+    font-size:10px; padding:2px 8px; border-radius:99px; background:#e2e8f0;
+    color:#334155; cursor:pointer; font-weight:500; transition:background .15s;
+  }
+  .reg-city-pill:hover { background:#cbd5e1; }
+  .user-personal-badge {
+    display:none; align-items:center; gap:6px; font-size:11.5px; background:#eef2ff;
+    color:#4338ca; border:1px solid #c7d2fe; border-radius:99px; padding:3px 10px; font-weight:500;
+  }
 </style>
 </head>
 <body>
@@ -300,6 +318,7 @@
     <!-- 1-Click Quick Picks Ribbon -->
     <div class="quick-ribbon" id="quickPicksRibbon">
       <div style="font-size:12px;font-weight:700;color:var(--muted);align-self:center;flex-shrink:0;margin-right:2px">⚡ Quick Picks:</div>
+      <div id="userPersonalPick" class="qp-chip" style="display:none;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#ffffff;border-color:#4338ca;font-weight:700;box-shadow:0 2px 6px rgba(79,70,229,.25)" onclick="triggerMyNicheSearch()">🎯 My Niche Leads</div>
       <div class="qp-chip" style="background:#fdf4ff;color:#9333ea;border-color:#f0abfc" onclick="quickSearchPreset('smo_post_design')">📱 SMO &amp; Post Design</div>
       <div class="qp-chip" style="background:#f0fdf4;color:#16a34a;border-color:#86efac" onclick="quickSearchPreset('flyer_brochure')">📄 Flyer &amp; Print Leads</div>
       <div class="qp-chip" style="background:#eff6ff;color:#2563eb;border-color:#93c5fd" onclick="quickSearchPreset('seo_local')">🔍 SEO &amp; GMB Ranking</div>
@@ -335,6 +354,7 @@
 
       <!-- Active Filter Chips Bar -->
       <div class="chips-container" id="activeChipsBar">
+        <div id="userPersonalBadge" class="user-personal-badge"></div>
         <span style="font-size:11.5px;color:var(--muted);font-weight:600">Active Selections:</span>
         <div id="chipsList" style="display:inline-flex;gap:6px;flex-wrap:wrap"></div>
         <button type="button" class="sec" onclick="clearAllSelections()" style="padding:2px 8px;font-size:11px;border-radius:99px;margin-left:auto;color:#ef4444">Clear All</button>
@@ -528,6 +548,30 @@
     <label style="margin-top:10px">Custom Pitch Template (Optional — placeholders: <code>{name}</code>, <code>{website}</code>, <code>{platform}</code>, <code>{issue}</code>)
       <textarea id="p_customTpl" placeholder="Hi {name} Team,&#10;&#10;Checked {website} and noticed {issue}..." style="min-height:90px"></textarea></label>
     <label style="margin-top:10px">Projects (one per line: Name | URL | tags)<textarea id="p_projects"></textarea></label>
+    
+    <div style="margin-top:14px;padding:14px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0">
+      <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:8px">🎯 Default Lead &amp; Pitch Preferences</div>
+      <div class="row">
+        <label>Primary Service Focus
+          <select id="p_primaryService" style="padding:6px 10px;font-size:12.5px;border-radius:8px;border:1px solid var(--bd);background:#fff">
+            <option value="web">🌐 Website Design &amp; Redesign (WordPress / Shopify)</option>
+            <option value="seo">🔍 SEO &amp; Google Local Ranking (GMB)</option>
+            <option value="smo">📱 Social Media Marketing (SMO)</option>
+            <option value="post">📸 Social Media Post &amp; Banner Design</option>
+            <option value="graphic">🎨 Graphic Design, Logo &amp; Flyer</option>
+            <option value="all">🚀 All-in-One Full Digital Suite</option>
+          </select>
+        </label>
+        <label>Target Primary City / Region
+          <input id="p_targetCity" placeholder="e.g. Mumbai, India or Dubai, UAE" style="min-width:240px" />
+        </label>
+      </div>
+      <label style="margin-top:8px">Target Niches (comma-separated codes)
+        <input id="p_targetNiches" placeholder="restaurant, hospital_clinic, real_estate" style="width:100%" />
+        <span style="font-size:11px;color:var(--muted)">Examples: restaurant, hospital_clinic, real_estate, salon_beauty, jewelry, gym_fitness, school_coaching, interior_design</span>
+      </label>
+    </div>
+
     <div class="row" style="margin-top:10px"><button onclick="saveProfile()">💾 Save Profile</button><span id="psaved" class="small"></span></div>
   </section>
 
@@ -967,7 +1011,7 @@ hello@roofersllc.com"></textarea>
 
 <!-- LOGIN & REGISTRATION MODAL -->
 <div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.48);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
-  <div style="background:#ffffff;color:var(--txt);border:1px solid var(--bd);border-radius:16px;padding:26px;width:min(460px,94vw);box-shadow:0 24px 60px rgba(15,23,42,0.22)">
+  <div style="background:#ffffff;color:var(--txt);border:1px solid var(--bd);border-radius:16px;padding:26px;width:min(540px,94vw);max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(15,23,42,0.22)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div style="display:flex;align-items:center;gap:10px">
         <div style="font-size:24px">🔐</div>
@@ -1005,22 +1049,84 @@ hello@roofersllc.com"></textarea>
     <!-- REGISTER FORM -->
     <div id="authRegisterWrap" style="display:none">
       <form onsubmit="event.preventDefault(); submitRegister();">
-        <label>Full Name
-          <input type="text" id="reg_name" placeholder="Praveen Pathak" required style="width:100%" />
-        </label>
-        <label style="margin-top:10px">Email Address
-          <input type="email" id="reg_email" placeholder="parvpathak12@gmail.com" required style="width:100%" />
-        </label>
-        <label style="margin-top:10px">Phone Number (Optional)
-          <input type="text" id="reg_phone" placeholder="+91 8109567672" style="width:100%" />
-        </label>
-        <label style="margin-top:10px">Password (min 4 chars)
-          <input type="password" id="reg_password" placeholder="••••••••" minlength="4" required style="width:100%" />
-        </label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <label>Full Name
+            <input type="text" id="reg_name" placeholder="Praveen Pathak" required style="width:100%" />
+          </label>
+          <label>Email Address
+            <input type="email" id="reg_email" placeholder="parvpathak12@gmail.com" required style="width:100%" />
+          </label>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+          <label>Phone / WhatsApp
+            <input type="text" id="reg_phone" placeholder="+91 8109567672" style="width:100%" />
+          </label>
+          <label>Password (min 4 chars)
+            <input type="password" id="reg_password" placeholder="••••••••" minlength="4" required style="width:100%" />
+          </label>
+        </div>
+
+        <!-- Smart Onboarding: Service & Niche -->
+        <div style="margin-top:14px;padding:12px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0">
+          <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px;display:flex;align-items:center;gap:6px">
+            <span>🎯 Tailor Your Lead Experience</span>
+            <span style="font-size:10px;background:#e0e7ff;color:#4338ca;padding:1px 6px;border-radius:99px;font-weight:600">Personalized</span>
+          </div>
+
+          <label style="font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:4px">1. Your Primary Service / Focus</label>
+          <select id="reg_service" style="width:100%;padding:7px 10px;font-size:12.5px;border-radius:7px;border:1px solid var(--bd);background:#fff;margin-bottom:10px">
+            <option value="web" selected>🌐 Website Design &amp; Redesign (WordPress / Shopify)</option>
+            <option value="seo">🔍 SEO &amp; Google Local Search Ranking (GMB)</option>
+            <option value="smo">📱 Social Media Marketing &amp; Organic Growth (SMO)</option>
+            <option value="post">📸 Social Media Post &amp; Banner Creatives</option>
+            <option value="graphic">🎨 Graphic Design, Logo &amp; Flyer / Print Design</option>
+            <option value="all">🚀 All-in-One Full Digital Suite (Agency / Multi-Service)</option>
+          </select>
+
+          <label style="font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:4px">2. Target Business Niches (Select one or more)</label>
+          <div id="regNichesContainer" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            <div class="reg-niche-chip active" data-val="restaurant" onclick="toggleRegNiche(this)">🍴 Restaurants &amp; Cafes</div>
+            <div class="reg-niche-chip active" data-val="hospital_clinic" onclick="toggleRegNiche(this)">🏥 Doctors &amp; Clinics</div>
+            <div class="reg-niche-chip" data-val="real_estate" onclick="toggleRegNiche(this)">🏢 Real Estate</div>
+            <div class="reg-niche-chip" data-val="salon_beauty" onclick="toggleRegNiche(this)">💇 Salons &amp; Spas</div>
+            <div class="reg-niche-chip" data-val="jewelry" onclick="toggleRegNiche(this)">💎 Jewelry &amp; Retail</div>
+            <div class="reg-niche-chip" data-val="gym_fitness" onclick="toggleRegNiche(this)">🏋️ Gyms &amp; Fitness</div>
+            <div class="reg-niche-chip" data-val="school_coaching" onclick="toggleRegNiche(this)">🎓 Coaching &amp; Institutes</div>
+            <div class="reg-niche-chip" data-val="interior_design" onclick="toggleRegNiche(this)">🛋️ Interior Designers</div>
+            <div class="reg-niche-chip" data-val="finance_ca_tax" onclick="toggleRegNiche(this)">📊 CA &amp; Consultants</div>
+          </div>
+
+          <label style="font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:4px">3. Target Primary City / Region</label>
+          <input type="text" id="reg_city" list="regCityList" placeholder="e.g. Mumbai, India or Dubai, UAE" value="Indore, India" style="width:100%;padding:7px 10px;font-size:12.5px;border-radius:7px;border:1px solid var(--bd);background:#fff" />
+          <datalist id="regCityList">
+            <option value="Indore, India"></option>
+            <option value="Mumbai, India"></option>
+            <option value="New Delhi, India"></option>
+            <option value="Bengaluru, India"></option>
+            <option value="Pune, India"></option>
+            <option value="Hyderabad, India"></option>
+            <option value="Ahmedabad, India"></option>
+            <option value="Dubai, UAE"></option>
+            <option value="London, UK"></option>
+            <option value="New York, USA"></option>
+            <option value="California, USA"></option>
+          </datalist>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">
+            <span style="font-size:10.5px;color:var(--muted);align-self:center">Quick Cities:</span>
+            <span class="reg-city-pill" onclick="$('reg_city').value='Indore, India'">Indore</span>
+            <span class="reg-city-pill" onclick="$('reg_city').value='Mumbai, India'">Mumbai</span>
+            <span class="reg-city-pill" onclick="$('reg_city').value='New Delhi, India'">Delhi</span>
+            <span class="reg-city-pill" onclick="$('reg_city').value='Bengaluru, India'">Bangalore</span>
+            <span class="reg-city-pill" onclick="$('reg_city').value='Dubai, UAE'">Dubai</span>
+            <span class="reg-city-pill" onclick="$('reg_city').value='New York, USA'">New York</span>
+          </div>
+        </div>
+
         <div id="regErr" style="color:#ef4444;font-size:12px;margin-top:8px;display:none"></div>
-        <button type="submit" id="regSubmitBtn" style="width:100%;margin-top:16px;padding:10px">Create Account &amp; Sign In</button>
+        <button type="submit" id="regSubmitBtn" style="width:100%;margin-top:14px;padding:10px;font-weight:700">🚀 Create Account &amp; Personalize Dashboard</button>
       </form>
-      <div style="text-align:center;margin-top:14px;font-size:12.5px;color:var(--muted)">
+      <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--muted)">
         Already have an account? <a href="javascript:void(0)" onclick="switchAuthTab('login')">Sign in here</a>
       </div>
     </div>
@@ -1077,6 +1183,10 @@ function switchAuthTab(tab) {
   }
 }
 
+function toggleRegNiche(el) {
+  if (el) el.classList.toggle('active');
+}
+
 async function submitLogin() {
   const email = $('login_email').value.trim();
   const password = $('login_password').value;
@@ -1098,6 +1208,7 @@ async function submitLogin() {
     localStorage.setItem('lga_user', JSON.stringify(d.user));
     currentUser = d.user;
     updateUserUI();
+    applyUserPreferences(d.user?.profile);
     $('authModal').style.display = 'none';
     $('login_password').value = '';
     showToast(`✔ Welcome back, ${currentUser.name}!`);
@@ -1117,17 +1228,29 @@ async function submitRegister() {
   const email = $('reg_email').value.trim();
   const phone = $('reg_phone').value.trim();
   const password = $('reg_password').value;
+  const primaryService = $('reg_service')?.value || 'web';
+  const targetCity = $('reg_city')?.value.trim() || 'Indore, India';
+  const targetNiches = Array.from(document.querySelectorAll('.reg-niche-chip.active')).map((c) => c.dataset.val);
+
   const errBox = $('regErr');
   const btn = $('regSubmitBtn');
   errBox.style.display = 'none';
   btn.disabled = true;
-  btn.textContent = 'Creating account...';
+  btn.textContent = 'Creating account & personalizing...';
 
   try {
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, phone, password })
+      body: JSON.stringify({
+        name,
+        email,
+        phone,
+        password,
+        primaryService,
+        targetCity,
+        targetNiches: targetNiches.length ? targetNiches : ['restaurant']
+      })
     });
     const d = await res.json();
     if (!res.ok || d.error) throw new Error(d.error || 'Registration failed');
@@ -1135,9 +1258,10 @@ async function submitRegister() {
     localStorage.setItem('lga_user', JSON.stringify(d.user));
     currentUser = d.user;
     updateUserUI();
+    applyUserPreferences(d.user?.profile);
     $('authModal').style.display = 'none';
     $('reg_password').value = '';
-    showToast(`🎉 Account created! Welcome, ${currentUser.name}!`);
+    showToast(`🎉 Account created! Personalized for ${primaryService.toUpperCase()} in ${targetCity}!`);
     await loadApps();
     await loadProfile();
   } catch (err) {
@@ -1145,7 +1269,7 @@ async function submitRegister() {
     errBox.style.display = 'block';
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Create Account & Sign In';
+    btn.textContent = '🚀 Create Account & Personalize Dashboard';
   }
 }
 
@@ -1161,6 +1285,7 @@ async function checkAuth() {
       const d = await res.json();
       currentUser = d.user;
       localStorage.setItem('lga_user', JSON.stringify(d.user));
+      applyUserPreferences(d.profile || d.user?.profile);
     } else {
       localStorage.removeItem('lga_token');
       localStorage.removeItem('lga_user');
@@ -1177,6 +1302,9 @@ function logoutUser() {
   localStorage.removeItem('lga_user');
   currentUser = null;
   updateUserUI();
+  const badge = $('userPersonalBadge'); if (badge) badge.style.display = 'none';
+  const pick = $('userPersonalPick'); if (pick) pick.style.display = 'none';
+  showToast('Logged out.');
   showToast('Logged out.');
   loadApps();
   loadProfile();
@@ -1517,6 +1645,76 @@ function clearAllSelections() {
   if (platMS) platMS.set(['all']);
   updateActiveChips();
   showToast('Cleared all active selections');
+}
+
+// Personalized User Lead Hydration & 1-Click Search
+function applyUserPreferences(prof) {
+  if (!prof) return;
+  const city = prof.targetCity || 'Indore, India';
+  const niches = (prof.targetNiches && prof.targetNiches.length) ? prof.targetNiches : ['restaurant'];
+  const service = prof.primaryService || 'web';
+
+  try {
+    if (typeof areaMS !== 'undefined' && areaMS && typeof areaMS.set === 'function') {
+      areaMS.set([city]);
+    }
+  } catch (e) {}
+
+  try {
+    if (typeof catMS !== 'undefined' && catMS && typeof catMS.set === 'function') {
+      catMS.set(niches);
+    }
+  } catch (e) {}
+
+  try {
+    if (typeof platMS !== 'undefined' && platMS && typeof platMS.set === 'function') {
+      if (service === 'seo') platMS.set(['seo_need']);
+      else if (service === 'smo') platMS.set(['smo_social']);
+      else if (service === 'post') platMS.set(['post_design']);
+      else if (service === 'graphic') platMS.set(['graphic_design', 'flyer_brochure']);
+      else platMS.set(['all']);
+    }
+  } catch (e) {}
+
+  try {
+    if (typeof updateActiveChips === 'function') {
+      updateActiveChips();
+    }
+  } catch (e) {}
+
+  try {
+    if ($('m_service')) {
+      $('m_service').value = (service === 'all' ? 'web' : service);
+    }
+  } catch (e) {}
+
+  const serviceNames = {
+    web: '🌐 Web Redesign',
+    seo: '🔍 SEO Ranking',
+    smo: '📱 Social Media (SMO)',
+    post: '📸 Post Creatives',
+    graphic: '🎨 Graphic & Logo',
+    all: '🚀 Full Suite'
+  };
+  const pick = $('userPersonalPick');
+  if (pick) {
+    pick.style.display = 'inline-flex';
+    pick.innerHTML = `🎯 My Leads (${serviceNames[service] || service} • ${esc(city)})`;
+    pick.title = `Click to search personalized ${service} leads in ${city}`;
+  }
+
+  const badge = $('userPersonalBadge');
+  if (badge) {
+    badge.style.display = 'inline-flex';
+    badge.innerHTML = `🎯 <strong>${serviceNames[service] || service}</strong> in <strong>${esc(city)}</strong> (${niches.length} niches)`;
+  }
+}
+
+function triggerMyNicheSearch() {
+  const prof = currentUser?.profile || lsGet(getUserProfileKey(), {});
+  applyUserPreferences(prof);
+  showToast(`🎯 Searching personalized leads for ${currentUser?.name || 'you'}...`);
+  if ($('goLeads')) $('goLeads').click();
 }
 
 // 1-Click Quick Picks Presets
@@ -2384,7 +2582,8 @@ async function openPitch(kind, idx, tone = $('m_tone')?.value || 'friendly') {
     }
   }
 
-  let currentPitchService = $('m_service')?.value || 'web';
+  let currentPitchService = $('m_service')?.value || currentUser?.profile?.primaryService || 'web';
+  if (currentPitchService === 'all') currentPitchService = 'web';
   const servicePitches = buildServicePitch(currentPitchService, l, r, tone, auditUrl);
 
   currentPitchData = {
@@ -3129,16 +3328,23 @@ async function loadProfile() {
   try { p = await fetch('/api/profile', { headers: authHeaders() }).then((r) => r.json()); } catch {}
   const localP = lsGet(getUserProfileKey(), {});
   const merged = { ...p, ...localP };
-  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl','customTpl']) {
+  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl','customTpl','primaryService','targetCity']) {
     if ($('p_' + k)) $('p_' + k).value = merged[k] || '';
+  }
+  if ($('p_targetNiches')) {
+    const n = Array.isArray(merged.targetNiches) ? merged.targetNiches.join(', ') : (merged.targetNiches || '');
+    $('p_targetNiches').value = n;
   }
   if ($('p_skills')) $('p_skills').value = (merged.skills || []).join(', ');
   if ($('p_projects')) $('p_projects').value = (merged.projects || []).map((x) => `${x.name} | ${x.url} | ${(x.tags || []).join(', ')}`).join('\n');
 }
 async function saveProfile() {
   const p = {};
-  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl','customTpl']) {
+  for (const k of ['name','title','email','phone','location','years','portfolio','linkedin','resumeFile','rateNote','gsheetUrl','customTpl','primaryService','targetCity']) {
     if ($('p_' + k)) p[k] = $('p_' + k).value.trim();
+  }
+  if ($('p_targetNiches')) {
+    p.targetNiches = $('p_targetNiches').value.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
   }
   p.skills = $('p_skills').value.split(',').map((s) => s.trim()).filter(Boolean);
   p.projects = $('p_projects').value.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
@@ -3147,9 +3353,11 @@ async function saveProfile() {
   });
   await fetch('/api/profile', { method: 'POST', headers: authHeaders(), body: JSON.stringify(p) });
   lsSet(getUserProfileKey(), p);
-  if (currentUser && p.name) {
-    currentUser.name = p.name;
+  if (currentUser) {
+    if (p.name) currentUser.name = p.name;
+    currentUser.profile = { ...(currentUser.profile || {}), ...p };
     updateUserUI();
+    applyUserPreferences(currentUser.profile);
   }
   $('psaved').textContent = '✔ Saved!'; setTimeout(() => $('psaved').textContent = '', 2000);
 }
