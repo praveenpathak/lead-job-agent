@@ -292,6 +292,22 @@
     </div>
     <div>
       <div id="dailyGoal" style="padding:10px;border-radius:10px;background:#f8fafc;border:1px solid var(--bd);font-size:11.5px;margin-bottom:10px"></div>
+      
+      <!-- User Quota / Membership Widget -->
+      <div id="userQuotaCard" style="margin-bottom:10px;padding:10px 12px;border-radius:10px;background:#f8fafc;border:1px solid var(--bd);font-size:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:700;color:var(--txt);font-size:11.5px" id="quotaPlanBadge">🌱 Free Plan</span>
+          <button type="button" onclick="openPricingModal()" style="padding:2px 8px;font-size:10.5px;border-radius:99px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;cursor:pointer;font-weight:600">⚡ Upgrade</button>
+        </div>
+        <div style="height:6px;border-radius:99px;background:#e2e8f0;overflow:hidden;margin-bottom:4px">
+          <div id="quotaProgressBar" style="height:100%;width:0%;background:#4f46e5;transition:width .3s"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted)">
+          <span id="quotaUsedText">0 / 10 used today</span>
+          <span id="quotaRemainingText" style="font-weight:600">10 left</span>
+        </div>
+      </div>
+
       <div class="user-card" id="sidebarUserCard" style="margin-top:0;cursor:pointer" onclick="openAuthModal()">
         <div class="avatar" id="sidebarAvatar">PP</div>
         <div><b id="sidebarUserName">Praveen Pathak</b><span id="sidebarUserSubtitle">Sr. Web Designer · 14.5 yrs</span></div>
@@ -302,13 +318,17 @@
     <header>
       <h2 id="pageTitle">🏪 Business Leads</h2>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div id="headerQuotaBadge" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;background:#f8fafc;border:1px solid var(--bd);font-size:11.5px;font-weight:600;color:var(--txt)" onclick="openPricingModal()" title="View Plan &amp; Upgrade">
+          <span>⚡</span>
+          <span id="headerQuotaLabel">10 / 10 Leads Left</span>
+        </div>
         <a href="https://docs.google.com/spreadsheets/d/1qyaz_ecGGaj80m6r207WKzYuytHO53r91MMnyHWmQBQ/edit?usp=sharing" target="_blank" style="text-decoration:none">
           <button type="button" class="sec" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;font-size:12px;color:#047857;background:#ecfdf5;border-color:#a7f3d0">
             📊 Open Connected Sheet
           </button>
         </a>
         <div id="authHeaderWrap" style="display:flex;align-items:center;gap:8px"></div>
-        <div class="badge-live">● Live & Auto-Saved</div>
+        <div class="badge-live">● Live &amp; Auto-Saved</div>
       </div>
     </header>
     <main>
@@ -392,7 +412,7 @@
         </div>
 
         <button class="sec" onclick="startPitchQueue()" style="color:#4f46e5;font-weight:700;padding:6px 11px;font-size:12px" title="Pitch unpitched leads one-by-one">⚡ Pitch Queue</button>
-        <button class="sec" onclick="exportCSV('leads')" style="padding:6px 11px;font-size:12px;color:#047857;background:#ecfdf5;border-color:#a7f3d0">⬇ CSV</button>
+        <button type="button" class="sec" onclick="exportLeadsCSV()" style="padding:6px 12px;font-size:12px;font-weight:700;color:#047857;background:#ecfdf5;border-color:#a7f3d0;display:inline-flex;align-items:center;gap:4px" title="Export current leads to Excel / CSV">📊 Export Excel / CSV</button>
 
         <!-- Dropdown for extra tools -->
         <div style="position:relative;display:inline-block">
@@ -1133,6 +1153,116 @@ hello@roofersllc.com"></textarea>
   </div>
 </div>
 
+<!-- PRICING & SUBSCRIPTION MODAL -->
+<div id="pricingModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:16px">
+  <div style="background:#ffffff;color:var(--txt);border:1px solid var(--bd);border-radius:20px;padding:28px;width:min(940px,96vw);max-height:92vh;overflow-y:auto;box-shadow:0 30px 80px rgba(15,23,42,0.3)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#4f46e5;background:#eef2ff;padding:3px 10px;border-radius:99px;text-transform:uppercase;margin-bottom:6px">
+          ⚡ Upgrade Your Growth
+        </div>
+        <h2 style="margin:0;font-size:22px;font-weight:800;color:#0f172a">Choose Your Lead &amp; Outreach Plan</h2>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Get daily high-ticket WordPress, Shopify, SEO &amp; Social Media leads with direct WhatsApp connectivity.</p>
+      </div>
+      <button class="sec" type="button" onclick="closePricingModal()" style="font-size:16px;padding:6px 12px;border-radius:8px">✕</button>
+    </div>
+
+    <!-- 3 Tier Cards Grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:24px">
+      <!-- 1. Free Starter -->
+      <div style="border:1px solid #e2e8f0;border-radius:16px;padding:20px;background:#f8fafc;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase">🌱 Free Starter</div>
+          <div style="margin:12px 0 16px"><span style="font-size:32px;font-weight:800;color:#0f172a">₹0</span> <span style="font-size:12px;color:var(--muted)">/ forever</span></div>
+          <ul style="margin:0;padding-left:18px;font-size:12.5px;color:#475569;line-height:1.75">
+            <li><b>10 Leads</b> per day</li>
+            <li>Basic Website Pitch</li>
+            <li>Standard Web Audit Link</li>
+            <li>Single City &amp; Niche Focus</li>
+            <li>Top 10 CSV Export</li>
+          </ul>
+        </div>
+        <button type="button" class="sec" disabled style="margin-top:20px;width:100%;padding:10px;font-size:12.5px;font-weight:600">Current Plan</button>
+      </div>
+
+      <!-- 2. Freelancer Pro (Most Popular) -->
+      <div style="border:2px solid #6366f1;border-radius:16px;padding:20px;background:#ffffff;box-shadow:0 12px 30px rgba(99,102,241,0.14);position:relative;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="position:absolute;top:-12px;right:18px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:99px;text-transform:uppercase;box-shadow:0 4px 10px rgba(79,70,229,.3)">
+          ⭐ Most Popular · Best ROI
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#4f46e5;text-transform:uppercase">🚀 Freelancer Pro</div>
+          <div style="margin:12px 0 16px">
+            <span style="font-size:32px;font-weight:800;color:#0f172a">₹499</span> 
+            <span style="font-size:12px;color:var(--muted)">/ month</span>
+            <div style="font-size:11px;color:#059669;font-weight:600">Just ₹16/day (Annual: ₹4,499)</div>
+          </div>
+          <ul style="margin:0;padding-left:18px;font-size:12.5px;color:#334155;line-height:1.75">
+            <li><b>150 Leads</b> per day (4,500/mo)</li>
+            <li><b>All 6 Service Pitches</b> (Web, SEO, SMO, Post, Graphic, Flyer)</li>
+            <li><b>WhatsApp Anti-Ban Spin-tax</b></li>
+            <li><b>Cold Calling Objection Cheat-Sheet</b></li>
+            <li><b>Unlimited 1-Click Excel / CSV Export</b></li>
+            <li>Interactive Web Audit Links (<code>/audit/:id</code>)</li>
+          </ul>
+        </div>
+        <button type="button" onclick="checkoutPlan('pro')" style="margin-top:20px;width:100%;padding:11px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:10px;box-shadow:0 6px 16px rgba(79,70,229,.35);cursor:pointer">
+          ⚡ Get Freelancer Pro (₹499)
+        </button>
+      </div>
+
+      <!-- 3. Agency Unlimited -->
+      <div style="border:1px solid #cbd5e1;border-radius:16px;padding:20px;background:#f8fafc;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#059669;text-transform:uppercase">🏢 Agency Unlimited</div>
+          <div style="margin:12px 0 16px">
+            <span style="font-size:32px;font-weight:800;color:#0f172a">₹1,499</span> 
+            <span style="font-size:12px;color:var(--muted)">/ month</span>
+            <div style="font-size:11px;color:#059669;font-weight:600">Annual: ₹12,999 (Save 28%)</div>
+          </div>
+          <ul style="margin:0;padding-left:18px;font-size:12.5px;color:#475569;line-height:1.75">
+            <li><b>Unlimited Leads</b> (No Daily Caps)</li>
+            <li><b>White-Label Web Audit</b> (Your Agency Name &amp; Logo)</li>
+            <li><b>1-Click Branded PDF Audit Export</b></li>
+            <li><b>Mini CRM Pipeline</b> (Follow-up Reminders)</li>
+            <li>3 Team Member / Caller Accounts</li>
+            <li>Priority High-Speed Scraping</li>
+          </ul>
+        </div>
+        <button type="button" onclick="checkoutPlan('agency')" class="sec" style="margin-top:20px;width:100%;padding:11px;font-size:13px;font-weight:700;color:#059669;border-color:#10b981;cursor:pointer">
+          🏢 Get Agency Plan (₹1,499)
+        </button>
+      </div>
+    </div>
+
+    <!-- Instant WhatsApp / UPI Checkout Banner -->
+    <div style="padding:16px 20px;border-radius:14px;background:#ecfdf5;border:1px solid #a7f3d0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:28px">💬</div>
+        <div>
+          <b style="font-size:13.5px;color:#065f46">Instant Activation via UPI / WhatsApp</b>
+          <div style="font-size:12px;color:#047857">Pay via GooglePay / PhonePe / Paytm UPI. Account upgrades immediately within 5 minutes.</div>
+        </div>
+      </div>
+      <a id="waPricingLink" href="https://wa.me/918109567672?text=Hi%20Praveen,%20I%20want%20to%20upgrade%20my%20Lead%20Agent%20account%20to%20Pro!" target="_blank" style="text-decoration:none">
+        <button type="button" style="background:#10b981;color:#fff;border:none;font-weight:700;padding:10px 18px;font-size:13px;border-radius:8px;box-shadow:0 4px 12px rgba(16,185,129,.35);cursor:pointer">
+          💬 Message on WhatsApp
+        </button>
+      </a>
+    </div>
+
+    <!-- Admin / Testing Switcher -->
+    <div style="margin-top:16px;padding:10px 14px;border-radius:10px;background:#f1f5f9;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span style="color:#64748b;font-weight:600">🛠️ Live Demo Mode (Instant Plan Switch):</span>
+      <div style="display:flex;gap:6px">
+        <button type="button" onclick="demoSwitchPlan('free')" class="sec" style="padding:4px 9px;font-size:11.5px">🌱 Free (10/d)</button>
+        <button type="button" onclick="demoSwitchPlan('pro')" style="padding:4px 9px;font-size:11.5px;background:#4f46e5;color:#fff;border:none;border-radius:6px;cursor:pointer">🚀 Pro (150/d)</button>
+        <button type="button" onclick="demoSwitchPlan('agency')" style="padding:4px 9px;font-size:11.5px;background:#059669;color:#fff;border:none;border-radius:6px;cursor:pointer">👑 Agency (Unlimited)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 
 <script>
@@ -1148,6 +1278,7 @@ const decodeHtml = (s) => String(s ?? '')
 const esc = (s) => String(decodeHtml(s)).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const data = { leads: [], check: [], jobs: [], apps: [] };
 let currentUser = null;
+let currentUserQuota = null;
 
 const authHeaders = () => {
   const token = localStorage.getItem('lga_token');
@@ -1187,6 +1318,166 @@ function toggleRegNiche(el) {
   if (el) el.classList.toggle('active');
 }
 
+// ---------- Subscription, Pricing & Export Functions ----------
+function openPricingModal(requestedPlan = 'pro') {
+  const modal = $('pricingModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  const email = currentUser?.email || '';
+  const name = currentUser?.name || 'User';
+  const msg = encodeURIComponent(`Hi Praveen, I want to upgrade my Lead & Job Agent account (${email || name}) to ${requestedPlan.toUpperCase()} plan!`);
+  const waBtn = $('waPricingLink');
+  if (waBtn) waBtn.href = `https://wa.me/918109567672?text=${msg}`;
+}
+
+function closePricingModal() {
+  const modal = $('pricingModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function checkoutPlan(plan) {
+  openPricingModal(plan);
+  const price = plan === 'pro' ? '₹499/mo' : '₹1,499/mo';
+  showToast(`⚡ Activating ${plan.toUpperCase()} (${price}) — WhatsApp message opened.`);
+}
+
+async function demoSwitchPlan(plan) {
+  try {
+    const res = await fetch('/api/user/upgrade', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ plan })
+    });
+    const d = await res.json();
+    if (res.ok) {
+      if (currentUser) {
+        currentUser.plan = d.user?.plan || plan;
+      }
+      currentUserQuota = d.quota;
+      updateQuotaUI(d.quota);
+      showToast(`🎉 Plan upgraded to ${plan.toUpperCase()} successfully!`);
+      closePricingModal();
+    } else {
+      showToast('Upgrade: ' + (d.error || 'Server error'));
+    }
+  } catch (err) {
+    if (currentUser) currentUser.plan = plan;
+    showToast(`✔ Switched to ${plan.toUpperCase()} plan.`);
+    closePricingModal();
+  }
+}
+
+function updateQuotaUI(quota) {
+  if (quota) currentUserQuota = quota;
+  const q = currentUserQuota;
+  const isSuper = Boolean(currentUser?.isSuperAdmin || currentUser?.role === 'superadmin' || (currentUser?.email && currentUser.email.toLowerCase() === 'parvpathak12@gmail.com'));
+  const plan = isSuper ? 'agency' : (q?.plan || currentUser?.plan || 'free');
+  const used = q?.usedToday || 0;
+  const limit = q?.limit || (plan === 'pro' ? 150 : 10);
+  const isUnlimited = isSuper || plan === 'agency' || Boolean(q?.isUnlimited);
+
+  // Sidebar Widget
+  const badgeEl = $('quotaPlanBadge');
+  if (badgeEl) {
+    if (plan === 'agency') badgeEl.innerHTML = '👑 Agency Unlimited';
+    else if (plan === 'pro') badgeEl.innerHTML = '🚀 Freelancer Pro';
+    else badgeEl.innerHTML = '🌱 Free Starter';
+  }
+
+  const barEl = $('quotaProgressBar');
+  if (barEl) {
+    if (isUnlimited) {
+      barEl.style.width = '100%';
+      barEl.style.background = '#10b981';
+    } else {
+      const pct = Math.min(100, Math.round((used / limit) * 100));
+      barEl.style.width = `${pct}%`;
+      barEl.style.background = pct >= 90 ? '#ef4444' : pct >= 60 ? '#f59e0b' : '#4f46e5';
+    }
+  }
+
+  const usedEl = $('quotaUsedText');
+  if (usedEl) {
+    usedEl.textContent = isUnlimited ? `${used} leads exported` : `${used} / ${limit} used today`;
+  }
+
+  const remEl = $('quotaRemainingText');
+  if (remEl) {
+    remEl.textContent = isUnlimited ? 'Unlimited' : `${Math.max(0, limit - used)} left`;
+  }
+
+  // Header Badge
+  const headerLabel = $('headerQuotaLabel');
+  if (headerLabel) {
+    if (isUnlimited) headerLabel.textContent = '👑 Unlimited Leads';
+    else headerLabel.textContent = `⚡ ${Math.max(0, limit - used)} / ${limit} Leads Left`;
+  }
+}
+
+function exportLeadsCSV() {
+  const rows = data.leads || [];
+  if (!rows.length) {
+    showToast('⚠️ Pehle search run karein, abhi koi leads nahi mili hain!');
+    return;
+  }
+  
+  const plan = currentUser?.plan || 'free';
+  const isSuper = Boolean(currentUser?.isSuperAdmin || currentUser?.role === 'superadmin' || (currentUser?.email && currentUser.email.toLowerCase() === 'parvpathak12@gmail.com'));
+  let exportRows = rows;
+  if (plan === 'free' && !isSuper && rows.length > 10) {
+    exportRows = rows.slice(0, 10);
+    showToast('🌱 Free Plan: Top 10 leads export ki gayi hain. Unlimited export ke liye Upgrade to Pro karein!');
+  } else {
+    showToast(`✔ Exporting ${exportRows.length} leads to CSV...`);
+  }
+
+  const headers = [
+    'Business Name',
+    'Category / Niche',
+    'City / Address',
+    'Phone Numbers',
+    'WhatsApp Direct Link',
+    'Website',
+    'Platform / CMS',
+    'Tech Theme',
+    'Emails',
+    'Instagram',
+    'Facebook',
+    'Issues & Opportunities'
+  ];
+
+  const lines = [
+    headers.join(','),
+    ...exportRows.map((r) => {
+      const waDigits = ((r.phones || [])[0] || '').replace(/\D/g, '');
+      const waLink = waDigits ? `https://wa.me/${waDigits.length === 10 ? '91' + waDigits : waDigits}` : '';
+      const vals = [
+        r.name || '',
+        r.category || '',
+        r.address || r.city || '',
+        (r.phones || []).join('; '),
+        waLink,
+        r.website || '',
+        r.platform || '',
+        r.theme || '',
+        (r.emails || []).join('; '),
+        r.socials?.instagram || '',
+        r.socials?.facebook || '',
+        (r.opportunities || []).join('; ')
+      ];
+      return vals.map((v) => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(',');
+    })
+  ];
+
+  const csv = lines.join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const dateStr = new Date().toISOString().slice(0, 10);
+  a.download = `leads_${dateStr}.csv`;
+  a.click();
+}
+
 async function submitLogin() {
   const email = $('login_email').value.trim();
   const password = $('login_password').value;
@@ -1212,6 +1503,7 @@ async function submitLogin() {
     $('authModal').style.display = 'none';
     $('login_password').value = '';
     showToast(`✔ Welcome back, ${currentUser.name}!`);
+    await checkAuth();
     await loadApps();
     await loadProfile();
   } catch (err) {
@@ -1262,6 +1554,7 @@ async function submitRegister() {
     $('authModal').style.display = 'none';
     $('reg_password').value = '';
     showToast(`🎉 Account created! Personalized for ${primaryService.toUpperCase()} in ${targetCity}!`);
+    await checkAuth();
     await loadApps();
     await loadProfile();
   } catch (err) {
@@ -1284,12 +1577,15 @@ async function checkAuth() {
     if (res.ok) {
       const d = await res.json();
       currentUser = d.user;
+      currentUserQuota = d.quota;
       localStorage.setItem('lga_user', JSON.stringify(d.user));
       applyUserPreferences(d.profile || d.user?.profile);
+      updateQuotaUI(d.quota);
     } else {
       localStorage.removeItem('lga_token');
       localStorage.removeItem('lga_user');
       currentUser = null;
+      currentUserQuota = null;
     }
   } catch {
     try { currentUser = JSON.parse(localStorage.getItem('lga_user')); } catch {}
@@ -1301,10 +1597,10 @@ function logoutUser() {
   localStorage.removeItem('lga_token');
   localStorage.removeItem('lga_user');
   currentUser = null;
+  currentUserQuota = null;
   updateUserUI();
   const badge = $('userPersonalBadge'); if (badge) badge.style.display = 'none';
   const pick = $('userPersonalPick'); if (pick) pick.style.display = 'none';
-  showToast('Logged out.');
   showToast('Logged out.');
   loadApps();
   loadProfile();
@@ -2313,6 +2609,11 @@ $('goLeads').onclick = async () => {
     const chosenPlatforms = platMS.get().length ? platMS.get() : ['all'];
     await streamPost('/api/leads', { areas: areaMS.get(), categories: catMS.get(), platform: chosenPlatforms, platforms: chosenPlatforms, maxScan: $('maxScan').value }, (m) => {
       if (m.stage === 'lead') { data.leads.push(m.lead); lsSet('leads', data.leads); renderLeads(); }
+      else if (m.stage === 'limit_reached') {
+        log('log', `🛑 ${m.msg}`);
+        showToast('🛑 Daily lead limit reached. Upgrade to Pro for more leads!');
+        openPricingModal();
+      }
       else if (m.stage === 'progress') $('bar').style.width = (m.done / m.total * 100) + '%';
       else if (m.stage === 'result') { data.leads = m.leads; lsSet('leads', data.leads); renderLeads(); $('bar').style.width = '100%'; }
       else if (m.msg) log('log', (m.stage === 'error' ? '❌ ' : '• ') + m.msg);
@@ -2322,6 +2623,7 @@ $('goLeads').onclick = async () => {
   }
   lsSet('leads', data.leads);
   btn.disabled = false; stop.style.display = 'none'; leadAbort = null;
+  checkAuth();
 };
 
 $('goCheck').onclick = async () => {

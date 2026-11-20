@@ -23,7 +23,10 @@ import {
   getAdminUsers,
   getAdminPitches,
   getAdminStats,
-  getAdminActivity
+  getAdminActivity,
+  getUserQuota,
+  incrementLeadsUsed,
+  updateUserPlan
 } from './lib/auth.js';
 import { dbSaveLead } from './lib/db.js';
 import { createAuditRecord, getAuditRecord, renderAuditHTML } from './lib/audit.js';
@@ -65,21 +68,60 @@ const server = http.createServer(async (req, res) => {
       const send = stream(res);
       const ctrl = new AbortController();
       req.on('close', () => ctrl.abort());
+
+      // Daily Quota Verification
+      const uid = await getAuthUserId(req);
+      const quota = await getUserQuota(uid);
+      if (!quota.canSearch) {
+        send({
+          stage: 'limit_reached',
+          plan: quota.plan,
+          used: quota.usedToday,
+          limit: quota.limit,
+          msg: `Daily lead limit of ${quota.limit} reached for ${quota.plan.toUpperCase()} plan. Upgrade to Pro for unlimited leads!`
+        });
+        return res.end();
+      }
+
+      let leadsStreamedThisRun = 0;
+      const maxAllowedThisRun = quota.isUnlimited ? 500 : quota.remaining;
+
       try {
         const r = await findLeads({
           ...b,
           maxScan: Math.min(Number(b.maxScan) || 200, 500),
           signal: ctrl.signal,
           onProgress: (m) => {
-            if (m && m.stage === 'lead' && m.lead) dbSaveLead(m.lead);
+            if (m && m.stage === 'lead' && m.lead) {
+              if (leadsStreamedThisRun >= maxAllowedThisRun) {
+                if (!res.writableEnded) {
+                  send({
+                    stage: 'limit_reached',
+                    plan: quota.plan,
+                    used: quota.limit,
+                    limit: quota.limit,
+                    msg: `Daily lead limit of ${quota.limit} reached for ${quota.plan.toUpperCase()} plan. Upgrade to Pro for unlimited leads!`
+                  });
+                }
+                ctrl.abort();
+                return;
+              }
+              leadsStreamedThisRun++;
+              dbSaveLead(m.lead);
+            }
             if (!res.writableEnded) send(m);
           }
         });
+        if (leadsStreamedThisRun > 0 && uid) {
+          await incrementLeadsUsed(uid, leadsStreamedThisRun);
+        }
         if (r && Array.isArray(r.leads)) {
           for (const ld of r.leads) dbSaveLead(ld);
         }
         if (!res.writableEnded) send({ stage: 'result', ...r });
-      } catch (e) { if (!res.writableEnded) send({ stage: 'error', msg: e.message }); }
+      } catch (e) {
+        if (!res.writableEnded && e.name !== 'AbortError') send({ stage: 'error', msg: e.message });
+      }
       return !res.writableEnded && res.end();
     }
     if (req.method === 'POST' && req.url === '/api/check-urls') {
@@ -141,7 +183,22 @@ const server = http.createServer(async (req, res) => {
       }
       const user = await getUserById(uid);
       const profile = await getUserProfile(uid);
-      return json({ user, profile });
+      const quota = await getUserQuota(uid);
+      return json({ user, profile, quota });
+    }
+
+    if (req.method === 'POST' && req.url === '/api/user/upgrade') {
+      const uid = await getAuthUserId(req);
+      if (!uid) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Unauthorized' }));
+      }
+      const b = await body(req);
+      const plan = b.plan || 'pro';
+      await updateUserPlan(uid, plan);
+      const user = await getUserById(uid);
+      const quota = await getUserQuota(uid);
+      return json({ success: true, user, quota });
     }
 
     // ----- Super Admin Endpoints -----
