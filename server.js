@@ -26,7 +26,8 @@ import {
   getAdminActivity,
   getUserQuota,
   incrementLeadsUsed,
-  updateUserPlan
+  updateUserPlan,
+  updateAdminUserAccess
 } from './lib/auth.js';
 import { dbSaveLead } from './lib/db.js';
 import { createAuditRecord, getAuditRecord, renderAuditHTML } from './lib/audit.js';
@@ -230,6 +231,18 @@ const server = http.createServer(async (req, res) => {
       try {
         const users = await getAdminUsers(uid);
         return json(users);
+      } catch (err) {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: err.message }));
+      }
+    }
+    if (req.method === 'POST' && req.url === '/api/admin/users/access') {
+      const uid = await getAuthUserId(req);
+      if (!uid) { res.writeHead(401, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ error: 'Unauthorized' })); }
+      try {
+        const body = await readBody(req);
+        const updated = await updateAdminUserAccess(uid, body.userId, { role: body.role, plan: body.plan });
+        return json({ ok: true, user: updated });
       } catch (err) {
         res.writeHead(403, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ error: err.message }));

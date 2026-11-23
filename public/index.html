@@ -160,7 +160,7 @@
     padding:16px 18px; box-shadow:var(--shadow); margin-bottom:12px;
   }
   .search-row-main {
-    display:grid; grid-template-columns: 1.1fr 1.1fr 1.1fr auto; gap:12px; align-items:flex-end;
+    display:grid; grid-template-columns: 0.85fr 1.1fr 1.1fr 1.1fr auto; gap:12px; align-items:flex-end;
   }
   @media (max-width:980px) {
     .search-row-main { grid-template-columns: 1fr 1fr; }
@@ -355,7 +355,20 @@
     <div class="search-card">
       <div class="search-row-main">
         <div class="search-box-field">
-          <span>📍 Locations (Cities &amp; States)</span>
+          <span>🌍 Country</span>
+          <select id="countrySelect" onchange="onCountryDropdownChange(this.value)" style="height:42px">
+            <option value="ALL">🌍 All Countries</option>
+            <option value="India">🇮🇳 India</option>
+            <option value="USA">🇺🇸 United States</option>
+            <option value="UAE">🇦🇪 UAE &amp; Middle East</option>
+            <option value="UK">🇬🇧 United Kingdom</option>
+            <option value="Canada">🇨🇦 Canada</option>
+            <option value="Europe">🇪🇺 Europe</option>
+            <option value="Other">🌏 Australia / APAC</option>
+          </select>
+        </div>
+        <div class="search-box-field">
+          <span>📍 State / City</span>
           <div class="ms" id="areaMS"></div>
         </div>
         <div class="search-box-field">
@@ -1324,7 +1337,7 @@ const PLAN_LIMITS = {
 };
 
 function getCurrentUserPlan() {
-  const isSuper = Boolean(currentUser?.isSuperAdmin || currentUser?.role === 'superadmin' || (currentUser?.email && currentUser.email.toLowerCase() === 'parvpathak12@gmail.com'));
+  const isSuper = Boolean(currentUser?.isSuperAdmin || currentUser?.role === 'superadmin' || ['parvpathak12@gmail.com', 'rohitnarwariya555@gmail.com'].includes(String(currentUser?.email || '').toLowerCase()));
   if (isSuper) return 'agency';
   return (currentUserQuota?.plan || currentUser?.plan || 'free').toLowerCase();
 }
@@ -1410,7 +1423,7 @@ async function demoSwitchPlan(plan) {
 function updateQuotaUI(quota) {
   if (quota) currentUserQuota = quota;
   const q = currentUserQuota;
-  const isSuper = Boolean(currentUser?.isSuperAdmin || currentUser?.role === 'superadmin' || (currentUser?.email && currentUser.email.toLowerCase() === 'parvpathak12@gmail.com'));
+  const isSuper = Boolean(currentUser?.isSuperAdmin || currentUser?.role === 'superadmin' || ['parvpathak12@gmail.com', 'rohitnarwariya555@gmail.com'].includes(String(currentUser?.email || '').toLowerCase()));
   const plan = isSuper ? 'agency' : (q?.plan || currentUser?.plan || 'free');
   const used = q?.usedToday || 0;
   const limit = q?.limit || (plan === 'pro' ? 150 : 10);
@@ -1466,7 +1479,7 @@ function exportLeadsCSV() {
   }
   
   const plan = currentUser?.plan || 'free';
-  const isSuper = Boolean(currentUser?.isSuperAdmin || currentUser?.role === 'superadmin' || (currentUser?.email && currentUser.email.toLowerCase() === 'parvpathak12@gmail.com'));
+  const isSuper = Boolean(currentUser?.isSuperAdmin || currentUser?.role === 'superadmin' || ['parvpathak12@gmail.com', 'rohitnarwariya555@gmail.com'].includes(String(currentUser?.email || '').toLowerCase()));
   let exportRows = rows;
   if (plan === 'free' && !isSuper && rows.length > 10) {
     exportRows = rows.slice(0, 10);
@@ -1663,7 +1676,7 @@ function updateUserUI() {
     if (cardName) cardName.textContent = currentUser.name;
     if (cardSub) cardSub.textContent = currentUser.email;
 
-    const isSuper = Boolean(currentUser.isSuperAdmin || currentUser.role === 'superadmin' || (currentUser.email && currentUser.email.toLowerCase() === 'parvpathak12@gmail.com'));
+    const isSuper = Boolean(currentUser.isSuperAdmin || currentUser.role === 'superadmin' || ['parvpathak12@gmail.com', 'rohitnarwariya555@gmail.com'].includes(String(currentUser?.email || '').toLowerCase()));
     if (adminTab) adminTab.style.display = isSuper ? 'flex' : 'none';
 
     if (wrap) {
@@ -1741,6 +1754,9 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
     return v.replace(/_/g, ' ');
   };
 
+  let countryFilter = 'ALL';
+  let levelFilter = 'ALL';
+
   el.innerHTML = `<button type="button" class="ms-btn"><span class="ms-lbl"></span><span>▾</span></button>
     <div class="ms-drop">
       <div class="ms-slot-bar" style="display:flex;align-items:center;justify-content:space-between;padding:5px 9px;margin-bottom:7px;border-radius:7px;font-size:11.5px;background:#f8fafc;border:1px solid #e2e8f0">
@@ -1791,12 +1807,37 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
       }
     }
 
+    const CANADA_PROVINCES = new Set(['Ontario, Canada','British Columbia, Canada','Quebec, Canada','Alberta, Canada','Manitoba, Canada','Nova Scotia, Canada']);
+    const EUROPE_COUNTRIES = ['Ireland','Germany','France','Netherlands','Spain','Portugal','Italy','Switzerland','Austria','Belgium','Sweden','Denmark','Norway','Poland','Czechia'];
+
+    const matchesAreaFilters = (g, n) => {
+      if (type !== 'area') return true;
+      const val = n.val;
+      if (countryFilter !== 'ALL') {
+        if (countryFilter === 'India' && !val.endsWith(', India')) return false;
+        if (countryFilter === 'USA' && !val.endsWith(', USA')) return false;
+        if (countryFilter === 'UAE' && !g.includes('UAE')) return false;
+        if (countryFilter === 'UK' && !val.endsWith(', UK')) return false;
+        if (countryFilter === 'Canada' && !val.endsWith(', Canada')) return false;
+        if (countryFilter === 'Europe' && !EUROPE_COUNTRIES.some((c) => val.endsWith(', ' + c))) return false;
+        if (countryFilter === 'Other' && !g.includes('APAC')) return false;
+      }
+      if (levelFilter === 'states') {
+        const isState = g.includes('States') || CANADA_PROVINCES.has(val);
+        if (!isState) return false;
+      } else if (levelFilter === 'cities') {
+        const isState = g.includes('States') || CANADA_PROVINCES.has(val);
+        if (isState) return false;
+      }
+      return true;
+    };
+
     const f = q.value.trim().toLowerCase();
     let html = '';
     const allGrps = custom.length ? [['Custom', custom.map((c) => ({ val: c, label: c, sub: '' }))], ...groups] : groups;
     for (const [g, items] of allGrps) {
       const normalizedItems = items.map(norm);
-      const hits = normalizedItems.filter((n) => !f || n.val.toLowerCase().includes(f) || n.label.toLowerCase().includes(f) || n.sub.toLowerCase().includes(f));
+      const hits = normalizedItems.filter((n) => matchesAreaFilters(g, n) && (!f || n.val.toLowerCase().includes(f) || n.label.toLowerCase().includes(f) || n.sub.toLowerCase().includes(f)));
       if (!hits.length) continue;
       html += `<div class="ms-grp">${esc(g)}</div>` + hits.map((n) => `<label class="ms-item" title="${esc(n.sub || n.label)}"><input type="checkbox" value="${esc(n.val)}" ${selected.has(n.val) ? 'checked' : ''} /><span>${esc(n.label)}</span></label>`).join('');
     }
@@ -1837,6 +1878,26 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
   };
   el.querySelector('.ms-drop').onclick = (e) => e.stopPropagation();
   q.oninput = () => render(false);
+  el.querySelectorAll('.ms-cf').forEach((b) => {
+    b.onclick = () => {
+      countryFilter = b.dataset.c || 'ALL';
+      el.querySelectorAll('.ms-cf').forEach((x) => {
+        x.style.background = x === b ? '#4f46e5' : '';
+        x.style.color = x === b ? '#fff' : '';
+      });
+      render(false);
+    };
+  });
+  el.querySelectorAll('.ms-lf').forEach((b) => {
+    b.onclick = () => {
+      levelFilter = b.dataset.l || 'ALL';
+      el.querySelectorAll('.ms-lf').forEach((x) => {
+        x.style.background = x === b ? '#0f766e' : '';
+        x.style.color = x === b ? '#fff' : '';
+      });
+      render(false);
+    };
+  });
   el.querySelector('.ms-all').onclick = () => {
     const limit = getMaxSelectLimit(type);
     if (limit < 20) {
@@ -1847,7 +1908,30 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
       return;
     }
     const f = q.value.trim().toLowerCase();
-    groups.flatMap((g) => g[1]).map(norm).filter((n) => !f || n.val.toLowerCase().includes(f) || n.label.toLowerCase().includes(f)).slice(0, 30).forEach((n) => selected.add(n.val));
+    const CANADA_PROVINCES = new Set(['Ontario, Canada','British Columbia, Canada','Quebec, Canada','Alberta, Canada','Manitoba, Canada','Nova Scotia, Canada']);
+    const EUROPE_COUNTRIES = ['Ireland','Germany','France','Netherlands','Spain','Portugal','Italy','Switzerland','Austria','Belgium','Sweden','Denmark','Norway','Poland','Czechia'];
+    const visibleItems = [];
+    for (const [g, items] of groups) {
+      for (const n of items.map(norm)) {
+        if (type === 'area') {
+          const val = n.val;
+          if (countryFilter !== 'ALL') {
+            if (countryFilter === 'India' && !val.endsWith(', India')) continue;
+            if (countryFilter === 'USA' && !val.endsWith(', USA')) continue;
+            if (countryFilter === 'UAE' && !g.includes('UAE')) continue;
+            if (countryFilter === 'UK' && !val.endsWith(', UK')) continue;
+            if (countryFilter === 'Canada' && !val.endsWith(', Canada')) continue;
+            if (countryFilter === 'Europe' && !EUROPE_COUNTRIES.some((c) => val.endsWith(', ' + c))) continue;
+            if (countryFilter === 'Other' && !g.includes('APAC')) continue;
+          }
+          const isState = g.includes('States') || CANADA_PROVINCES.has(val);
+          if (levelFilter === 'states' && !isState) continue;
+          if (levelFilter === 'cities' && isState) continue;
+        }
+        if (!f || n.val.toLowerCase().includes(f) || n.label.toLowerCase().includes(f)) visibleItems.push(n.val);
+      }
+    }
+    visibleItems.slice(0, 30).forEach((v) => selected.add(v));
     render(true);
   };
   el.querySelector('.ms-clr').onclick = () => { selected.clear(); render(true); };
@@ -1867,6 +1951,15 @@ function makeMultiSelect(elId, groups, initial, { allowCustom = false, placehold
   render(false);
   return {
     get: () => [...selected],
+    setCountry: (c) => {
+      countryFilter = c || 'ALL';
+      el.querySelectorAll('.ms-cf').forEach((x) => {
+        const match = (x.dataset.c || 'ALL') === countryFilter;
+        x.style.background = match ? '#4f46e5' : '';
+        x.style.color = match ? '#fff' : '';
+      });
+      render(false);
+    },
     set: (arr) => {
       selected.clear();
       const limit = getMaxSelectLimit(type);
@@ -2015,6 +2108,11 @@ const PLATFORM_GROUPS = [
 
 const onFilterChange = () => { updateActiveChips(); };
 const areaMS = makeMultiSelect('areaMS', LOC_GROUPS, ['Indore, India'], { allowCustom: true, placeholder: 'Search state, city or type custom...', type: 'area', onChange: onFilterChange });
+function onCountryDropdownChange(countryVal) {
+  if (typeof areaMS !== 'undefined' && areaMS && typeof areaMS.setCountry === 'function') {
+    areaMS.setCountry(countryVal || 'ALL');
+  }
+}
 let catMS = makeMultiSelect('catMS', CATEGORY_GROUPS, ['restaurant'], { placeholder: 'Search niche or category...', type: 'cat', onChange: onFilterChange });
 let platMS = makeMultiSelect('platMS', PLATFORM_GROUPS, ['all'], { placeholder: 'Search platform, tech or need...', type: 'plat', onChange: onFilterChange });
 
@@ -3966,9 +4064,8 @@ function renderAdminUsers(users) {
 
   tbody.innerHTML = users.map((u) => {
     const isSuper = u.role === 'superadmin' || u.isSuperAdmin;
-    const roleBadge = isSuper
-      ? `<span class="pill" style="background:#faf5ff;color:#7c3aed;border-color:#e9d5ff;font-weight:700">👑 Super Admin</span>`
-      : `<span class="pill" style="background:#eff6ff;color:#2563eb;border-color:#bfdbfe">Agent</span>`;
+    const curRole = isSuper ? 'superadmin' : 'user';
+    const curPlan = isSuper ? 'agency' : (u.plan || 'free').toLowerCase();
 
     const lastLoginFormatted = u.lastLoginAt ? `${formatDateTime(u.lastLoginAt)} <span class="small" style="color:var(--muted)">(${u.lastLoginIp || 'Local'})</span>` : '<span style="color:var(--muted)">Never</span>';
 
@@ -3985,7 +4082,19 @@ function renderAdminUsers(users) {
         </td>
         <td><a href="mailto:${esc(u.email)}">${esc(u.email)}</a></td>
         <td>${u.phone ? `<a href="tel:${esc(u.phone)}">${esc(u.phone)}</a>` : '—'}</td>
-        <td>${roleBadge}</td>
+        <td>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+            <select onchange="updateUserAccess('${esc(u.id)}', this.value, null)" style="padding:3px 6px;font-size:11px;border-radius:6px;width:auto;background:${isSuper ? '#faf5ff' : '#eff6ff'};color:${isSuper ? '#7c3aed' : '#1d4ed8'};font-weight:700">
+              <option value="user" ${curRole === 'user' ? 'selected' : ''}>Agent</option>
+              <option value="superadmin" ${curRole === 'superadmin' ? 'selected' : ''}>👑 Super Admin</option>
+            </select>
+            <select onchange="updateUserAccess('${esc(u.id)}', null, this.value)" style="padding:3px 6px;font-size:11px;border-radius:6px;width:auto">
+              <option value="free" ${curPlan === 'free' ? 'selected' : ''}>Free</option>
+              <option value="pro" ${curPlan === 'pro' ? 'selected' : ''}>Pro</option>
+              <option value="agency" ${curPlan === 'agency' ? 'selected' : ''}>Agency</option>
+            </select>
+          </div>
+        </td>
         <td>${formatDateTime(u.createdAt).split(',')[0]}</td>
         <td>${lastLoginFormatted}</td>
         <td><b style="color:#059669;font-size:14px">${u.totalPitches || 0}</b></td>
@@ -4004,6 +4113,23 @@ function renderAdminUsers(users) {
       </tr>
     `;
   }).join('');
+}
+
+async function updateUserAccess(userId, role, plan) {
+  try {
+    const res = await fetch('/api/admin/users/access', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ userId, role, plan })
+    });
+    const d = await res.json();
+    if (!res.ok || !d.ok) throw new Error(d.error || 'Failed to update access');
+    showToast(`✅ Access updated for ${d.user?.email || 'user'}!`);
+    await loadAdminData();
+  } catch (err) {
+    alert('❌ ' + err.message);
+    await loadAdminData();
+  }
 }
 
 function filterUserInAdmin(userId) {
